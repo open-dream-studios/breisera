@@ -1,0 +1,7 @@
+{
+  "project_name": "Template",
+  "default_theme": "dark",
+  "left_bar_full": false,
+  "left_bar_width": "125px + 14vw",
+  "nav_height": 70
+}

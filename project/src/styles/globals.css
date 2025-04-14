@@ -1,0 +1,246 @@
+@import "tailwindcss";
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+
+/* DIM */
+.dim {
+  transition: filter 0.2s ease-in-out;
+  will-change: filter;
+}
+
+/* Sephir */
+@font-face {
+  font-family: "Sephir";
+  src: url("/public/fonts/sephir/Sephir-Regular.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+.sephir {
+  font-family: "Sephir", sans-serif;
+}
+
+/* Glyce */
+@font-face {
+  font-family: "Glyce";
+  src: url("/public/fonts/glyce/Glyce-Regular.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+.glyce {
+  font-family: "Glyce", sans-serif;
+}
+
+/* Caster */
+@font-face {
+  font-family: "Caster";
+  src: url("/public/fonts/caster-demo/Caster.ttf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+.caster {
+  font-family: "Caster", sans-serif;
+}
+
+/* Abygaer */
+@font-face {
+  font-family: "Abygaer";
+  src: url("/public/fonts/abygaer/Abygaer.ttf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+.abygaer {
+  font-family: "Abygaer", sans-serif;
+}
+
+/* Klivora */
+@font-face {
+  font-family: "Klivora";
+  src: url("/public/fonts/klivora/Klivora.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+.klivora {
+  font-family: "Klivora", sans-serif;
+}
+
+/* Sandemore */
+@font-face {
+  font-family: "Sandemore";
+  src: url("/public/fonts/sandemore/SandeMore-Regular.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+.sandemore {
+  font-family: "Sandemore", sans-serif;
+}
+
+/* Medio */
+@font-face {
+  font-family: "Medio";
+  src: url("/public/fonts/medio/Medio.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+.medio {
+  font-family: "Medio", sans-serif;
+}
+
+/* Mollie */
+@font-face {
+  font-family: "Mollie";
+  src: url("/public/fonts/mollie/MollieGlaston.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+.mollie {
+  font-family: "Mollie", sans-serif;
+}
+
+/* Kayonest */
+@font-face {
+  font-family: "kayonest";
+  src: url("/public/fonts/kayonest/Kayonest.ttf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+.kayonest {
+  font-family: "Kayonest", sans-serif;
+}
+
+/* Quorina */
+@font-face {
+  font-family: "quorina";
+  src: url("/public/fonts/quorina/Quorina.ttf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+.quorina {
+  font-family: "Quorina", sans-serif;
+}
+
+/* seraphinem */
+@font-face {
+  font-family: "seraphinem";
+  src: url("/public/fonts/seraphinem/seraphinem.ttf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+.seraphinem {
+  font-family: "Seraphinem", sans-serif;
+}
+
+/* poppins */
+/* @font-face {
+  font-family: 'poppins';
+  src: url('/public/fonts/poppins/poppins.medium.ttf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+.poppins {
+  font-family: 'Poppins', sans-serif;
+}  */
+
+/* poppins semibold */
+@font-face {
+  font-family: "poppins";
+  src: url("/public/fonts/poppins/poppins.semibold.ttf") format("opentype");
+}
+
+.poppins {
+  font-family: "Poppins", sans-serif;
+}
+
+/* manrope bold */
+@font-face {
+  font-family: "manrope";
+  src: url("/public/fonts/manrope/manrope.bold.otf") format("opentype");
+}
+
+.manrope {
+  font-family: "Manrope", sans-serif;
+}
+
+/* manrope md */
+@font-face {
+  font-family: "manrope2";
+  src: url("/public/fonts/manrope-md/manrope.medium.otf") format("opentype");
+}
+
+.manrope-md {
+  font-family: "Manrope2", sans-serif;
+}
+
+/* Roboto */
+@font-face {
+  font-family: "roboto";
+  src: url("/public/fonts/roboto/roboto-condensed.bold.ttf") format("opentype");
+}
+
+.roboto {
+  font-family: "Roboto", sans-serif;
+}
+
+/* Handwriting */
+@font-face {
+  font-family: "baskara";
+  src: url("/public/fonts/baskara/baskara.regular.otf") format("opentype");
+}
+
+.baskara {
+  font-family: "Baskara", sans-serif;
+}
+
+@font-face {
+  font-family: "bestfriend";
+  src: url("/public/fonts/bestfriend/bestfriend-signature.regular.ttf")
+    format("opentype");
+}
+
+.bestfriend {
+  font-family: "Bestfriend", sans-serif;
+}
+
+/* modernline */
+@font-face {
+  font-family: "modernline";
+  src: url("/public/fonts/modernline/modernline.otf") format("opentype");
+}
+
+.modernline {
+  font-family: "Modernline", sans-serif;
+}
+
+/* priestacy */
+@font-face {
+  font-family: "priestacy";
+  src: url("/public/fonts/priestacy/Priestacy.otf") format("opentype");
+}
+
+.priestacy {
+  font-family: "priestacy", sans-serif;
+}
+
+/* akitha */
+@font-face {
+  font-family: "akitha";
+  src: url("/public/fonts/akitha/akitha.regular.otf") format("opentype");
+}
+
+.akitha {
+  font-family: "akitha", sans-serif;
+}
