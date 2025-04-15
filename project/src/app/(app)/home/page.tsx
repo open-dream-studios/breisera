@@ -2,6 +2,7 @@
 import { useContext } from "react";
 import { appTheme } from "../../../util/appTheme";
 import { AuthContext } from "../../../contexts/authContext";
+import Player from "@/screens/Player/Player";
 
 const Home = () => {
   const { currentUser } = useContext(AuthContext);
@@ -21,7 +22,7 @@ const Home = () => {
           color: appTheme[currentUser.theme].text_1,
         }}
       >
-        Home
+        <Player />
       </div>
     </div>
   );

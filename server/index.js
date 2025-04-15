@@ -2,7 +2,9 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import Stripe from "stripe";
-import http from "http";
+// import http from "http";
+import https from "https";
+import fs from "fs";
 import authRoutes from "./routes/auth.js";
 import userRoutes from "./routes/users.js";
 import paymentRoutes from "./routes/payment.js";
@@ -15,10 +17,17 @@ import { db } from "./connection/connect.js";
 import { initializeWebSocket, getIO } from "./connection/websocket.js";
 dotenv.config();
 
+// To use https
+const options = {
+  key: fs.readFileSync("./ssl/key.pem"),
+  cert: fs.readFileSync("./ssl/cert.pem"),
+};
+
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const app = express();
 const PORT = process.env.PORT || 8080;
-const server = http.createServer(app);
+// const server = http.createServer(app);
+const server = https.createServer(options, app);
 const io = initializeWebSocket(server);
 
 // STRIPE Webhooks

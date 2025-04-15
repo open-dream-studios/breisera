@@ -11,7 +11,7 @@ import { IoEye } from "react-icons/io5";
 import { BACKEND_URL } from "../../../util/config";
 import appDetails from "../../../util/appDetails.json";
 import { appTheme, ThemeType } from "../../../util/appTheme";
-import animationData from "../../../Util/Animations/loading-animation-black.json";
+import animationData from "../../../util/animations/loading-animation-black.json";
 import { useModal1Store, useModal2Store } from "../../../store/useModalStore";
 import TermsDocument from "../../../util/forms/TermsDocument";
 import PrivacyDocument from "../../../util/forms/PrivacyDocument";

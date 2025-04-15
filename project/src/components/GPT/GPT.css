@@ -1,0 +1,16 @@
+#messages {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  scroll-behavior: smooth;
+}
+
+
+#messages::-webkit-scrollbar {
+  display: none;
+}
+
+.message::-webkit-scrollbar {
+  display: none;
+}
+
+

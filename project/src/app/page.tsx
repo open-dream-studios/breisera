@@ -10,10 +10,10 @@ const Landing = async () => {
   const cookieStore = await cookies();
   const token = cookieStore.get("accessToken");
 
-  if (token?.value) {
-    console.log("token");
-    redirect("/home");
-  }
+  // if (token?.value) {
+  //   console.log("token");
+  //   redirect("/home");
+  // }
 
   return (
     <>

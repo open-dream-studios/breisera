@@ -7,8 +7,11 @@ import {
 import { appTheme } from "../../../util/appTheme";
 import { ThemeType } from "../../../util/appTheme";
 import appDetails from "../../../util/appDetails.json";
+import { login } from "@/util/auth";
+import { useRouter } from "next/navigation";
 
 const LandingLeftBar = () => {
+  const router = useRouter()
   const defaultTheme = appDetails.default_theme as ThemeType;
   const leftBarRef = useRef<HTMLDivElement>(null);
   const setLeftBarRef = useLeftBarRefStore((state) => state.setLeftBarRef);
@@ -25,6 +28,8 @@ const LandingLeftBar = () => {
 
   const handleSignInClick = async (e: any) => {
     e.preventDefault();
+    const success = await login({ email: "joeygoff13@gmail.com", password: "guest"});
+    if (success) router.push("/home");
   };
 
   // Global State -> Set local state -> Trigger fade in

@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { useEffect, RefObject, useRef, useState, useContext } from "react";
 import {
   useLeftBarOpenStore,
@@ -9,6 +9,7 @@ import Modal2Continue from "../../util/modals/Modal2Continue";
 import { appTheme } from "../../util/appTheme";
 import appDetails from "../../util/appDetails.json";
 import { AuthContext } from "@/contexts/authContext";
+import Link from "next/link";
 
 const LeftBar = () => {
   const { currentUser, logout } = useContext(AuthContext);
@@ -131,11 +132,24 @@ const LeftBar = () => {
           ref={leftBarRef}
           style={{
             backgroundColor: appTheme[currentUser.theme].background_1,
+            borderRight: `0.5px solid ${
+              appTheme[currentUser.theme].background_2
+            }`,
           }}
           className={`z-[951] pointer-events-auto lg:right-0 ${
             leftBarOpen ? "right-0" : "right-[100%]"
-          } absolute top-0 h-[100%] w-[100%] flex justify-center`}
+          } bg-red-400 absolute top-0 h-[100%] w-[100%] flex justify-center
+          `}
         >
+          <Link
+            href="/explore"
+            onClick={() => {
+              toggleLeftBar()
+            }}
+            className="cursor-pointer text-white mt-[100px]"
+          >
+            Explore
+          </Link>
           <div
             onClick={handleSignOut}
             className="dim select-none cursor-pointer w-[80%] hover:brightness-75 h-[40px] absolute bottom-[20px] flex items-center justify-center font-[600]"

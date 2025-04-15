@@ -1,2 +1,2 @@
 const local_frontend = true;
-export const FRONTEND_URL = local_frontend ? "http://localhost:3000" : ""
+export const FRONTEND_URL = local_frontend ? "https://localhost:3000" : ""

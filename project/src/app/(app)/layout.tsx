@@ -65,21 +65,17 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 const Layout = ({ children }: { children: ReactNode }) => {
   return (
     <>
-      <>
-        <Modals landing={true} />
-        <Navbar />
-        <LeftBar />
-        <PageLayout>
-          {children}
-        </PageLayout>
-      </>
+      <Modals landing={true} />
+      <Navbar />
+      <LeftBar />
+      <PageLayout>{children}</PageLayout>
     </>
   );
 };
 
 const PageLayout = ({ children }: { children: ReactNode }) => {
-  const { currentUser } = useContext(AuthContext)
-  if (!currentUser) return
+  const { currentUser } = useContext(AuthContext);
+  if (!currentUser) return;
 
   return (
     <div

@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { useContext } from "react";
 import { AuthContext, User } from "../../contexts/authContext";
 import { HiBars3 } from "react-icons/hi2";
@@ -19,6 +19,7 @@ import {
   capitalizeFirstLetter,
   removeWhiteSpace,
 } from "../../util/functions/Data";
+import Link from "next/link";
 
 const Navbar = () => {
   const queryClient = useQueryClient();
@@ -117,6 +118,9 @@ const Navbar = () => {
           "--left-bar-width": removeWhiteSpace(appDetails.left_bar_width),
           "--nav-ml": appDetails.left_bar_width,
           backgroundColor: appTheme[currentUser.theme].background_1,
+          borderBottom: `0.5px solid ${
+            appTheme[currentUser.theme].background_2
+          }`,
         } as React.CSSProperties
       }
       className={`fixed z-[900] ${
@@ -157,6 +161,36 @@ const Navbar = () => {
             >
               {appDetails.project_name}
             </p>
+          </div>
+
+          <div className="ml-[28px] flex flex-row h-[22px] gap-[28px]">
+            <Link
+              href="/study"
+              className="dim text-[17px] font-[100] hover:brightness-75"
+              style={{
+                color: appTheme[currentUser.theme].text_3,
+              }}
+            >
+              Study
+            </Link>
+            <Link
+              href="/library"
+              className="dim text-[17px] font-[100] hover:brightness-75"
+              style={{
+                color: appTheme[currentUser.theme].text_3,
+              }}
+            >
+              Library
+            </Link>
+            <Link
+              href="/explore"
+              className="dim text-[17px] font-[100] hover:brightness-75"
+              style={{
+                color: appTheme[currentUser.theme].text_3,
+              }}
+            >
+              Explore
+            </Link>
           </div>
         </div>
 
