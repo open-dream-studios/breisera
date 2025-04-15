@@ -1,0 +1,7 @@
+[build]
+  command = "cd server && npm install" # or yarn / bun, etc.
+  cwd = "server"
+
+[start]
+  command = "node index.js" # or your actual server start script
+  cwd = "server"
