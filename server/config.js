@@ -1,2 +1,2 @@
-const local_frontend = true;
-export const FRONTEND_URL = local_frontend ? "https://localhost:3000" : ""
+const local_frontend = false;
+export const FRONTEND_URL = local_frontend ? "https://localhost:3000" : "https://breisera.com"
