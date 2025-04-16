@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import Stripe from "stripe";
-// import http from "http";
+import http from "http";
 import https from "https";
 import fs from "fs";
 import authRoutes from "./routes/auth.js";
@@ -17,17 +17,22 @@ import { db } from "./connection/connect.js";
 import { initializeWebSocket, getIO } from "./connection/websocket.js";
 dotenv.config();
 
-// To use https
-const options = {
-  key: fs.readFileSync("./ssl/key.pem"),
-  cert: fs.readFileSync("./ssl/cert.pem"),
-};
+const isProduction = process.env.NODE_ENV === "production";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const app = express();
 const PORT = process.env.PORT || 8080;
+
 // const server = http.createServer(app);
-const server = https.createServer(options, app);
+const server = isProduction
+  ? http.createServer(app)
+  : https.createServer(
+      {
+        key: fs.readFileSync("./ssl/key.pem"),
+        cert: fs.readFileSync("./ssl/cert.pem"),
+      },
+      app
+    );
 const io = initializeWebSocket(server);
 
 // STRIPE Webhooks
@@ -252,7 +257,7 @@ db.getConnection((err, connection) => {
     return;
   }
   console.log("Connected to MySQL Database");
-  connection.release();  
+  connection.release();
 });
 
 // Process signals for web socket
