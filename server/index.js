@@ -5,9 +5,11 @@ import Stripe from "stripe";
 import http from "http";
 import https from "https";
 import fs from "fs";
+import OpenAI from "openai";
 import authRoutes from "./routes/auth.js";
 import userRoutes from "./routes/users.js";
 import paymentRoutes from "./routes/payment.js";
+import youtubeSearchRoutes from "./routes/youtube.js"
 import {
   handle1XCheckoutTransaction,
   handleSubscriptionCheckoutTransaction,
@@ -17,13 +19,13 @@ import { db } from "./connection/connect.js";
 import { initializeWebSocket, getIO } from "./connection/websocket.js";
 dotenv.config();
 
-const isProduction = process.env.NODE_ENV === "production";
+const isProduction = true
+// const isProduction = process.env.NODE_ENV === "production";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const app = express();
 const PORT = process.env.PORT || 8080;
 
-// const server = http.createServer(app);
 const server = isProduction
   ? http.createServer(app)
   : https.createServer(
@@ -249,6 +251,34 @@ app.use(
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/payment", paymentRoutes);
+app.use("/api/youtube", youtubeSearchRoutes)
+
+// GPT Endpoint
+app.post("/gpt-message", async (req, res) => {
+  const messages = req.body.messages;
+  async function getMessage(messages) {
+    try {
+      const formattedMessages = messages.map((message) => ({
+        role: message.isBot ? "assistant" : "user",
+        content: message.text,
+      }));
+      const openai = new OpenAI({
+        apiKey: process.env.OPENAI_API_KEY,
+      });
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        store: true,
+        messages: formattedMessages,
+      });
+      return completion.choices[0].message.content;
+    } catch (error) {
+      console.error(error);
+      return "Something went wrong...";
+    }
+  }
+  const result = await getMessage(messages);
+  res.status(200).send(result);
+});
 
 // Database
 db.getConnection((err, connection) => {

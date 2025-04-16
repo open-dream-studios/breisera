@@ -62,7 +62,15 @@ export const googleAuth = (req, res) => {
       const token = jwt.sign({ id: data[0].user_id }, "jwtSecretKey", {
         expiresIn: "7d",
       });
-      return res.status(200).json({ accessToken: token });
+      // return res.status(200).json({ accessToken: token });
+      res.cookie("accessToken", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      });
+      return res.status(200).json({ message: "Google login successful" });
     }
 
     createUniqueUserId()
@@ -88,9 +96,14 @@ export const googleAuth = (req, res) => {
           const token = jwt.sign({ id: newUserId }, "jwtSecretKey", {
             expiresIn: "7d",
           });
-          return res.status(201).json({
-            accessToken: token,
+          res.cookie("accessToken", token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+            path: "/",
+            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
           });
+          return res.status(200).json({ message: "Google registration successful" });
         });
       })
       .catch((error) => {
@@ -135,9 +148,14 @@ export const register = (req, res) => {
           const token = jwt.sign({ id: newUserId }, "jwtSecretKey", {
             expiresIn: "7d",
           });
-          return res.status(201).json({
-            accessToken: token,
+          res.cookie("accessToken", token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+            path: "/",
+            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
           });
+          return res.status(200).json({ message: "Registration successful" });
         });
       })
       .catch((error) => {
@@ -191,9 +209,14 @@ export const login = (req, res) => {
     const token = jwt.sign({ id: data[0].user_id }, "jwtSecretKey", {
       expiresIn: "7d",
     });
-
-    // destructure data[0] so others is everything except the password
-    res.status(200).json({ accessToken: token });
+    res.cookie("accessToken", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+    return res.status(200).json({ message: "Login successful" });
   });
 };
 
@@ -230,30 +253,34 @@ export const sendCode = async (req, res) => {
         .replace("T", " ");
       const q2 =
         "UPDATE users SET `password_reset`=?,`password_reset_timestamp`=? WHERE user_id=?";
-      db.query(q2, [resetCode, currentTime, data[0].user_id], async (err, data) => {
-        if (err) return res.status(500).json(err);
-        if (data.affectedRows > 0) {
-          try {
-            await transporter.sendMail({
-              from: process.env.NODE_MAILER_ORIGIN,
-              to: email,
-              subject: "Password Reset Code",
-              text: `Your password reset code is: ${resetCode}`,
-            });
-            return res
-              .status(200)
-              .json({ success: true, message: "Email sent successfully." });
-          } catch (err) {
+      db.query(
+        q2,
+        [resetCode, currentTime, data[0].user_id],
+        async (err, data) => {
+          if (err) return res.status(500).json(err);
+          if (data.affectedRows > 0) {
+            try {
+              await transporter.sendMail({
+                from: process.env.NODE_MAILER_ORIGIN,
+                to: email,
+                subject: "Password Reset Code",
+                text: `Your password reset code is: ${resetCode}`,
+              });
+              return res
+                .status(200)
+                .json({ success: true, message: "Email sent successfully." });
+            } catch (err) {
+              return res
+                .status(500)
+                .json({ success: false, message: "Error sending email." });
+            }
+          } else {
             return res
               .status(500)
-              .json({ success: false, message: "Error sending email." });
+              .json({ success: false, message: "Error updating database" });
           }
-        } else {
-          return res
-            .status(500)
-            .json({ success: false, message: "Error updating database" });
         }
-      });
+      );
     });
   } catch (error) {
     console.log(error);
@@ -361,12 +388,10 @@ export const passwordReset = async (req, res) => {
               message: "User password updated",
             });
           } else {
-            return res
-              .status(500)
-              .json({
-                success: false,
-                message: "Error updating user password",
-              });
+            return res.status(500).json({
+              success: false,
+              message: "Error updating user password",
+            });
           }
         });
       });
