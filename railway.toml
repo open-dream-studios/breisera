@@ -3,5 +3,5 @@
   cwd = "server"
 
 [start]
-  command = "node index.js" # or your actual server start script
+  command = "npm start" # or your actual server start script
   cwd = "server"
