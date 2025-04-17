@@ -1,28 +1,22 @@
 import { ThemeType } from "../../../util/appTheme";
 import { appTheme } from "../../../util/appTheme";
 import appDetails from "../../../util/appDetails.json";
-import { cookies } from "next/headers";
+import PageLayout from "@/layouts/pageLayout";
 
 const LandingPage = async () => {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("accessToken");
-  if (token) return <></>
-  
-  const defaultTheme = appDetails.default_theme as ThemeType;
+  const currentTheme = appDetails.default_theme as ThemeType
   return (
-    <div
-      style={
-        {
-          "--nav-height": `${appDetails.nav_height}px`,
-          "--left-bar-width": appDetails.left_bar_width,
-          backgroundColor: appTheme[defaultTheme].background_1,
-          color: appTheme[defaultTheme].text_1,
-        } as React.CSSProperties
-      }
-      className={`absolute left-0 lg:left-[calc(var(--left-bar-width))] top-[var(--nav-height)] w-[100vw] lg:w-[calc(100vw-(var(--left-bar-width)))] flex h-[calc(100vh-var(--nav-height))] overflow-scroll`}
-    >
-      Landing Page
-    </div>
+    <PageLayout>
+      <div
+        style={{
+          backgroundColor: appTheme[currentTheme].background_1,
+          color: appTheme[currentTheme].text_1,
+        }}
+        className="w-[100%] h-[100%]"
+      >
+        Landing Page
+      </div>
+    </PageLayout>
   );
 };
 
