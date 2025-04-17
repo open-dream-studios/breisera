@@ -2,8 +2,8 @@
 import { useContext } from "react";
 import { appTheme } from "../../../util/appTheme";
 import { AuthContext } from "../../../contexts/authContext";
-import React, { useEffect, useState } from "react";
-import GPT, { GPTMessage } from "@/components/GPT/GPT";
+import React, { useState } from "react";
+import GPT from "@/components/GPT/GPT";
 export type StudyToolTypes = "Chat" | "Notes" | "Flash Cards";
 
 const StudyTools = () => {
@@ -28,7 +28,7 @@ const StudyTools = () => {
           return (
             <div
               key={index}
-              className="flex flex-row w-[33.3%] h-[30px] relative"
+              className="group flex flex-row w-[33.3%] h-[30px] relative"
             >
               <div
                 style={{
@@ -40,7 +40,7 @@ const StudyTools = () => {
                 className={`cursor-pointer w-[100%] h-[100%] rounded-[5px] flex justify-center items-center text-[calc(10px+0.2vw)]`}
                 onClick={() => handleStudyToolClick(tool)}
               >
-                {tool}
+                <p className="dim group-hover:brightness-75">{tool}</p>
               </div>
               {index < 2 &&
                 currentStudyTool !== "Notes" &&

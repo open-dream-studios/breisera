@@ -10,7 +10,7 @@ import { LuSquareArrowOutUpLeft } from "react-icons/lu";
 
 const Player = () => {
   const { currentUser } = useContext(AuthContext);
-  const { playerState } = useVideo();
+  const { playerState, setPlayerState, windowWidth } = useVideo();
   const [dividerPercent, setDividerPercent] = useState(66);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -46,7 +46,9 @@ const Player = () => {
   return (
     <div
       ref={containerRef}
-      className="flex h-[100%] w-[100%] select-none fixed"
+      className={`flex flex-col sm:flex-row w-[100%] h-[100%] ${
+        playerState !== "sm" && "relative"
+      }`}
     >
       {playerState === "sm" && (
         <div
@@ -54,7 +56,10 @@ const Player = () => {
             backgroundColor: appTheme[currentUser.theme].background_1,
             border: `1px solid ${appTheme[currentUser.theme].background_2}`,
           }}
-          className="absolute top-[-20px] left-[-20px] rounded-full w-[40px] h-[40px] flex justify-center items-center"
+          onClick={() => {
+            setPlayerState("screen");
+          }}
+          className="cursor-pointer dim hover:brightness-75 absolute top-[-20px] left-[-20px] rounded-full w-[40px] h-[40px] flex justify-center items-center"
         >
           <LuSquareArrowOutUpLeft
             className="w-[20px] h-[20px]"
@@ -67,7 +72,7 @@ const Player = () => {
       <div
         className="select-none flex flex-col"
         style={{
-          width: playerState === "sm" ? "100%" : `${dividerPercent}%`,
+          width: playerState === "sm" || (windowWidth !== null && windowWidth < 640) ? "100%" : `${dividerPercent}%`,
         }}
       >
         <YouTubePlayer />
@@ -76,14 +81,18 @@ const Player = () => {
 
       <div
         onMouseDown={handleMouseDown}
-        className="absolute h-[100%] cursor-col-resize w-[6px] ml-[-2px]"
+        className={`absolute h-[100%] cursor-col-resize ${
+          playerState === "sm" ? "hidden" : "hidden sm:block"
+        } w-[6px] ml-[-2px]`}
         style={{
-          left: playerState === "sm" ? "100%" : `${dividerPercent}%`,
+          left: `${dividerPercent}%`,
         }}
       >
         <div
           className="w-[0.5px] h-[100%] ml-[1px]"
-          style={{ backgroundColor: appTheme[currentUser.theme].background_2 }}
+          style={{
+            backgroundColor: appTheme[currentUser.theme].background_2,
+          }}
         ></div>
       </div>
 

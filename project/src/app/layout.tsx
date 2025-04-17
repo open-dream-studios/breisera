@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { cookies } from "next/headers"
+import { cookies } from "next/headers";
 import { appTheme, ThemeType } from "@/util/appTheme";
 import appDetails from "../util/appDetails.json";
 import LandingPage from "@/screens/Landing/LandingPage/LandingPage";

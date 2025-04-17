@@ -11,7 +11,7 @@ export const youtubeSearch = async (req, res) => {
     const searchRes = await axios.get("https://www.googleapis.com/youtube/v3/search", {
       params: {
         part: "snippet",
-        maxResults: 50,
+        maxResults: 1,
         order: "viewCount",
         q: req.body.query,
         type: "video",
@@ -62,6 +62,8 @@ export const youtubeSearch = async (req, res) => {
         channelInfo: channelMap[channelId] || {},
       };
     });
+
+    console.log(enrichedVideos)
 
     res.json(enrichedVideos);
   } catch (err) {

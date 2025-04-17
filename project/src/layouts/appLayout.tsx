@@ -94,14 +94,7 @@ const UnprotectedLayout = () => {
 };
 
 const ProtectedLayout = ({ children }: { children: ReactNode }) => {
-  const { playerState, setPlayerState } = useVideo();
-  const pathName = usePathname();
-  useEffect(() => {
-    if (!pathName.startsWith("/youtube")) {
-      setPlayerState("sm");
-    }
-  }, [pathName]);
-
+  const { playerState } = useVideo();
   return (
     <>
       <Modals landing={true} />
@@ -109,9 +102,9 @@ const ProtectedLayout = ({ children }: { children: ReactNode }) => {
       <LeftBar />
       <PageLayout>
         <div
-          className={`z-[501] absolute ${
+          className={`z-[600] absolute ${
             playerState === "screen" && "top-0 left-0 w-[100%] h-[100%]"
-          } ${playerState === "sm" && "w-[400px] h-[225px] bottom-0 right-0"} ${
+          } ${playerState === "sm" && "w-[400px] h-[225px] bottom-0 right-0 mr-[-1px] fixed"} ${
             playerState === "hidden" && "hidden"
           }`}
         >

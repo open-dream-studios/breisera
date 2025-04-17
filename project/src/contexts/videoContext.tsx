@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import React, { createContext, useState, useContext, useEffect } from "react";
 
 export type YouTubePlayerVideo = {
@@ -11,35 +11,61 @@ export type GPTMessage = {
   text: string;
 };
 
-export type PlayerStates = "screen" | "sm" | "hidden"
-
+export type PlayerStates = "screen" | "sm" | "hidden";
 
 type VideoContextType = {
   currentVideo: YouTubePlayerVideo | null;
   setCurrentVideo: (video: YouTubePlayerVideo) => void;
-  messages: GPTMessage[],
+  messages: GPTMessage[];
   setMessages: React.Dispatch<React.SetStateAction<GPTMessage[]>>;
   userMessage: string;
-  setUserMessage: (message: string) => void
-  playerState: PlayerStates,
+  setUserMessage: (message: string) => void;
+  playerState: PlayerStates;
   setPlayerState: (newState: PlayerStates) => void;
+  windowWidth: number | null;
 };
 
 const VideoContext = createContext<VideoContextType | undefined>(undefined);
 
-export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [currentVideo, setCurrentVideo] = useState<YouTubePlayerVideo | null>(null);
+export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  const [currentVideo, setCurrentVideo] = useState<YouTubePlayerVideo | null>(
+    null
+  );
   const [messages, setMessages] = useState<GPTMessage[]>([]);
   const [userMessage, setUserMessage] = useState<string>("");
-  const [playerState, setPlayerState] = useState<PlayerStates>("hidden")
+  const [playerState, setPlayerState] = useState<PlayerStates>("hidden");
+  const [windowWidth, setWindowWidth] = useState<number | null>(null);
 
-  useEffect(()=>{
-    setMessages([])
-    setUserMessage("")
-  },[currentVideo])
+  useEffect(() => {
+    setMessages([]);
+    setUserMessage("");
+  }, [currentVideo]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   return (
-    <VideoContext.Provider value={{ currentVideo, setCurrentVideo, messages, setMessages, userMessage, setUserMessage, playerState, setPlayerState }}>
+    <VideoContext.Provider
+      value={{
+        currentVideo,
+        setCurrentVideo,
+        messages,
+        setMessages,
+        userMessage,
+        setUserMessage,
+        playerState,
+        setPlayerState,
+        windowWidth
+      }}
+    >
       {children}
     </VideoContext.Provider>
   );

@@ -20,10 +20,12 @@ import {
   removeWhiteSpace,
 } from "../../util/functions/Data";
 import Link from "next/link";
+import { useVideo } from "@/contexts/videoContext";
 
 const Navbar = () => {
   const queryClient = useQueryClient();
   const { currentUser, currentUserSubscription } = useContext(AuthContext);
+  const { playerState, setPlayerState } = useVideo()
   const modal1 = useModal1Store((state: any) => state.modal1);
   const setModal1 = useModal1Store((state: any) => state.setModal1);
   const leftBarOpen = useLeftBarOpenStore((state: any) => state.leftBarOpen);
@@ -166,8 +168,13 @@ const Navbar = () => {
             </p>
           </Link>
 
-          <div className="ml-[28px] flex flex-row h-[22px] gap-[28px]">
+          <div className="ml-[28px] hidden md:flex flex-row h-[22px] gap-[28px]">
             <Link
+              onClick={() => {
+                if (playerState === "screen") {
+                  setPlayerState("sm");
+                }
+              }}
               href="/study"
               className="dim text-[17px] font-[100] hover:brightness-75"
               style={{
@@ -177,6 +184,11 @@ const Navbar = () => {
               Study
             </Link>
             <Link
+              onClick={() => {
+                if (playerState === "screen") {
+                  setPlayerState("sm");
+                }
+              }}
               href="/library"
               className="dim text-[17px] font-[100] hover:brightness-75"
               style={{
@@ -186,6 +198,11 @@ const Navbar = () => {
               Library
             </Link>
             <Link
+              onClick={() => {
+                if (playerState === "screen") {
+                  setPlayerState("sm");
+                }
+              }}
               href="/explore"
               className="dim text-[17px] font-[100] hover:brightness-75"
               style={{
@@ -197,7 +214,7 @@ const Navbar = () => {
           </div>
         </div>
 
-        <div className="h-[100%] mr-[10px] pr-[2px] flex flex-row items-center gap-[18px]">
+        <div className="h-[100%] mr-[10px] pr-[2px] hidden min-[500px]:flex flex-row items-center gap-[18px]">
           <div
             className="dim cursor-pointer hover:brightness-75"
             onClick={handleThemeChange}
