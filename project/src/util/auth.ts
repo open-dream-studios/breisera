@@ -18,28 +18,34 @@ export type RegisterInputs = {
 
 export const login = async (inputs: LoginInputs) => {
   try {
-    const res = await axios.post(BACKEND_URL + "/api/auth/login", inputs);
-    if (res.data.accessToken) {
-      document.cookie = `accessToken=${res.data.accessToken}; path=/`;
-      return true
-    }
-    return false
+    const res = await axios.post(BACKEND_URL + "/api/auth/login", inputs, {
+      withCredentials: true,
+    });
+    return res.status === 200;
   } catch (err) {
     console.error("Login failed", err);
-    return false
+    return false;
+  }
+};
+
+export const logout = async () => {
+  try {
+    const res = await axios.post(BACKEND_URL + '/api/auth/logout', {}, { withCredentials: true });
+    return res.status === 200;
+  } catch (err) {
+    console.error("Login failed", err);
+    return false;
   }
 };
 
 export const register = async (inputs: RegisterInputs) => {
   try {
-    const res = await axios.post(BACKEND_URL + "/api/auth/register", inputs);
-    if (res.data.accessToken) {
-      document.cookie = `accessToken=${res.data.accessToken}; path=/`;
-      return true;
-    }
-    return false;
+    const res = await axios.post(BACKEND_URL + "/api/auth/register", inputs, {
+      withCredentials: true,
+    });
+    return res.status === 200;
   } catch (err) {
-    console.error("Login failed", err);
+    console.error("Registration failed", err);
     return false;
   }
 };
@@ -58,15 +64,13 @@ export const googleSignIn = async () => {
       profile_img_src: user.photoURL,
     };
 
+    // const res = await axios.post(BACKEND_URL + "/api/auth/google", inputs, {
+    //   withCredentials: true,
+    // });
     const res = await axios.post(BACKEND_URL + "/api/auth/google", inputs, {
       withCredentials: true,
     });
-
-    if (res.data.accessToken) {
-      document.cookie = `accessToken=${res.data.accessToken}; path=/`;
-      return true;
-    }
-    return false;
+    return res.status === 200;
   } catch (error) {
     console.error("Login Error:", error);
     return false;

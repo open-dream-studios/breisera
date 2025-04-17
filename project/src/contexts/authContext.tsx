@@ -6,6 +6,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useModal1Store, useModal2Store } from "@/store/useModalStore";
 import { useLeftBarOpenStore } from "@/store/useLeftBarOpenStore";
+import { logout } from "@/util/auth";
 
 export interface User {
   id: string;
@@ -23,13 +24,13 @@ export interface User {
 interface AuthContextType {
   currentUser: User | null;
   currentUserSubscription: any;
-  logout: () => void;
+  handleLogout: () => void;
 }
 
 export const AuthContext = createContext<AuthContextType>({
   currentUser: null,
   currentUserSubscription: null,
-  logout: () => {},
+  handleLogout: () => {},
 });
 
 interface AuthContextProviderProps {
@@ -69,6 +70,7 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
     },
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 5,
+    refetchOnMount: true,
   });
   const currentUser = currentUserData ?? null;
 
@@ -80,19 +82,16 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
     },
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 5,
+    refetchOnMount: true,
   });
   const currentUserSubscription = currentUserSubscriptionData ?? null;
 
-  const logout = () => {
+  const handleLogout = async () => {
     if (typeof window !== "undefined") {
       localStorage.removeItem("user");
       localStorage.removeItem("accessToken");
-      document.cookie =
-        "accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
     }
     queryClient.clear();
-    router.push("/");
-
     setModal1({
       ...modal1,
       open: false,
@@ -102,6 +101,10 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
       open: false,
     });
     setLeftBarOpen(false);
+    const success = await logout();
+    if (success) {
+      window.location.reload();
+    }
   };
 
   return (
@@ -109,7 +112,7 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
       value={{
         currentUser,
         currentUserSubscription,
-        logout,
+        handleLogout,
       }}
     >
       {children}

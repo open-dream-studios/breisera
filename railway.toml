@@ -1,7 +1,0 @@
-[build]
-  command = "cd server && npm install" # or yarn / bun, etc.
-  cwd = "server"
-
-[start]
-  command = "npm start" # or your actual server start script
-  cwd = "server"

@@ -4,11 +4,11 @@ import { appTheme } from "../../../util/appTheme";
 import { AuthContext } from "../../../contexts/authContext";
 import React, { useEffect, useState } from "react";
 
-const Library = () => {
+const LibraryPage = () => {
   const { currentUser } = useContext(AuthContext);
   if (!currentUser) return <></>;
 
-  return <div>Library</div>;
+  return <div>LibraryPage</div>;
 };
 
-export default Library;
+export default LibraryPage;

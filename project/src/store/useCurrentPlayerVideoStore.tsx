@@ -2,14 +2,8 @@ import { create } from "zustand";
 
 export type YouTubePlayerVideo = {
   id: string;
-  url: string;
-  title: string;
-  description: string;
-  startTime: number
-  channel: string;
-  channel_url: string;
-  channel_profile: string;
-  channel_subs: string;
+} & {
+  [key: string]: any;
 };
 
 type CurrentPlayerVideoStore = {

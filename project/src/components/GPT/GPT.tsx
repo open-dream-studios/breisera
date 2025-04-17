@@ -1,31 +1,25 @@
-import { useRef, useState } from "react";
+"use client";
+import { useContext, useEffect, useRef, useState } from "react";
 import "./GPT.css";
 import GPTlogo from "/assets/ai.png";
 import user from "/assets/user.png";
 import { LuSend } from "react-icons/lu";
 import axios from "axios";
 import { BACKEND_URL } from "@/util/config";
+import { appTheme } from "@/util/appTheme";
+import { AuthContext } from "@/contexts/authContext";
+import { GPTMessage, useVideo } from "@/contexts/videoContext";
 
 // height: -webkit-fill-available
 
-export type GPTMessage = {
-  isBot: boolean;
-  text: string;
-};
-
 const GPT = () => {
-  const [messages, setMessages] = useState<GPTMessage[]>([]);
+  const { currentUser } = useContext(AuthContext);
+  const { messages, setMessages, userMessage, setUserMessage } = useVideo()
   const [isLoading, setIsLoading] = useState(false);
   const [loading, setLoading] = useState("");
   const loaderRef = useRef<any>(null);
   const formRef = useRef<HTMLFormElement>(null);
-
-  const handleTextareaKeyPress = (e: any) => {
-    if (formRef.current && e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      formRef.current.requestSubmit();
-    }
-  };
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   function startLoadingAnimation() {
     if (loaderRef.current && !isLoading) {
@@ -46,16 +40,13 @@ const GPT = () => {
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
-
-    const form = e.target;
-    const data = new FormData(form);
-
-    const userMessage = data.get("prompt")?.toString() || "";
+    if (userMessage.trim() === "") return;
+    const newUserMessage = userMessage;
+    setUserMessage("");
     setMessages((prevMessages) => [
       ...prevMessages,
-      { text: userMessage, isBot: false },
+      { text: newUserMessage, isBot: false },
     ]);
-    form.reset();
 
     startLoadingAnimation();
     setIsLoading(true);
@@ -63,7 +54,7 @@ const GPT = () => {
     try {
       const botMessage = await getMessage([
         ...messages,
-        { text: userMessage, isBot: false },
+        { text: newUserMessage, isBot: false },
       ]);
       setMessages((prevMessages) => [
         ...prevMessages,
@@ -91,8 +82,31 @@ const GPT = () => {
     }
   }
 
+  const handleTextareaKeyPress = (e: any) => {
+    if (formRef.current && e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      formRef.current.requestSubmit();
+    }
+  };
+
+  const handleInputChange = (e: any) => {
+    setUserMessage(e.target.value);
+    autoResize();
+  };
+
+  const autoResize = () => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.style.height = "20px";
+      const newHeight = Math.min(textarea.scrollHeight, 100);
+      textarea.style.height = `${newHeight}px`;
+    }
+  };
+
+  if (!currentUser) return <></>;
+
   return (
-    <div className="relative w-[100%] h-[100%] flex flex-col items-center justify-center">
+    <div className="relative px-[15px] w-[100%] h-[100%] flex flex-col items-center justify-center">
       <div
         id="messages"
         className="flex-1 w-[100%] px-[15px] pt-[15px] h-[100%] overflow-y-scroll flex flex-col gap-[12px] pb-[20px]"
@@ -134,30 +148,59 @@ const GPT = () => {
         )}
       </div>
 
-      <form
-        className="w-[100%] absolute bottom-0 flex flex-row gap-[10px] min-h-[50px] items-center justify-center"
-        style={{ borderTop: "0.1px solid white" }}
-        onSubmit={handleSubmit}
-        ref={formRef}
+      <div
+        style={{
+          backgroundColor: appTheme[currentUser.theme].background_1,
+        }}
+        className="w-[100%] px-[15px] absolute bottom-[40px]"
       >
-        <textarea
-          className="w-[100%] color-white text-[16px] px-[10px] outline-0 border-0"
-          onKeyPress={handleTextareaKeyPress}
-          style={{ resize: "none" }}
-          name="prompt"
-          placeholder="Ask me something..."
-        ></textarea>
-        <button
-          type="submit"
-          className="h-[100%] w-[40px] pr-[10px] cursor-pointer justify-center items-center flex"
+        <div
+          style={{
+            border: `1px solid ${appTheme[currentUser.theme].background_2}`,
+          }}
+          className="w-[100%] px-[19px] rounded-[25px]"
         >
-          <LuSend
-            color="white"
-            fontSize={21}
-            style={{ transform: "rotate(45deg)" }}
-          />
-        </button>
-      </form>
+          <form
+            className="relative w-[100%] flex items-center"
+            onSubmit={handleSubmit}
+            ref={formRef}
+          >
+            <div className="w-[100%] pt-[14px] pb-[4px] pr-[28px]">
+              <textarea
+                ref={textareaRef}
+                className="w-[calc(100%+10px)] text-[15px] leading-[16px] outline-0 border-0 overflow-scroll pr-[10px]"
+                onInput={handleInputChange}
+                value={userMessage}
+                onKeyDown={handleTextareaKeyPress}
+                style={{ resize: "none", height: "20px", maxHeight: "150px" }}
+                name="prompt"
+                placeholder="Ask AI anything..."
+              />
+            </div>
+            <button
+              type="submit"
+              className="cursor-pointer absolute bottom-[12.5px] right-[-4px] dim hover:brightness-75 pr-[5px]"
+            >
+              <LuSend
+                color={appTheme[currentUser.theme].text_3}
+                fontSize={21}
+                className=" w-[20px] ml-[-5px]"
+                style={{ transform: "rotate(45deg)" }}
+              />
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <p
+        style={{
+          backgroundColor: appTheme[currentUser.theme].background_1,
+          color: appTheme[currentUser.theme].text_4,
+        }}
+        className="absolute bottom-0 h-[40px] pt-[10px] w-[100%] text-center text-[12px]"
+      >
+        AI can make mistakes. Check important information.
+      </p>
     </div>
   );
 };

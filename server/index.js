@@ -5,6 +5,7 @@ import Stripe from "stripe";
 import http from "http";
 import https from "https";
 import fs from "fs";
+import cookieParser from "cookie-parser";
 import OpenAI from "openai";
 import authRoutes from "./routes/auth.js";
 import userRoutes from "./routes/users.js";
@@ -238,6 +239,7 @@ app.use((req, res, next) => {
 });
 
 app.use(express.json());
+app.use(cookieParser());
 app.use(
   cors({
     origin: process.env.ALLOWED_ORIGINS

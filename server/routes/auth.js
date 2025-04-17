@@ -1,6 +1,7 @@
 import express from "express";
 import {
   login,
+  logout,
   register,
   googleAuth,
   sendCode,
@@ -12,6 +13,7 @@ import { rateLimiter } from "../connection/middlewares.js"
 const router = express.Router();
 
 router.post("/login", login);
+router.post("/logout", logout);
 router.post("/register", register);
 router.post("/google", googleAuth);
 

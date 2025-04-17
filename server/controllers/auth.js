@@ -103,7 +103,9 @@ export const googleAuth = (req, res) => {
             path: "/",
             maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
           });
-          return res.status(200).json({ message: "Google registration successful" });
+          return res
+            .status(200)
+            .json({ message: "Google registration successful" });
         });
       })
       .catch((error) => {
@@ -218,6 +220,17 @@ export const login = (req, res) => {
     });
     return res.status(200).json({ message: "Login successful" });
   });
+};
+
+export const logout = (req, res) => {
+  const token = req.cookies.accessToken;
+  if (!token) return res.status(401).json("Not authenticated!");
+  res.clearCookie("accessToken", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+  });
+  return res.status(200).json({ message: "Logout successful" });
 };
 
 export const sendCode = async (req, res) => {

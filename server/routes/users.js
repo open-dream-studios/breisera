@@ -1,8 +1,8 @@
 import express from "express";
 import {
-  getUser,
-  getUsers,
-  deleteUser,
+  // getUser,
+  // getUsers,
+  // deleteUser,
   getCurrentUser,
   getCurrentUserSubscription,
   getCurrentUserBilling,
@@ -11,9 +11,9 @@ import {
 
 const router = express.Router();
 
-router.get("/get", getUsers);
-router.get("/find/:userId", getUser);
-router.delete("/:id", deleteUser);
+// router.get("/get", getUsers);
+// router.get("/find/:userId", getUser);
+// router.delete("/:id", deleteUser);
 
 router.get("/current", getCurrentUser);
 router.get("/current-subscription", getCurrentUserSubscription);

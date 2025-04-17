@@ -3,34 +3,30 @@ import { useContext } from "react";
 import { appTheme } from "../../../util/appTheme";
 import { AuthContext } from "../../../contexts/authContext";
 import React, { useEffect, useState } from "react";
+import { BACKEND_URL, FRONTEND_URL } from "@/util/config";
+import Link from "next/link";
+import { YouTubePlayerVideo } from "@/store/useCurrentPlayerVideoStore";
+import { useVideo } from "@/contexts/videoContext";
+import { makeRequest } from "@/util/axios";
 
-const Explore = () => {
+const ExplorePage = () => {
   const { currentUser } = useContext(AuthContext);
+  const { setCurrentVideo } = useVideo();
   if (!currentUser) return <></>;
 
   const [videos, setVideos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const apiKey = process.env.NEXT_PUBLIC_YOUTUBE_PUBLIC_KEY;
 
   useEffect(() => {
     const fetchVideos = async () => {
       try {
-        const res = await fetch(
-          `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=50&order=viewCount&q=education&type=video&regionCode=US&key=${apiKey}`
-        );
-        const data = await res.json();
-        console.log("Raw Data:", data);
-        const videoIds = data.items
-          .map((item: any) => item.id.videoId)
-          .join(",");
-
-        const videoDetailsRes = await fetch(
-          `https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics,contentDetails&id=${videoIds}&key=${apiKey}`
-        );
-        const videoDetails = await videoDetailsRes.json();
-        console.log("Video Details:", videoDetails);
-
-        setVideos(videoDetails.items);
+        const res = await makeRequest.post("/api/youtube/search", {
+          query: "sports",
+        });
+        const data = res.data;
+        if (Array.isArray(data)) {
+          setVideos(data);
+        }
         setLoading(false);
       } catch (error) {
         console.error("Failed to fetch videos:", error);
@@ -39,7 +35,11 @@ const Explore = () => {
     };
 
     fetchVideos();
-  }, [apiKey]);
+  }, []);
+
+  const handleVideoClick = (video: YouTubePlayerVideo) => {
+    setCurrentVideo(video);
+  };
 
   if (loading) return <div>Loading...</div>;
 
@@ -53,11 +53,12 @@ const Explore = () => {
       }}
     >
       {videos.map((video) => (
-        <a
+        <Link
           key={video.id}
-          href={`https://www.youtube.com/watch?v=${video.id}`}
-          target="_blank"
-          rel="noopener noreferrer"
+          onClick={(e) => {
+            handleVideoClick(video as YouTubePlayerVideo);
+          }}
+          href={`${FRONTEND_URL}/www.youtube.com/watch?v=${video.id}`}
           style={{
             display: "block",
             textDecoration: "none",
@@ -68,23 +69,25 @@ const Explore = () => {
             boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
           }}
         >
-          <img
-            src={video.snippet.thumbnails.medium.url}
-            alt={video.snippet.title}
-            style={{ width: "100%", height: "auto" }}
-          />
-          <div style={{ padding: "8px" }}>
-            <h4 style={{ fontSize: "14px", marginBottom: "4px" }}>
-              {video.snippet.title}
-            </h4>
-            <p style={{ fontSize: "12px", color: "#666" }}>
-              {video.snippet.channelTitle}
-            </p>
+          <div>
+            <img
+              src={video.snippet.thumbnails.medium.url}
+              alt={video.snippet.title}
+              className="w-[100%] h-[100px]"
+            />
+            <div className="p-[8px]">
+              <h4 className="text-white text-[14px] mb-[5px]">
+                {video.snippet.title}
+              </h4>
+              <p className="text-[#666] text-[12px] mb-[10px]">
+                {video.snippet.channelTitle}
+              </p>
+            </div>
           </div>
-        </a>
+        </Link>
       ))}
     </div>
   );
 };
 
-export default Explore;
+export default ExplorePage;

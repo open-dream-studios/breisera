@@ -139,7 +139,10 @@ const Navbar = () => {
             color={appTheme[currentUser.theme].text_1}
             fontSize={29}
           />
-          <div className="flex flex-row gap-[5px] items-center">
+          <Link
+            href="/"
+            className="flex flex-row gap-[5px] items-center cursor-pointer dim hover:brightness-75 pr-[6px]"
+          >
             {currentUser.theme === "dark" ? (
               <img
                 src="/assets/logo-white.png"
@@ -154,14 +157,14 @@ const Navbar = () => {
               />
             )}
             <p
-              className="dim select-none text-[23px] font-[700] ml-[10px] hover:brightness-75"
+              className="select-none text-[23px] font-[700] ml-[10px]"
               style={{
                 color: appTheme[currentUser.theme].text_1,
               }}
             >
               {appDetails.project_name}
             </p>
-          </div>
+          </Link>
 
           <div className="ml-[28px] flex flex-row h-[22px] gap-[28px]">
             <Link

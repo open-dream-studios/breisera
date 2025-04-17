@@ -3,6 +3,9 @@ import dotenv from "dotenv";
 dotenv.config();
 
 export const youtubeSearch = async (req, res) => {
+  const token = req.cookies.accessToken
+  if (!token) return res.status(401).json("Not authenticated!");
+
   try {
     // Step 1: Search for video IDs
     const searchRes = await axios.get("https://www.googleapis.com/youtube/v3/search", {

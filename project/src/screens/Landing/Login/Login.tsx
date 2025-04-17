@@ -19,6 +19,7 @@ import Modal2Warning from "../../../util/modals/Modal2Close";
 import { validateEmail } from "../../../util/functions/Data";
 import { useRouter } from "next/navigation";
 import { googleSignIn, login, register } from "@/util/auth";
+import { useQueryClient } from "@tanstack/react-query";
 
 const LoginSlider = () => {
   const images = [
@@ -103,6 +104,7 @@ const LoginSlider = () => {
 };
 
 const Login = () => {
+  const queryClient = useQueryClient();
   const defaultTheme = appDetails.default_theme as ThemeType;
   const router = useRouter();
   const [inputs, setInputs] = useState({
@@ -642,7 +644,10 @@ const Login = () => {
               ...modal1,
               open: false,
             });
-            if (success) router.push("/home");
+            if (success) {
+              router.push("/");
+              window.location.href = "/";
+            }
           } finally {
             if (animationInstance) {
               animationInstance.stop();
@@ -663,7 +668,10 @@ const Login = () => {
               ...modal1,
               open: false,
             });
-            if (success) router.push("/home");
+            if (success) {
+              router.push("/");
+              window.location.href = "/";
+            }
           } finally {
             if (animationInstance) {
               animationInstance.stop();
@@ -762,7 +770,10 @@ const Login = () => {
                 ...modal1,
                 open: false,
               });
-              if (success) router.push("/home");
+              if (success) {
+                router.push("/");
+                window.location.href = "/";
+              }
             }}
             className="relative h-[50px] md:h-[46px] lg:h-[50px] w-full cursor-pointer select-none rounded-[12px] overflow-hidden"
           >

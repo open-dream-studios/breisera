@@ -10,9 +10,12 @@ import { appTheme } from "../../util/appTheme";
 import appDetails from "../../util/appDetails.json";
 import { AuthContext } from "@/contexts/authContext";
 import Link from "next/link";
+import { useVideo } from "@/contexts/videoContext";
+import { FRONTEND_URL } from "@/util/config";
 
 const LeftBar = () => {
-  const { currentUser, logout } = useContext(AuthContext);
+  const { currentVideo } = useVideo();
+  const { currentUser, handleLogout } = useContext(AuthContext);
   const modal2 = useModal2Store((state: any) => state.modal2);
   const setModal2 = useModal2Store((state: any) => state.setModal2);
   const leftBarRef = useRef<HTMLDivElement>(null);
@@ -108,7 +111,7 @@ const LeftBar = () => {
             currentUser.last_name +
             "?"
           }
-          onContinue={logout}
+          onContinue={handleLogout}
         />
       ),
     });
@@ -138,18 +141,25 @@ const LeftBar = () => {
           }}
           className={`z-[951] pointer-events-auto lg:right-0 ${
             leftBarOpen ? "right-0" : "right-[100%]"
-          } bg-red-400 absolute top-0 h-[100%] w-[100%] flex justify-center
+          } absolute top-0 h-[100%] w-[100%] flex justify-center
           `}
         >
-          <Link
-            href="/explore"
-            onClick={() => {
-              toggleLeftBar()
-            }}
-            className="cursor-pointer text-white mt-[100px]"
-          >
-            Explore
-          </Link>
+          <div className="w-[100%] px-[20px] pt-[10px] relative flex items-start">
+            {currentVideo !== null && (
+              <Link
+                href={`${FRONTEND_URL}/www.youtube.com/watch?v=${currentVideo.id}`}
+                className="dim hover:brightness-75 cursor-pointer w-[100%] flex justify-between rounded-[5px] px-[12px] py-[10px]"
+                style={{
+                  backgroundColor: appTheme[currentUser.theme].background_2,
+                  color: appTheme[currentUser.theme].text_1,
+                }}
+              >
+                <p>Current Video</p>
+                <img alt="" className="w-[30%] aspect-[16/9] object-cover" src={currentVideo.snippet.thumbnails.standard.url}/>
+              </Link>
+            )}
+          </div>
+
           <div
             onClick={handleSignOut}
             className="dim select-none cursor-pointer w-[80%] hover:brightness-75 h-[40px] absolute bottom-[20px] flex items-center justify-center font-[600]"

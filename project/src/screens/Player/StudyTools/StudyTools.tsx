@@ -3,13 +3,14 @@ import { useContext } from "react";
 import { appTheme } from "../../../util/appTheme";
 import { AuthContext } from "../../../contexts/authContext";
 import React, { useEffect, useState } from "react";
-import GPT from "@/components/GPT/GPT";
-export type StudyToolTypes = "Notes" | "Quizzes" | "Flash Cards";
+import GPT, { GPTMessage } from "@/components/GPT/GPT";
+export type StudyToolTypes = "Chat" | "Notes" | "Flash Cards";
 
 const StudyTools = () => {
   const { currentUser } = useContext(AuthContext);
   const [currentStudyTool, setCurrentStudyTool] =
-    useState<StudyToolTypes>("Notes");
+    useState<StudyToolTypes>("Chat");
+  const studyTools: StudyToolTypes[] = ["Chat", "Notes", "Flash Cards"];
 
   const handleStudyToolClick = (tool: StudyToolTypes) => {
     setCurrentStudyTool(tool);
@@ -18,41 +19,71 @@ const StudyTools = () => {
   if (!currentUser) return <></>;
 
   return (
-    <div className="w-[100%] h-[100%]">
-      <div className="h-[60px] bg-gray-400 rounded-[6px] flex flex-row items-center justify-center">
+    <div className="w-[100%] h-[100%] px-[10px] pt-[8px] pb-[12px] flex flex-col gap-[10px]">
+      <div
+        className="px-[4px] h-[37px] rounded-[6px] flex flex-row items-center justify-center"
+        style={{ background: appTheme[currentUser.theme].background_2 }}
+      >
+        {studyTools.map((tool: StudyToolTypes, index: number) => {
+          return (
+            <div
+              key={index}
+              className="flex flex-row w-[33.3%] h-[30px] relative"
+            >
+              <div
+                style={{
+                  backgroundColor:
+                    currentStudyTool === tool
+                      ? appTheme[currentUser.theme].background_1
+                      : appTheme[currentUser.theme].background_2,
+                }}
+                className={`cursor-pointer w-[100%] h-[100%] rounded-[5px] flex justify-center items-center text-[calc(10px+0.2vw)]`}
+                onClick={() => handleStudyToolClick(tool)}
+              >
+                {tool}
+              </div>
+              {index < 2 &&
+                currentStudyTool !== "Notes" &&
+                !(currentStudyTool === "Flash Cards" && index === 1) &&
+                !(currentStudyTool === "Chat" && index === 0) && (
+                  <div
+                    className="w-[0.5px] h-[100%] absolute right-0"
+                    style={{
+                      backgroundColor: appTheme[currentUser.theme].text_4,
+                    }}
+                  ></div>
+                )}
+            </div>
+          );
+        })}
+      </div>
+      <div
+        style={{
+          border: `1px solid ${appTheme[currentUser.theme].background_2}`,
+        }}
+        className="flex-1 rounded-[5px] overflow-hidden"
+      >
         <div
-          className={`cursor-pointer w-[33%] h-[40px] rounded-[5px] flex justify-center items-center text-[calc(10px+0.2vw)] ${
-            currentStudyTool === "Notes"
-              ? "brightness-100 bg-black"
-              : "brightness-90"
+          className={`w-[100%] h-[100%] ${
+            currentStudyTool !== "Chat" && "hidden"
           }`}
-          onClick={() => handleStudyToolClick("Notes")}
+        >
+          <GPT />
+        </div>
+        <div
+          className={`w-[100%] h-[100%] ${
+            currentStudyTool !== "Notes" && "hidden"
+          }`}
         >
           Notes
         </div>
         <div
-          className={`cursor-pointer w-[33%] h-[40px] rounded-[5px] flex justify-center items-center text-[calc(10px+0.2vw)] ${
-            currentStudyTool === "Quizzes"
-              ? "brightness-100 bg-black"
-              : "brightness-90"
+          className={`w-[100%] h-[100%] ${
+            currentStudyTool !== "Flash Cards" && "hidden"
           }`}
-          onClick={() => handleStudyToolClick("Quizzes")}
-        >
-          Quizzes
-        </div>
-        <div
-          className={`cursor-pointer w-[33%] h-[40px] rounded-[5px] flex justify-center items-center text-[calc(10px+0.2vw)] ${
-            currentStudyTool === "Flash Cards"
-              ? "brightness-100 bg-black"
-              : "brightness-90"
-          }`}
-          onClick={() => handleStudyToolClick("Flash Cards")}
         >
           Flash Cards
         </div>
-      </div>
-      <div className="h-[calc(100%-60px)]">
-        {/* <GPT /> */}
       </div>
     </div>
   );

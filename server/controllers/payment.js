@@ -6,6 +6,9 @@ import { products } from "../payments/stripe.js";
 dotenv.config();
 
 export const checkoutSession = async (req, res) => {
+  const token = req.cookies.accessToken
+  if (!token) return res.status(401).json("Not authenticated!");
+
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
   const { user_id, user_email, user_first_name, user_last_name, product_type } =
     req.body;
@@ -128,6 +131,9 @@ export const checkoutSession = async (req, res) => {
 };
 
 export const customerPortalSession = async (req, res) => {
+  const token = req.cookies.accessToken
+  if (!token) return res.status(401).json("Not authenticated!");
+
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
   const { user_id } = req.body;
 
@@ -166,6 +172,9 @@ export const customerPortalSession = async (req, res) => {
 };
 
 export const customerUpdateSubscription = async (req, res) => {
+  const token = req.cookies.accessToken
+  if (!token) return res.status(401).json("Not authenticated!");
+
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
   const { user_id, product_type } = req.body;
   if (!Object.keys(products).includes(product_type)) {

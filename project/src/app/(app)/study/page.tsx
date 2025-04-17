@@ -3,10 +3,10 @@ import { useContext } from "react";
 import { AuthContext } from "../../../contexts/authContext";
 import React from "react";
 
-const Study = () => {
+const StudyPage = () => {
   const { currentUser } = useContext(AuthContext);
   if (!currentUser) return <></>;
-  return <>Study</>
+  return <>StudyPage</>
 };
 
-export default Study;
+export default StudyPage;

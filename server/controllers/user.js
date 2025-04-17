@@ -4,54 +4,54 @@ import { formatDateForMySQL } from "../functions/data.js";
 import { db } from "../connection/connect.js";
 import { products } from "../payments/stripe.js";
 
-export const getUser = (req, res) => {
-  const userId = req.params.userId;
-  const q = "SELECT * FROM users WHERE user_id = ?";
+// export const getUser = (req, res) => {
+//   const userId = req.params.userId;
+//   const q = "SELECT * FROM users WHERE user_id = ?";
 
-  db.query(q, [userId], (err, data) => {
-    if (err) return res.status(500).json(err);
+//   db.query(q, [userId], (err, data) => {
+//     if (err) return res.status(500).json(err);
 
-    if (data.length > 0) {
-      const { password, ...info } = data[0];
-      return res.json(info);
-    }
-  });
-};
+//     if (data.length > 0) {
+//       const { password, ...info } = data[0];
+//       return res.json(info);
+//     }
+//   });
+// };
 
-export const getUsers = (req, res) => {
-  const q = "SELECT * FROM users";
+// export const getUsers = (req, res) => {
+//   const q = "SELECT * FROM users";
 
-  db.query(q, [], (err, data) => {
-    if (err) return res.status(500).json(err);
-    const data2 = [];
-    for (let i = 0; i < data.length; i++) {
-      const { password, ...info } = data[i];
-      data2.push(info);
-    }
-    return res.json(data2);
-  });
-};
+//   db.query(q, [], (err, data) => {
+//     if (err) return res.status(500).json(err);
+//     const data2 = [];
+//     for (let i = 0; i < data.length; i++) {
+//       const { password, ...info } = data[i];
+//       data2.push(info);
+//     }
+//     return res.json(data2);
+//   });
+// };
+// 
+// export const deleteUser = (req, res) => {
+//   const token = req.cookies.accessToken
+//   if (!token) return res.status(401).json("Not logged in!");
 
-export const deleteUser = (req, res) => {
-  const token = req.accessToken;
-  if (!token) return res.status(401).json("Not logged in!");
+//   jwt.verify(token, "jwtSecretKey", (err, userInfo) => {
+//     if (err) return res.status(403).json("Token is invalid!");
 
-  jwt.verify(token, "jwtSecretKey", (err, userInfo) => {
-    if (err) return res.status(403).json("Token is invalid!");
+//     const q = "DELETE FROM users WHERE `user_id`= ?";
 
-    const q = "DELETE FROM users WHERE `user_id`= ?";
-
-    db.query(q, [userInfo.id], (err, data) => {
-      if (err) return res.status(500).json(err);
-      if (data.affectedRows > 0)
-        return res.status(200).json("User has been deleted.");
-      return res.status(403).json("No accounts were deleted");
-    });
-  });
-};
+//     db.query(q, [userInfo.id], (err, data) => {
+//       if (err) return res.status(500).json(err);
+//       if (data.affectedRows > 0)
+//         return res.status(200).json("User has been deleted.");
+//       return res.status(403).json("No accounts were deleted");
+//     });
+//   });
+// };
 
 export const getCurrentUser = (req, res) => {
-  const token = req.accessToken;
+  const token = req.cookies.accessToken
   if (!token) return res.json(null);
 
   jwt.verify(token, "jwtSecretKey", (err, userInfo) => {
@@ -75,7 +75,7 @@ export const getCurrentUser = (req, res) => {
 };
 
 export const getCurrentUserSubscription = (req, res) => {
-  const token = req.accessToken;
+  const token = req.cookies.accessToken
   if (!token) return res.json(null);
 
   jwt.verify(token, "jwtSecretKey", async (err, userInfo) => {
@@ -141,7 +141,7 @@ export const getCurrentUserSubscription = (req, res) => {
 };
 
 export const getCurrentUserBilling = (req, res) => {
-  const token = req.accessToken;
+  const token = req.cookies.accessToken
   if (!token) return res.json(null);
 
   jwt.verify(token, "jwtSecretKey", async (err, userInfo) => {
@@ -197,7 +197,7 @@ export const getCurrentUserBilling = (req, res) => {
 };
 
 export const updateCurrentUser = (req, res) => {
-  const token = req.accessToken;
+  const token = req.cookies.accessToken
   if (!token) return res.status(401).json("Not authenticated!");
 
   jwt.verify(token, "jwtSecretKey", (err, userInfo) => {

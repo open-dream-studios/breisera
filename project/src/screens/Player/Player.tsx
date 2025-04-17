@@ -1,13 +1,16 @@
-"use client"
+"use client";
 import { useState, useEffect, useRef, useContext } from "react";
 import { appTheme } from "@/util/appTheme";
 import { AuthContext } from "@/contexts/authContext";
 import YouTubePlayer from "./YouTubePlayer/YouTubePlayer";
 import YoutubePlayerData from "./YoutubePlayerData/YoutubePlayerData";
 import StudyTools from "./StudyTools/StudyTools";
+import { useVideo } from "@/contexts/videoContext";
+import { LuSquareArrowOutUpLeft } from "react-icons/lu";
 
 const Player = () => {
-  const { currentUser } = useContext(AuthContext)
+  const { currentUser } = useContext(AuthContext);
+  const { playerState } = useVideo();
   const [dividerPercent, setDividerPercent] = useState(66);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -16,7 +19,7 @@ const Player = () => {
       const containerWidth = containerRef.current.offsetWidth;
       const containerLeft = containerRef.current.getBoundingClientRect().left;
       const newPercent = ((e.clientX - containerLeft) / containerWidth) * 100;
-      setDividerPercent(Math.max(35, Math.min(newPercent, 73))); 
+      setDividerPercent(Math.max(35, Math.min(newPercent, 73)));
     }
   };
 
@@ -37,15 +40,34 @@ const Player = () => {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
-  
-  if (!currentUser) return
+
+  if (!currentUser) return;
 
   return (
-    <div ref={containerRef} className="flex h-[100%] w-[100%] select-none relative">
+    <div
+      ref={containerRef}
+      className="flex h-[100%] w-[100%] select-none fixed"
+    >
+      {playerState === "sm" && (
+        <div
+          style={{
+            backgroundColor: appTheme[currentUser.theme].background_1,
+            border: `1px solid ${appTheme[currentUser.theme].background_2}`,
+          }}
+          className="absolute top-[-20px] left-[-20px] rounded-full w-[40px] h-[40px] flex justify-center items-center"
+        >
+          <LuSquareArrowOutUpLeft
+            className="w-[20px] h-[20px]"
+            style={{
+              color: appTheme[currentUser.theme].text_1,
+            }}
+          />
+        </div>
+      )}
       <div
         className="select-none flex flex-col"
         style={{
-          width: `${dividerPercent}%`,
+          width: playerState === "sm" ? "100%" : `${dividerPercent}%`,
         }}
       >
         <YouTubePlayer />
@@ -56,13 +78,16 @@ const Player = () => {
         onMouseDown={handleMouseDown}
         className="absolute h-[100%] cursor-col-resize w-[6px] ml-[-2px]"
         style={{
-          left: `${dividerPercent}%`,
+          left: playerState === "sm" ? "100%" : `${dividerPercent}%`,
         }}
       >
-        <div className="w-[0.5px] h-[100%] ml-[1px]" style={{backgroundColor: appTheme[currentUser.theme].background_2}}></div>
+        <div
+          className="w-[0.5px] h-[100%] ml-[1px]"
+          style={{ backgroundColor: appTheme[currentUser.theme].background_2 }}
+        ></div>
       </div>
 
-      <div className="select-none flex-grow">
+      <div className={`select-none flex-grow ${playerState === "sm" && "w-0"}`}>
         <StudyTools />
       </div>
     </div>

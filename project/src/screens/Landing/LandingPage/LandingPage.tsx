@@ -1,10 +1,14 @@
 import { ThemeType } from "../../../util/appTheme";
 import { appTheme } from "../../../util/appTheme";
 import appDetails from "../../../util/appDetails.json";
+import { cookies } from "next/headers";
 
-const LandingPage = () => {
+const LandingPage = async () => {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("accessToken");
+  if (token) return <></>
+  
   const defaultTheme = appDetails.default_theme as ThemeType;
-
   return (
     <div
       style={
