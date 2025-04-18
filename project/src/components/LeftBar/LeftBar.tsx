@@ -160,8 +160,8 @@ const LeftBar = () => {
         subs: "35000000",
       },
     };
-    setCurrentVideo(vid)
-    setPlayerState("screen")
+    setCurrentVideo(vid);
+    setPlayerState("screen");
   };
 
   if (!currentUser) return;
@@ -211,11 +211,16 @@ const LeftBar = () => {
             )}
           </div>
 
-          <div 
-            className="absolute top-[40px] bg-black w-[90%] h-[40px] rounded-[5px] cursor-pointer text-white flex items-center justify-center dim hover:brightness-75"
+          <div
             onClick={handleVid}
+            className="dim select-none cursor-pointer w-[80%] hover:brightness-75 h-[40px] absolute bottom-[70px] flex items-center justify-center font-[600]"
+            style={{
+              borderRadius: "6px",
+              backgroundColor: appTheme[currentUser.theme].background_2,
+              color: appTheme[currentUser.theme].text_2,
+            }}
           >
-            Set Vid
+            Set Video
           </div>
 
           <div

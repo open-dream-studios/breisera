@@ -61,7 +61,7 @@ const StudyTools = () => {
       </div>
       <div
         style={{
-          border: currentStudyTool === "Notes"? "none" : `1px solid ${appTheme[currentUser.theme].background_2}`,
+          border: currentStudyTool === "Flash Cards" ? `1px solid ${appTheme[currentUser.theme].background_2}` : "none",
         }}
         className="flex-1 rounded-[5px] overflow-hidden"
       >

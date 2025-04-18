@@ -5,17 +5,15 @@ import { AuthContext } from "../../../contexts/authContext";
 import React, { useEffect, useState } from "react";
 import { BACKEND_URL, FRONTEND_URL } from "@/util/config";
 import Link from "next/link";
-import { YouTubePlayerVideo } from "@/store/useCurrentPlayerVideoStore";
-import { useVideo } from "@/contexts/videoContext";
+import { useVideo, YouTubePlayerVideo } from "@/contexts/videoContext";
 import { makeRequest } from "@/util/axios";
 
 const ExplorePage = () => {
   const { currentUser } = useContext(AuthContext);
-  const { setCurrentVideo } = useVideo();
+  const { setCurrentVideo, exploreVideos, setExploreVideos } = useVideo();
   if (!currentUser) return <></>;
-
-  const [videos, setVideos] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchVideos = async () => {
@@ -25,7 +23,9 @@ const ExplorePage = () => {
         });
         const data = res.data;
         if (Array.isArray(data)) {
-          setVideos(data);
+          const exploreVideosCopy = exploreVideos;
+          exploreVideosCopy.recommended_1 = data;
+          setExploreVideos(exploreVideosCopy);
         }
         setLoading(false);
       } catch (error) {
@@ -34,7 +34,10 @@ const ExplorePage = () => {
       }
     };
 
-    fetchVideos();
+    if (exploreVideos.recommended_1.length === 0) {
+      setLoading(true)
+      fetchVideos();
+    }
   }, []);
 
   const handleVideoClick = (video: YouTubePlayerVideo) => {
@@ -52,7 +55,7 @@ const ExplorePage = () => {
         padding: "16px",
       }}
     >
-      {videos.map((video) => (
+      {exploreVideos.recommended_1.map((video) => (
         <Link
           key={video.id}
           onClick={(e) => {

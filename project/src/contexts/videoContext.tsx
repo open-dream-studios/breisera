@@ -13,6 +13,10 @@ export type GPTMessage = {
 
 export type PlayerStates = "screen" | "sm" | "hidden";
 
+export type ExploreVideos = {
+  recommended_1: any[];
+};
+
 type VideoContextType = {
   currentVideo: YouTubePlayerVideo | null;
   setCurrentVideo: (video: YouTubePlayerVideo) => void;
@@ -25,6 +29,8 @@ type VideoContextType = {
   windowWidth: number | null;
   currentNote: string;
   setCurrentNote: (newCurrentNote: string) => void;
+  exploreVideos: ExploreVideos;
+  setExploreVideos: (newExploreVideos: ExploreVideos) => void;
 };
 
 const VideoContext = createContext<VideoContextType | undefined>(undefined);
@@ -39,7 +45,10 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({
   const [userMessage, setUserMessage] = useState<string>("");
   const [playerState, setPlayerState] = useState<PlayerStates>("hidden");
   const [windowWidth, setWindowWidth] = useState<number | null>(null);
-  const [currentNote, setCurrentNote] = useState<string>("")
+  const [currentNote, setCurrentNote] = useState<string>("");
+  const [exploreVideos, setExploreVideos] = useState<ExploreVideos>({
+    recommended_1: [],
+  });
 
   useEffect(() => {
     setMessages([]);
@@ -68,7 +77,9 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({
         setPlayerState,
         windowWidth,
         currentNote,
-        setCurrentNote
+        setCurrentNote,
+        exploreVideos,
+        setExploreVideos,
       }}
     >
       {children}

@@ -95,11 +95,19 @@ const Player = () => {
         ></div>
       </div>
 
-      <div style={{
-        maxWidth: `calc(100% - ${dividerPercent}%)`
-      }} className={`select-none flex-grow ${playerState === "sm" && "w-0"}`}>
+      <div
+       style={
+          {
+            "--max-width": `calc(100% - ${dividerPercent}%)`
+          } as React.CSSProperties
+        } className={`select-none flex-grow max-w-[100%] md:max-w-[var(--max-width)] ${playerState === "sm" && "w-0"}`}>
         <StudyTools />
       </div>
+
+
+        
+
+
     </div>
   );
 };

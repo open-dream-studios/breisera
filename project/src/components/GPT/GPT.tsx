@@ -9,6 +9,7 @@ import { BACKEND_URL } from "@/util/config";
 import { appTheme } from "@/util/appTheme";
 import { AuthContext } from "@/contexts/authContext";
 import { GPTMessage, useVideo } from "@/contexts/videoContext";
+import { HiOutlinePencilAlt } from "react-icons/hi";
 
 // height: -webkit-fill-available
 
@@ -17,36 +18,46 @@ const GPT = () => {
   const { messages, setMessages, userMessage, setUserMessage } = useVideo();
   const [isLoading, setIsLoading] = useState(false);
   const [loading, setLoading] = useState("");
-  const loaderRef = useRef<any>(null);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const gptMessageDisplay = useRef<HTMLDivElement>(null);
 
   function startLoadingAnimation() {
-    if (loaderRef.current && !isLoading) {
+    if (!isLoading) {
       setIsLoading(true);
-      loaderRef.current = setInterval(() => {
-        setLoading((prevLoading) =>
-          prevLoading.length < 3 ? prevLoading + "." : ""
-        );
-      }, 160);
+      let count = 0;
+      intervalRef.current = setInterval(() => {
+        count = (count + 1) % 4;
+        setLoading(".".repeat(count));
+      }, 180);
     }
   }
 
   function stopLoadingAnimation() {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
     setIsLoading(false);
-    clearInterval(loaderRef.current);
     setLoading("");
   }
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
-    if (userMessage.trim() === "") return;
+    if (userMessage.trim() === "" || isLoading) return;
     const newUserMessage = userMessage;
     setUserMessage("");
     setMessages((prevMessages) => [
       ...prevMessages,
       { text: newUserMessage, isBot: false },
     ]);
+    setTimeout(() => {
+      if (gptMessageDisplay.current) {
+        gptMessageDisplay.current.scrollTop =
+          gptMessageDisplay.current.scrollHeight;
+      }
+    }, 200);
     const textarea = textareaRef.current;
     if (textarea) {
       textarea.style.height = "20px";
@@ -72,6 +83,12 @@ const GPT = () => {
       ]);
     } finally {
       stopLoadingAnimation();
+      setTimeout(() => {
+        if (gptMessageDisplay.current) {
+          gptMessageDisplay.current.scrollTop =
+            gptMessageDisplay.current.scrollHeight;
+        }
+      }, 200);
     }
   };
 
@@ -110,114 +127,147 @@ const GPT = () => {
   if (!currentUser) return <></>;
 
   return (
-    <div
-      className="relative px-[15px] pt-[16px] w-[100%] h-[100%] flex flex-col items-center justify-center"
-      style={{
-        backgroundColor: appTheme[currentUser.theme].component_bg_1,
-      }}
-    >
+    <div className="w-[100%] h-[100%] flex flex-col gap-[8px]">
       <div
-        id="messages"
-        className="w-[100%] h-[100%] overflow-y-scroll flex flex-col gap-[12px] pb-[1px]"
+        style={{
+          backgroundColor: appTheme[currentUser.theme].component_bg_1,
+          color: appTheme[currentUser.theme].text_2,
+          border: `1px solid ${appTheme[currentUser.theme].background_2}`,
+        }}
+        className="w-[100%] min-h-[46px] h-[46px] rounded-[5px] flex justify-between items-center pl-[12px] pr-[8px]"
       >
-        {messages.map((message, index) => (
+        <div
+          onClick={() => {
+            setMessages([]);
+            setUserMessage("");
+            if (textareaRef.current) {
+              textareaRef.current.focus();
+            }
+          }}
+          style={{
+            color: appTheme[currentUser.theme].text_3,
+          }}
+          className="cursor-pointer dim hover:brightness-75 w-[23px] h-[23px]"
+        >
+          <HiOutlinePencilAlt className="w-[100%] h-[100%]" />
+        </div>
+
+        <div
+          style={{
+            backgroundColor: appTheme[currentUser.theme].background_2,
+          }}
+          className="text-[14px] leading-[14px] cursor-pointer dim hover:brightness-75 px-[18px] py-[6px] rounded-[15px]"
+        >
+          Model
+        </div>
+      </div>
+      <div
+        className="relative flex flex-col h-[100%] w-[100%] rounded-[5px]"
+        style={{
+          backgroundColor: appTheme[currentUser.theme].component_bg_1,
+          border: `1px solid ${appTheme[currentUser.theme].background_2}`,
+        }}
+      >
+        <div
+          id="messages"
+          ref={gptMessageDisplay}
+          className="absolute w-[100%] h-[100%] px-[15px] overflow-y-scroll flex flex-col gap-[12px] pb-[114px]"
+        >
+          {messages.map((message, index) => (
+            <div
+              key={index}
+              className={`w-full flex ${index === 0 && "mt-[15px]"} ${
+                message.isBot ? "justify-start" : "justify-end"
+              }`}
+            >
+              <div
+                style={{
+                  color: appTheme[currentUser.theme].text_1,
+                  backgroundColor: message.isBot
+                    ? appTheme[currentUser.theme].bot_message
+                    : appTheme[currentUser.theme].user_message,
+                }}
+                className="text-[15px] leading-[21px] w-fit max-w-[92%] px-[15px] py-[7px] rounded-[18px] flex flex-row items-start justify-start"
+              >
+                {message.text}
+              </div>
+            </div>
+          ))}
+          {isLoading && (
+            <div className="h-[20px] w-full">{loading || <>&nbsp;</>}</div>
+          )}
+        </div>
+
+        <div
+          style={{
+            backgroundColor: appTheme[currentUser.theme].component_bg_1,
+          }}
+          className="absolute w-[100%] bottom-0 px-[20px] flex flex-col items-end"
+        >
           <div
-            key={index}
-            className={`w-[100%] flex ${
-              message.isBot ? "justify-start ml" : "justify-end"
-            }`}
+            style={{
+              backgroundColor: appTheme[currentUser.theme].component_bg_1,
+            }}
+            className="w-[100%] pt-[3px]"
           >
             <div
               style={{
-                color: appTheme[currentUser.theme].text_1,
-                backgroundColor: message.isBot
-                  ? appTheme[currentUser.theme].bot_message
-                  : appTheme[currentUser.theme].user_message,
+                border: `1px solid ${appTheme[currentUser.theme].background_2}`,
               }}
-              className={`text-[15px] leading-[21px] w-fit max-w-[92%] px-[15px] py-[7px] rounded-[18px] flex flex-row items-start justify-start`}
+              className="w-full px-[19px] rounded-[25px]"
             >
-              {message.text}
+              <form
+                className="relative w-full flex items-center"
+                onSubmit={handleSubmit}
+                ref={formRef}
+              >
+                <div className="w-full pt-[14px] pb-[4px] pr-[28px]">
+                  <textarea
+                    ref={textareaRef}
+                    className="w-[calc(100%+10px)] text-[15px] leading-[16px] outline-0 border-0 overflow-scroll pr-[10px] placeholder:text-[var(--placeholder-color)]"
+                    onInput={handleInputChange}
+                    value={userMessage}
+                    onKeyDown={handleTextareaKeyPress}
+                    style={
+                      {
+                        resize: "none",
+                        height: "20px",
+                        maxHeight: "150px",
+                        "--placeholder-color":
+                          appTheme[currentUser.theme].text_3,
+                      } as React.CSSProperties
+                    }
+                    name="prompt"
+                    placeholder="Ask AI anything..."
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className={`${
+                    !isLoading && "cursor-pointer dim hover:brightness-75"
+                  } absolute bottom-[12.5px] right-[-4px] pr-[5px]`}
+                >
+                  <LuSend
+                    color={appTheme[currentUser.theme].text_3}
+                    fontSize={21}
+                    className="w-[20px] ml-[-5px]"
+                    style={{ transform: "rotate(45deg)" }}
+                  />
+                </button>
+              </form>
             </div>
           </div>
-        ))}
-        {isLoading && (
-          <div className="w-[100%] p-[15px]">
-            <div className="w-[100%] mx-auto my-0 flex flex-row items-start gap-[10px]">
-              <div className="image">
-                {/* <img
-                  className="w-[100%] h-[100%] object-contain "
-                  src={GPTlogo}
-                  alt="bot"
-                /> */}
-              </div>
-              <div className="flex-1 color-white text-[20px] max-w-[100%] overflow-x-scroll mt-[5px] ml-[3px] pb-[5px] whitespace-pre-wrap">
-                {loading}
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
 
-      <div
-        style={{
-          backgroundColor: appTheme[currentUser.theme].component_bg_1,
-        }}
-        className="w-[100%] px-[15px] absolute bottom-[40px]"
-      >
-        <div
-          style={{
-            border: `1px solid ${appTheme[currentUser.theme].background_2}`,
-          }}
-          className="w-[100%] px-[19px] rounded-[25px]"
-        >
-          <form
-            className="relative w-[100%] flex items-center"
-            onSubmit={handleSubmit}
-            ref={formRef}
+          <p
+            style={{
+              color: appTheme[currentUser.theme].text_4,
+            }}
+            className="pb-[15px] mt-[8px] w-[100%] text-center text-[12px] leading-[16px] break-words"
           >
-            <div className="w-[100%] pt-[14px] pb-[4px] pr-[28px]">
-              <textarea
-                ref={textareaRef}
-                className="w-[calc(100%+10px)] text-[15px] leading-[16px] outline-0 border-0 overflow-scroll pr-[10px] placeholder:text-[var(--placeholder-color)]"
-                onInput={handleInputChange}
-                value={userMessage}
-                onKeyDown={handleTextareaKeyPress}
-                style={
-                  {
-                    resize: "none",
-                    height: "20px",
-                    maxHeight: "150px",
-                    "--placeholder-color": appTheme[currentUser.theme].text_3,
-                  } as React.CSSProperties
-                }
-                name="prompt"
-                placeholder="Ask AI anything..."
-              />
-            </div>
-            <button
-              type="submit"
-              className="cursor-pointer absolute bottom-[12.5px] right-[-4px] dim hover:brightness-75 pr-[5px]"
-            >
-              <LuSend
-                color={appTheme[currentUser.theme].text_3}
-                fontSize={21}
-                className=" w-[20px] ml-[-5px]"
-                style={{ transform: "rotate(45deg)" }}
-              />
-            </button>
-          </form>
+            AI can make mistakes. Check important information.
+          </p>
         </div>
       </div>
-
-      <p
-        style={{
-          backgroundColor: appTheme[currentUser.theme].component_bg_1,
-          color: appTheme[currentUser.theme].text_4,
-        }}
-        className="absolute bottom-0 h-[40px] pt-[10px] w-[100%] text-center text-[12px]"
-      >
-        AI can make mistakes. Check important information.
-      </p>
     </div>
   );
 };
