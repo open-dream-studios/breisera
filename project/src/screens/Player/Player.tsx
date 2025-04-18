@@ -7,12 +7,33 @@ import YoutubePlayerData from "./YoutubePlayerData/YoutubePlayerData";
 import StudyTools from "./StudyTools/StudyTools";
 import { useVideo } from "@/contexts/videoContext";
 import { LuSquareArrowOutUpLeft } from "react-icons/lu";
+import { makeRequest } from "@/util/axios";
 
 const Player = () => {
   const { currentUser } = useContext(AuthContext);
-  const { playerState, setPlayerState, windowWidth } = useVideo();
+  const { playerState, setPlayerState, windowWidth, currentVideo, setCurrentVideoTranscript } = useVideo();
   const [dividerPercent, setDividerPercent] = useState(66);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const fetchTranscript = async () => {
+      if (currentVideo) {
+        try {
+          const res = await makeRequest.post("/api/youtube/transcript", {
+            videoId: currentVideo.id,
+          });
+          const data = res.data;
+          console.log(data)
+          setCurrentVideoTranscript(data)
+        } catch (error) {
+          setCurrentVideoTranscript(null)
+          console.error("Failed to fetch videos:", error);
+        }
+      }
+    };
+
+    fetchTranscript();
+  }, [currentVideo]);
 
   const handleMouseMove = (e: MouseEvent) => {
     if (containerRef.current) {
@@ -47,7 +68,7 @@ const Player = () => {
     <div
       ref={containerRef}
       className="relative flex flex-col sm:flex-row w-[100%] h-[100%]"
-      style={{backgroundColor: appTheme[currentUser.theme].background_1}}
+      style={{ backgroundColor: appTheme[currentUser.theme].background_1 }}
     >
       {playerState === "sm" && (
         <div
@@ -71,7 +92,10 @@ const Player = () => {
       <div
         className="select-none flex flex-col"
         style={{
-          width: playerState === "sm" || (windowWidth !== null && windowWidth < 640) ? "100%" : `${dividerPercent}%`,
+          width:
+            playerState === "sm" || (windowWidth !== null && windowWidth < 640)
+              ? "100%"
+              : `${dividerPercent}%`,
         }}
       >
         <YouTubePlayer />
@@ -96,18 +120,17 @@ const Player = () => {
       </div>
 
       <div
-       style={
+        style={
           {
-            "--max-width": `calc(100% - ${dividerPercent}%)`
+            "--max-width": `calc(100% - ${dividerPercent}%)`,
           } as React.CSSProperties
-        } className={`select-none flex-grow max-w-[100%] md:max-w-[var(--max-width)] ${playerState === "sm" && "w-0"}`}>
+        }
+        className={`select-none flex-grow max-w-[100%] md:max-w-[var(--max-width)] ${
+          playerState === "sm" && "w-0"
+        }`}
+      >
         <StudyTools />
       </div>
-
-
-        
-
-
     </div>
   );
 };

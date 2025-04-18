@@ -31,7 +31,17 @@ type VideoContextType = {
   setCurrentNote: (newCurrentNote: string) => void;
   exploreVideos: ExploreVideos;
   setExploreVideos: (newExploreVideos: ExploreVideos) => void;
+  currentVideoTranscript: VideoTranscript;
+  setCurrentVideoTranscript: (newVideoTranscript: VideoTranscript) => void;
 };
+
+export type VideoTranscriptBit = {
+  text: string;
+  offset: number;
+  duration: number;
+  lang?: string;
+}
+export type VideoTranscript = null | VideoTranscriptBit[]
 
 const VideoContext = createContext<VideoContextType | undefined>(undefined);
 
@@ -49,6 +59,8 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({
   const [exploreVideos, setExploreVideos] = useState<ExploreVideos>({
     recommended_1: [],
   });
+  const [currentVideoTranscript, setCurrentVideoTranscript] = useState<VideoTranscript>(null)
+
 
   useEffect(() => {
     setMessages([]);
@@ -80,6 +92,8 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({
         setCurrentNote,
         exploreVideos,
         setExploreVideos,
+        currentVideoTranscript,
+        setCurrentVideoTranscript
       }}
     >
       {children}

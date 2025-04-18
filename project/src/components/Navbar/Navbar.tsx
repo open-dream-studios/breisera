@@ -263,7 +263,7 @@ const Navbar = () => {
 
           <div
             onClick={handleTokensClick}
-            className="w-[75px]  h-[42px] flex flex-row justify-center items-center gap-[8px] dim cursor-pointer hover:brightness-75 rounded-[4px]"
+            className="w-[75px] h-[42px] flex flex-row justify-center items-center gap-[8px] dim cursor-pointer hover:brightness-75 rounded-[4px]"
             style={{
               backgroundColor: appTheme[currentUser.theme].background_2,
             }}
@@ -274,7 +274,7 @@ const Navbar = () => {
               color={appTheme[currentUser.theme].text_1}
             />
             <p
-              className="font-[500] text-[15px] rounded-[7px]"
+              className="select-none font-[500] text-[15px] rounded-[7px]"
               style={{
                 color: appTheme[currentUser.theme].text_1,
               }}

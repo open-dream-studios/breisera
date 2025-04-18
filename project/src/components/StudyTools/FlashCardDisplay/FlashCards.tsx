@@ -21,6 +21,15 @@ const FlashCards = () => {
 
   const card = flashcards[currentIndex];
 
+  const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const selection = window.getSelection();
+    const isTextSelected = selection && selection.toString().length > 0;
+
+    if (!isTextSelected) {
+      handleFlip();
+    }
+  };
+
   const handleFlip = () => {
     if (isAnimating) return;
     setIsAnimating(true);
@@ -49,7 +58,7 @@ const FlashCards = () => {
 
   return (
     <div className="h-[100%] flex flex-col items-center justify-start pt-[20px] px-[20px]">
-      <motion.div
+      {/* <motion.div
         className="w-full max-w-md aspect-[2/1.5] relative"
         onClick={handleFlip}
         initial={false}
@@ -60,24 +69,40 @@ const FlashCards = () => {
             : { duration: 0.6, ease: "easeInOut" }
         }
         style={{ transformStyle: "preserve-3d", cursor: "pointer" }}
+      > */}
+      <motion.div
+        className="w-full max-w-md aspect-[2/1.5] relative"
+        onClick={handleClick} // <-- updated here
+        initial={false}
+        animate={{ rotateY: flipped ? 180 : 0 }}
+        transition={
+          disableAnimation
+            ? { duration: 0 }
+            : { duration: 0.6, ease: "easeInOut" }
+        }
+        style={{ transformStyle: "preserve-3d", cursor: "pointer" }}
       >
         <motion.div
-          className="absolute text-center w-full h-full rounded-2xl shadow-xl flex items-center justify-center text-2xl font-semibold p-6"
+          className="absolute text-center w-full h-full rounded-2xl shadow-xl flex items-center justify-center text-2xl font-semibold p-6 select-text"
           style={{
             backfaceVisibility: "hidden",
             rotateY: 0,
             backgroundColor: appTheme[currentUser.theme].background_2,
+            userSelect: "text",
+            cursor: "pointer",
           }}
         >
           {card.question}
         </motion.div>
 
         <motion.div
-          className="absolute w-full h-full rounded-2xl shadow-xl flex items-center justify-center text-2xl font-semibold p-6"
+          className="absolute w-full h-full rounded-2xl shadow-xl flex items-center justify-center text-2xl font-semibold p-6 select-text"
           style={{
             backfaceVisibility: "hidden",
             rotateY: 180,
             backgroundColor: appTheme[currentUser.theme].background_2_2,
+            userSelect: "text",
+            cursor: "pointer",
           }}
         >
           {card.answer}

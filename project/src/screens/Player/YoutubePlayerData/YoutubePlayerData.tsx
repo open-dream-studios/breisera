@@ -22,7 +22,7 @@ const YoutubePlayerData = () => {
           );
         }}
         style={{ backgroundColor: appTheme[currentUser.theme].background_2 }}
-        className="cursor-pointer dim hover:brightness-75 w-fit py-[8px] pl-[10px] pr-[15px] rounded-[5px] mt-[8px] flex flex-row gap-[10px]"
+        className="cursor-pointer dim hover:brightness-75 w-fit py-[8px] pl-[10px] pr-[15px] rounded-[5px] mt-[10px] flex flex-row gap-[10px]"
       >
         <div className="rounded-full w-[38px] h-[38px] lg:w-[42px] lg:h-[42px] overflow-hidden">
           <img

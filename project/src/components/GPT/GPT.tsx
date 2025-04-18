@@ -156,7 +156,7 @@ const GPT = () => {
           style={{
             backgroundColor: appTheme[currentUser.theme].background_2,
           }}
-          className="text-[14px] leading-[14px] cursor-pointer dim hover:brightness-75 px-[18px] py-[6px] rounded-[15px]"
+          className="text-[14px] leading-[14px] font-[100] cursor-pointer dim hover:brightness-75 px-[18px] py-[6px] rounded-[15px]"
         >
           Model
         </div>
