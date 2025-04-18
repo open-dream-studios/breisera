@@ -2,6 +2,7 @@
   "dependencies": {
     "@azure/storage-blob": "^12.14.0",
     "@distube/ytdl-core": "^4.16.8",
+    "@dqbd/tiktoken": "^1.0.20",
     "@supabase/supabase-js": "^2.49.4",
     "aws-sdk": "^2.1574.0",
     "axios": "^1.8.4",

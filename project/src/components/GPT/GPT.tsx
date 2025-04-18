@@ -10,12 +10,14 @@ import { appTheme } from "@/util/appTheme";
 import { AuthContext } from "@/contexts/authContext";
 import { GPTMessage, useVideo } from "@/contexts/videoContext";
 import { HiOutlinePencilAlt } from "react-icons/hi";
+import { makeRequest } from "@/util/axios";
 
 // height: -webkit-fill-available
 
 const GPT = () => {
   const { currentUser } = useContext(AuthContext);
-  const { messages, setMessages, userMessage, setUserMessage } = useVideo();
+  const { currentVideo, messages, setMessages, userMessage, setUserMessage } =
+    useVideo();
   const [isLoading, setIsLoading] = useState(false);
   const [loading, setLoading] = useState("");
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -93,14 +95,25 @@ const GPT = () => {
   };
 
   async function getMessage(messages: GPTMessage[]) {
-    const proxyUrl = `${BACKEND_URL}/gpt-message`;
-    try {
-      const response = await axios.post(proxyUrl, { messages });
-      return response.data;
-    } catch (error) {
-      console.error(error);
-      return "Something went wrong...";
+    // const proxyUrl = `${BACKEND_URL}/gpt-message`;
+    // try {
+    //   const response = await axios.post(proxyUrl, { messages });
+    //   return response.data;
+    // } catch (error) {
+    //   console.error(error);
+    //   return "Something went wrong...";
+    // }
+
+    if (currentVideo) {
+      const res2 = await makeRequest.post("/api/youtube/gpt", {
+        videoId: currentVideo.id,
+        messages: messages,
+      });
+      const data2 = res2.data;
+      console.log(data2);
+      return data2
     }
+    return "Something went wrong...";
   }
 
   const handleTextareaKeyPress = (e: any) => {
