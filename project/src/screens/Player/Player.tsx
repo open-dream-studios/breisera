@@ -46,9 +46,8 @@ const Player = () => {
   return (
     <div
       ref={containerRef}
-      className={`flex flex-col sm:flex-row w-[100%] h-[100%] ${
-        playerState !== "sm" && "relative"
-      }`}
+      className="relative flex flex-col sm:flex-row w-[100%] h-[100%]"
+      style={{backgroundColor: appTheme[currentUser.theme].background_1}}
     >
       {playerState === "sm" && (
         <div
@@ -96,7 +95,9 @@ const Player = () => {
         ></div>
       </div>
 
-      <div className={`select-none flex-grow ${playerState === "sm" && "w-0"}`}>
+      <div style={{
+        maxWidth: `calc(100% - ${dividerPercent}%)`
+      }} className={`select-none flex-grow ${playerState === "sm" && "w-0"}`}>
         <StudyTools />
       </div>
     </div>

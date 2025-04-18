@@ -13,6 +13,7 @@
   "dependencies": {
     "@stripe/react-stripe-js": "^3.6.0",
     "@stripe/stripe-js": "^7.0.0",
+    "@tailwindcss/line-clamp": "^0.4.4",
     "@tanstack/react-query": "^5.74.3",
     "axios": "^1.8.4",
     "cross-env": "^7.0.3",
@@ -20,10 +21,13 @@
     "framer-motion": "^12.7.2",
     "js-cookie": "^3.0.5",
     "lottie-web": "^5.12.2",
+    "lucide-react": "^0.488.0",
     "next": "15.3.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-icons": "^5.5.0",
+    "slate": "^0.112.0",
+    "slate-react": "^0.112.1",
     "socket.io-client": "^4.8.1",
     "zustand": "^5.0.3"
   },

@@ -1,6 +1,5 @@
 import { AuthContext } from "@/contexts/authContext";
 import { useVideo } from "@/contexts/videoContext";
-import { useCurrentPlayerVideoStore } from "@/store/useCurrentPlayerVideoStore";
 import { appTheme, appTextSizes } from "@/util/appTheme";
 import { formatSubs } from "@/util/functions/YouTubeData";
 import React, { useContext } from "react";
@@ -17,10 +16,13 @@ const YoutubePlayerData = () => {
       </div>
       <div
         onClick={() => {
-          window.open(currentVideo.channel_url, "_blank");
+          window.open(
+            `https://www.youtube.com/channel/${currentVideo.snippet.channelId}`,
+            "_blank"
+          );
         }}
         style={{ backgroundColor: appTheme[currentUser.theme].background_2 }}
-        className="cursor-pointer dim hover:brightness-75 w-fit py-[8px] pl-[10px] pr-[12px] rounded-[5px] mt-[8px] flex flex-row gap-[10px]"
+        className="cursor-pointer dim hover:brightness-75 w-fit py-[8px] pl-[10px] pr-[15px] rounded-[5px] mt-[8px] flex flex-row gap-[10px]"
       >
         <div className="rounded-full w-[38px] h-[38px] lg:w-[42px] lg:h-[42px] overflow-hidden">
           <img
@@ -30,7 +32,9 @@ const YoutubePlayerData = () => {
           />
         </div>
         <div className="w-[100%] flex-1 flex flex-col gap-[3px] justify-center max-w-[30vw]">
-          <h1 className={`font-[600] truncate w-[100%] ${appTextSizes.textHead5}`}>
+          <h1
+            className={`font-[600] truncate w-[100%] ${appTextSizes.textHead5}`}
+          >
             {currentVideo.snippet.channelTitle}
           </h1>
           <p

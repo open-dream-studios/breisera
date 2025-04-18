@@ -10,6 +10,10 @@ export const appTheme = {
     background_1_2: "#FFFFFF",
     background_2_2: "#E9E9E9",
 
+    component_bg_1: "#f3f4f6",
+    bot_message: "#DDDDDD",
+    user_message: "#DDDDDD",
+
     // Texts
     text_1: "#000000",
     text_2: "#1F1F1F",
@@ -29,6 +33,10 @@ export const appTheme = {
     background_4: "#666666",
     background_1_2: "#252525",
     background_2_2: "#343434",
+
+    component_bg_1: "#161616",
+    bot_message: "#222222",
+    user_message: "#222222",
 
     // Texts
     text_1: "#FFFFFF",

@@ -23,6 +23,8 @@ type VideoContextType = {
   playerState: PlayerStates;
   setPlayerState: (newState: PlayerStates) => void;
   windowWidth: number | null;
+  currentNote: string;
+  setCurrentNote: (newCurrentNote: string) => void;
 };
 
 const VideoContext = createContext<VideoContextType | undefined>(undefined);
@@ -37,6 +39,7 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({
   const [userMessage, setUserMessage] = useState<string>("");
   const [playerState, setPlayerState] = useState<PlayerStates>("hidden");
   const [windowWidth, setWindowWidth] = useState<number | null>(null);
+  const [currentNote, setCurrentNote] = useState<string>("")
 
   useEffect(() => {
     setMessages([]);
@@ -63,7 +66,9 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({
         setUserMessage,
         playerState,
         setPlayerState,
-        windowWidth
+        windowWidth,
+        currentNote,
+        setCurrentNote
       }}
     >
       {children}

@@ -14,7 +14,7 @@ import { GPTMessage, useVideo } from "@/contexts/videoContext";
 
 const GPT = () => {
   const { currentUser } = useContext(AuthContext);
-  const { messages, setMessages, userMessage, setUserMessage } = useVideo()
+  const { messages, setMessages, userMessage, setUserMessage } = useVideo();
   const [isLoading, setIsLoading] = useState(false);
   const [loading, setLoading] = useState("");
   const loaderRef = useRef<any>(null);
@@ -47,6 +47,10 @@ const GPT = () => {
       ...prevMessages,
       { text: newUserMessage, isBot: false },
     ]);
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.style.height = "20px";
+    }
 
     startLoadingAnimation();
     setIsLoading(true);
@@ -106,26 +110,32 @@ const GPT = () => {
   if (!currentUser) return <></>;
 
   return (
-    <div className="relative px-[15px] w-[100%] h-[100%] flex flex-col items-center justify-center">
+    <div
+      className="relative px-[15px] pt-[16px] w-[100%] h-[100%] flex flex-col items-center justify-center"
+      style={{
+        backgroundColor: appTheme[currentUser.theme].component_bg_1,
+      }}
+    >
       <div
         id="messages"
-        className="flex-1 w-[100%] px-[15px] pt-[15px] h-[100%] overflow-y-scroll flex flex-col gap-[12px] pb-[20px]"
+        className="w-[100%] h-[100%] overflow-y-scroll flex flex-col gap-[12px] pb-[1px]"
       >
         {messages.map((message, index) => (
           <div
-            className={`w-[100%] flex flex-row items-start gap-[7px] justify-start ${
-              message.isBot ? "ai" : ""
-            }`}
             key={index}
+            className={`w-[100%] flex ${
+              message.isBot ? "justify-start ml" : "justify-end"
+            }`}
           >
-            <div className="w-[36px] h-[36px] rounded-[10px] flex items-center justify-center">
-              {/* <img
-                className="w-[100%] h-[100%] object-contain"
-                src={message.isBot ? GPTlogo : user}
-                alt={message.isBot ? "bot" : "user"}
-              /> */}
-            </div>
-            <div className="ml-[1px] w-[10px] text-white text-[16px] flex-1 mt-[5px]">
+            <div
+              style={{
+                color: appTheme[currentUser.theme].text_1,
+                backgroundColor: message.isBot
+                  ? appTheme[currentUser.theme].bot_message
+                  : appTheme[currentUser.theme].user_message,
+              }}
+              className={`text-[15px] leading-[21px] w-fit max-w-[92%] px-[15px] py-[7px] rounded-[18px] flex flex-row items-start justify-start`}
+            >
               {message.text}
             </div>
           </div>
@@ -150,7 +160,7 @@ const GPT = () => {
 
       <div
         style={{
-          backgroundColor: appTheme[currentUser.theme].background_1,
+          backgroundColor: appTheme[currentUser.theme].component_bg_1,
         }}
         className="w-[100%] px-[15px] absolute bottom-[40px]"
       >
@@ -168,11 +178,18 @@ const GPT = () => {
             <div className="w-[100%] pt-[14px] pb-[4px] pr-[28px]">
               <textarea
                 ref={textareaRef}
-                className="w-[calc(100%+10px)] text-[15px] leading-[16px] outline-0 border-0 overflow-scroll pr-[10px]"
+                className="w-[calc(100%+10px)] text-[15px] leading-[16px] outline-0 border-0 overflow-scroll pr-[10px] placeholder:text-[var(--placeholder-color)]"
                 onInput={handleInputChange}
                 value={userMessage}
                 onKeyDown={handleTextareaKeyPress}
-                style={{ resize: "none", height: "20px", maxHeight: "150px" }}
+                style={
+                  {
+                    resize: "none",
+                    height: "20px",
+                    maxHeight: "150px",
+                    "--placeholder-color": appTheme[currentUser.theme].text_3,
+                  } as React.CSSProperties
+                }
                 name="prompt"
                 placeholder="Ask AI anything..."
               />
@@ -194,7 +211,7 @@ const GPT = () => {
 
       <p
         style={{
-          backgroundColor: appTheme[currentUser.theme].background_1,
+          backgroundColor: appTheme[currentUser.theme].component_bg_1,
           color: appTheme[currentUser.theme].text_4,
         }}
         className="absolute bottom-0 h-[40px] pt-[10px] w-[100%] text-center text-[12px]"

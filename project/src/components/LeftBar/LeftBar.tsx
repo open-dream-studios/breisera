@@ -161,7 +161,6 @@ const LeftBar = () => {
       },
     };
     setCurrentVideo(vid)
-    console.log(vid)
     setPlayerState("screen")
   };
 

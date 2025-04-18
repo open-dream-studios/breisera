@@ -25,7 +25,7 @@ import { useVideo } from "@/contexts/videoContext";
 const Navbar = () => {
   const queryClient = useQueryClient();
   const { currentUser, currentUserSubscription } = useContext(AuthContext);
-  const { playerState, setPlayerState } = useVideo()
+  const { playerState, setPlayerState } = useVideo();
   const modal1 = useModal1Store((state: any) => state.modal1);
   const setModal1 = useModal1Store((state: any) => state.setModal1);
   const leftBarOpen = useLeftBarOpenStore((state: any) => state.leftBarOpen);
@@ -143,6 +143,11 @@ const Navbar = () => {
           />
           <Link
             href="/"
+            onClick={() => {
+              if (playerState === "screen") {
+                setPlayerState("sm");
+              }
+            }}
             className="flex flex-row gap-[5px] items-center cursor-pointer dim hover:brightness-75 pr-[6px]"
           >
             {currentUser.theme === "dark" ? (

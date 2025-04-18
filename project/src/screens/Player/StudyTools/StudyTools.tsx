@@ -4,6 +4,8 @@ import { appTheme } from "../../../util/appTheme";
 import { AuthContext } from "../../../contexts/authContext";
 import React, { useState } from "react";
 import GPT from "@/components/GPT/GPT";
+import FlashCardDisplay from "@/components/StudyTools/FlashCardDisplay/FlashCardDisplay";
+import NotesDisplay from "@/components/StudyTools/NotesDisplay/NotesDisplay";
 export type StudyToolTypes = "Chat" | "Notes" | "Flash Cards";
 
 const StudyTools = () => {
@@ -59,7 +61,7 @@ const StudyTools = () => {
       </div>
       <div
         style={{
-          border: `1px solid ${appTheme[currentUser.theme].background_2}`,
+          border: currentStudyTool === "Notes"? "none" : `1px solid ${appTheme[currentUser.theme].background_2}`,
         }}
         className="flex-1 rounded-[5px] overflow-hidden"
       >
@@ -75,14 +77,14 @@ const StudyTools = () => {
             currentStudyTool !== "Notes" && "hidden"
           }`}
         >
-          Notes
+          <NotesDisplay />
         </div>
         <div
           className={`w-[100%] h-[100%] ${
             currentStudyTool !== "Flash Cards" && "hidden"
           }`}
         >
-          Flash Cards
+          <FlashCardDisplay />
         </div>
       </div>
     </div>

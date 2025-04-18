@@ -69,18 +69,14 @@ const AppRoot = ({ children }: { children: ReactNode }) => {
   }, []);
 
   useEffect(() => {
-    console.log(currentUser, "updated!!");
     localStorage.setItem("user", JSON.stringify(currentUser));
-    if (currentUser) {
-      document.body.style.backgroundColor =
-        appTheme[currentUser.theme].background_1;
-    }
   }, [currentUser]);
 
-  if (!currentUser) {
-    return <UnprotectedLayout />;
-  }
-  return <ProtectedLayout>{children}</ProtectedLayout>;
+  return currentUser ? (
+    <ProtectedLayout>{children}</ProtectedLayout>
+  ) : (
+    <UnprotectedLayout />
+  );
 };
 
 const UnprotectedLayout = () => {
@@ -97,20 +93,21 @@ const ProtectedLayout = ({ children }: { children: ReactNode }) => {
   const { playerState } = useVideo();
   return (
     <>
-      <Modals landing={true} />
+      <Modals landing={false} />
       <Navbar />
       <LeftBar />
       <PageLayout>
         <div
-          className={`z-[600] absolute ${
-            playerState === "screen" && "top-0 left-0 w-[100%] h-[100%]"
-          } ${playerState === "sm" && "w-[400px] h-[225px] bottom-0 right-0 mr-[-1px] fixed"} ${
-            playerState === "hidden" && "hidden"
-          }`}
+          className={`z-[600] ${
+            playerState === "screen" && "w-[100%] h-[100%]"
+          } ${
+            playerState === "sm" &&
+            "fixed w-[400px] h-[225px] bottom-0 right-0 mr-[-1px]"
+          } ${playerState === "hidden" && "hidden"}`}
         >
           <Player />
         </div>
-        <div className="z-[500] w-[100%] h-[100%]">{children}</div>
+        <div className={`z-[500] w-[100%] h-[100%] ${playerState === "screen" && "hidden"}`}>{children}</div>
       </PageLayout>
     </>
   );
@@ -132,7 +129,7 @@ const PageLayout = ({ children }: { children: ReactNode }) => {
       }
       className={`absolute left-0 lg:left-[calc(var(--left-bar-width))] top-[var(--nav-height)] w-[100vw] lg:w-[calc(100vw-(var(--left-bar-width)))] flex h-[calc(100vh-var(--nav-height))] overflow-scroll`}
     >
-      {children}
+      <div className="relative w-[100%] h-[100%]">{children}</div>
     </div>
   );
 };

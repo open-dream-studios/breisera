@@ -63,8 +63,6 @@ export const youtubeSearch = async (req, res) => {
       };
     });
 
-    console.log(enrichedVideos)
-
     res.json(enrichedVideos);
   } catch (err) {
     console.error("Error fetching videos:", err.message);
