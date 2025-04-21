@@ -5,7 +5,7 @@ import { rateLimiter } from "../connection/middlewares.js";
 const router = express.Router();
 
 router.post("/search", rateLimiter, youtubeSearch);
-router.post("/transcript", rateLimiter, getYoutubeTranscript)
+router.post("/get-transcript", rateLimiter, getYoutubeTranscript)
 router.post("/generate-transcript", rateLimiter, generateYoutubeTranscript)
 router.post("/gpt", rateLimiter, youtubeGPT)
 

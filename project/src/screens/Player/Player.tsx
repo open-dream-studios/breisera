@@ -19,12 +19,12 @@ const Player = () => {
     const fetchTranscript = async () => {
       if (currentVideo) {
         try {
-          // const res = await makeRequest.post("/api/youtube/transcript", {
-          //   videoId: currentVideo.id,
-          // });
-          // const data = res.data;
-          // console.log(data)
-          // setCurrentVideoTranscript(data)
+          const res = await makeRequest.post("/api/youtube/get-transcript", {
+            videoId: currentVideo.id,
+          });
+          const data = res.data;
+          console.log(data)
+          setCurrentVideoTranscript(data)
         } catch (error) {
           setCurrentVideoTranscript(null)
           console.error("Failed to fetch videos:", error);

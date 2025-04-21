@@ -8,9 +8,10 @@ import fs from "fs";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
 import { createClient } from "@supabase/supabase-js";
-import { encoding_for_model } from "@dqbd/tiktoken";
-
+import he from "he";
+import { usePython } from "../functions/python.js";
 dotenv.config();
+
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
@@ -100,21 +101,202 @@ export const youtubeSearch = async (req, res) => {
 
 export const getYoutubeTranscript = async (req, res) => {
   const token = req.cookies.accessToken;
-  if (!token) return res.status(401).json("Not authenticated!");
+  if (!token)
+    return res
+      .status(401)
+      .json({ success: false, content: "Not authenticated!" });
 
   const { videoId } = req.body;
-  if (!videoId) return res.status(400).json("Missing video ID");
+  if (!videoId)
+    return res
+      .status(400)
+      .json({ success: false, content: "Missing video ID" });
 
   try {
-    const transcript = await YoutubeTranscript.fetchTranscript(videoId);
-    storeTranscriptEmbeddings(videoId, transcript);
+    let transcript = await YoutubeTranscript.fetchTranscript(videoId);
 
-    res.json({ transcript });
+    // Clean the transcript
+    function cleanTranscript(text) {
+      let cleanedText = he.decode(he.decode(text));
+      // cleanedText = cleanedText
+      // .replace(/\[Music\]/gi, '')                      // remove music markers
+      // .replace(/\s+/g, ' ')                            // normalize whitespace
+      // .replace(/(oh|dude|bro|nah|yeah|well)[,.]*/gi, '$1.')  // add breaks after common interjections
+      // .replace(/([!?])\s*/g, '$1 ')
+      // preserve ! and ?
+      // .replace(/([a-z])([A-Z])/g, '$1. $2')
+
+      cleanedText = cleanedText.replace(/\[Music\]/gi, "");
+      cleanedText = cleanedText.replace(/\[\s*__\s*\]/g, "[ __ ]");
+      cleanedText = cleanedText.replace(/\[\u00a0__\u00a0\]/g, "[ __ ]");
+      return cleanedText;
+    }
+    transcript = transcript.map((item) => ({
+      ...item,
+      text: cleanTranscript(item.text),
+    }));
+
+    // Check if embeddings are already stored for this video
+    const { data, error } = await supabase
+      .from("transcript_chunks")
+      .select("video_id")
+      .eq("video_id", videoId)
+      .limit(1);
+
+    if (error) {
+      console.error("Supabase query error:", error.message);
+      res.status(417).json({ success: false, content: "Database query error" });
+    } else {
+      if (data && data.length > 0) {
+        // Video is in the database
+        res.status(200).json({ success: true, content: "Video already in DB" });
+        return;
+      } else {
+        // Video is not in the DB  -> Being processing
+        const success = await chunkTranscriptWithSentences(transcript);
+        console.log(success);
+        if (success) {
+          // await storeTranscriptEmbeddings(videoId, transcript);
+          res.status(200).json({ success: true, content: success });
+        } else {
+          res.status(417).json({ success: false, error: "Processing error" });
+        }
+      }
+    }
   } catch (error) {
     console.error("Transcript error:", error.message);
-    res.status(404).json({ error: "Transcript not available" });
+    res
+      .status(404)
+      .json({ success: false, content: "Error getting transcript" });
   }
 };
+
+const chunkTranscriptWithSentences = async (transcriptArray) => {
+  const fullTranscript = transcriptArray.map((t) => t.text).join(" ");
+  // const result = await usePython(fullTranscript, "string", "transcript-processing.py");
+  // console.log(result);
+  // return result
+  console.log(fullTranscript);
+
+  try {
+    const formattedMessage = [{
+      role: "user",
+      content: "Please return me a summary of what you assert takes place in this youtube video. This is a video from Extessy, playing a game of APEX Legends:" + fullTranscript
+    }];
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      store: true,
+      messages: formattedMessage,
+    });
+    console.log(completion.choices[0].message.content)
+    return completion.choices[0].message.content;
+  } catch (error) {
+    console.error(error);
+    return "Something went wrong...";
+  }
+
+
+};
+
+// function chunkTranscriptWithSentences_old(transcriptItems) {
+//   const fullText = transcriptItems.map((t) => t.text).join(" ");
+//   const enc = encoding_for_model("gpt-3.5-turbo");
+//   const countTokens = (text) => enc.encode(text).length;
+
+//   const splitIntoSentences = (text) => {
+//     return text
+//       .replace(/\s+/g, " ")
+//       .split(/(?<=[.?!])\s+(?=[A-Z])/)
+//       .map((s) => s.trim())
+//       .filter((s) => s.length > 0);
+//   };
+
+//   const chunkSentences = (sentences, maxTokens = 500) => {
+//     const chunks = [];
+//     let currentChunk = [];
+//     let currentTokenCount = 0;
+
+//     for (let sentence of sentences) {
+//       const tokenCount = encode(sentence).length;
+
+//       if (currentTokenCount + tokenCount > maxTokens) {
+//         chunks.push(currentChunk.join(" "));
+//         currentChunk = [sentence];
+//         currentTokenCount = tokenCount;
+//       } else {
+//         currentChunk.push(sentence);
+//         currentTokenCount += tokenCount;
+//       }
+//     }
+
+//     if (currentChunk.length > 0) {
+//       chunks.push(currentChunk.join(" "));
+//     }
+
+//     return chunks;
+//   };
+
+//   const sentences = splitIntoSentences(fullText);
+//   const segments = chunkSentences(sentences);
+
+//   console.log(
+//     segments.map((s, i) => ({
+//       segment: s,
+//       index: i,
+//       tokenCount: encode(s).length,
+//     }))
+//   );
+
+//   // Map from sentence character indices to original transcript pieces
+//   // let currentCharIndex = 0;
+//   // let pointer = 0;
+//   // const sentenceChunks = [];
+
+//   // for (const segment of sentences) {
+//   //   const sentenceText = segment.segment.trim();
+//   //   const sentenceStart = segment.index;
+//   //   const sentenceEnd = sentenceStart + sentenceText.length;
+
+//   //   const wordsInSentence = [];
+//   //   let sentenceOffset = null;
+//   //   let sentenceDuration = 0;
+
+//   //   // Gather transcript items that fall within this sentence
+//   //   while (pointer < transcriptItems.length && currentCharIndex < sentenceEnd) {
+//   //     const item = transcriptItems[pointer];
+//   //     const itemText = item.text;
+//   //     currentCharIndex += itemText.length + 1; // +1 for space
+
+//   //     if (sentenceOffset === null) sentenceOffset = item.offset;
+//   //     sentenceDuration += parseFloat(item.duration);
+//   //     wordsInSentence.push(item);
+
+//   //     pointer++;
+//   //   }
+
+//   //   sentenceChunks.push({
+//   //     sentenceText,
+//   //     offset: parseFloat(sentenceOffset),
+//   //     duration: sentenceDuration,
+//   //     originalItems: wordsInSentence,
+//   //   });
+//   // }
+
+//   // // Now create 2–3 sentence sliding windows
+//   // const finalChunks = [];
+//   // for (let i = 0; i < sentenceChunks.length; i++) {
+//   //   const window = sentenceChunks.slice(i, i + 3); // max 3 sentences
+//   //   if (window.length < 2) continue; // skip if too small
+
+//   //   const chunkText = window.map(s => s.sentenceText).join(" ");
+//   //   const offset = window[0].offset;
+//   //   const duration = window.reduce((sum, s) => sum + s.duration, 0);
+
+//   //   finalChunks.push({ text: chunkText, offset, duration });
+//   // }
+
+//   // return finalChunks;
+// }
 
 export const generateYoutubeTranscript = async (req, res) => {
   const token = req.cookies.accessToken;
@@ -175,105 +357,6 @@ export const generateYoutubeTranscript = async (req, res) => {
   }
 };
 
-// 1) How to handle long transcripts with token limits?
-
-// Whisper transcripts for long videos can easily exceed 100k tokens — way beyond the limits of GPT-4 (which is ~128k with the turbo variant, but still limited and expensive). Here are strategies:
-
-// ✅ Chunking + Smart Summarization
-
-// Step 1: Chunk the transcript into manageable pieces (which you’re already doing — nice!).
-
-// Step 2: Summarize each chunk individually using GPT. Then summarize those summaries into a final one — this is called map-reduce summarization.
-// 	•	Map step: Summarize each chunk (100 items or ~3–5 min of content).
-// 	•	Reduce step: Combine those summaries into a global summary.
-
-// You can use the same idea for semantic embedding, flashcard generation, or context retrieval later.
-
-// ⸻
-
-// 2) How to answer dynamic questions about a long video (with timestamps)?
-
-// This is where retrieval-augmented generation (RAG) comes in.
-
-// ✅ Use embeddings + vector search
-
-// Here’s how:
-// 	1.	Embed the transcript segments (chunks of ~100 tokens) using OpenAI Embeddings or something like all-MiniLM if you’re budget-conscious.
-// 	2.	Store them in a vector database (e.g. Pinecone, Weaviate, Supabase pgvector, or Qdrant).
-// 	3.	When a user asks a question, you:
-// 	•	Embed their question
-// 	•	Search your vector DB for the most relevant segments
-// 	•	Grab those relevant chunks (with timestamps!)
-// 	•	Feed those as context into the GPT prompt (plus the user’s question)
-
-// 💡 Bonus: In your response, you can show “Referenced at 1:32:45” by using the offset from the matched transcript chunks.
-
-// ⸻
-
-// ✅ Optional: Add context window smarts
-
-// If the query is about a specific time range (e.g. “What happened between 20:00 and 40:00?”), you can pre-filter the chunks by offset and then do semantic search. Mix time and meaning.
-
-// ⸻
-
-// 🔁 Reusability
-
-// You’ll want to cache all this:
-// 	•	Store transcript chunks + embeddings on first load
-// 	•	Store generated summaries and flashcards per video
-// 	•	Let AI chat retrieve from those dynamically
-
-// ⸻
-
-// Want a quick roadmap?
-// 	1.	✅ You already have transcript chunking and Whisper support.
-// 	2.	🔜 Embed each chunk + store in vector DB.
-// 	3.	🔜 Build an endpoint for search by embedding similarity.
-// 	4.	🔜 Create a GPT prompt like:
-// “Answer the question using the transcript chunks below. Be concise. Include timestamps where possible.”
-// 	5.	🔜 Use this for chat, summary, and flashcard prompts.
-
-// ⸻
-
-// Let me know if you want help wiring up:
-// 	•	Embeddings with Supabase or Pinecone
-// 	•	GPT prompt examples for summarizing or QA
-// 	•	Frontend flow ideas
-
-// You’re really close to something amazing.
-
-// async function storeTranscriptEmbeddings(videoId, chunks) {
-//   console.log("embedding...");
-
-//   // 1. Prepare inputs for batch
-//   const inputs = chunks.map((chunk) => chunk.text.slice(0, 1000));
-
-//   // 2. Batch embed all inputs
-//   const response = await openai.embeddings.create({
-//     model: "text-embedding-3-small",
-//     input: inputs,
-//   });
-
-//   // 3. Prepare all rows for bulk insert
-//   const rows = chunks.map((chunk, i) => ({
-//     video_id: videoId,
-//     text: chunk.text,
-//     time_offset: chunk.offset,
-//     duration: chunk.duration,
-//     embedding: response.data[i].embedding,
-//   }));
-
-//   // 4. Bulk insert into Supabase
-//   const { error } = await supabase.from("transcript_chunks").insert(rows);
-
-//   if (error) {
-//     console.error("❌ Supabase insert error:", error);
-//     throw error;
-//   }
-
-//   console.log("✅ All chunks embedded and stored for", videoId);
-// }
-
 async function storeTranscriptEmbeddings(videoId, chunks) {
   console.log("Embedding transcript...");
   const inputs = chunks.map((chunk) => chunk.text.slice(0, 1000));
@@ -312,30 +395,21 @@ async function embed(text) {
   return response.data[0].embedding;
 }
 
-// NOW SET UP AI TO MANAGAE QUERIES
-
-// LOG ONE VECTOR
-// const response = await openai.embeddings.create({
-//   model: "text-embedding-3-small",
-//   input: "behind me",
-// });
-// console.log(JSON.stringify(response.data[0].embedding));
-
 export const youtubeGPT = async (req, res) => {
   const messages = req.body.messages;
   const question = messages[messages.length - 1].text;
   const videoId = req.body.videoId;
 
-  const { data: queryChunks, error } = await supabase.rpc(
-    "match_transcript_chunks",
-    {
-      query_embedding: await embed(question), // your OpenAI embedding call
-      match_threshold: 0.68, 
-      match_count: 15,
-      video_id: videoId,
-    }
-  );
-  console.log("🔍 Query Chunks:", queryChunks);
+  // const { data: queryChunks, error } = await supabase.rpc(
+  //   "match_transcript_chunks",
+  //   {
+  //     query_embedding: await embed(question), // your OpenAI embedding call
+  //     match_threshold: 0.68,
+  //     match_count: 15,
+  //     video_id: videoId,
+  //   }
+  // );
+  // console.log("🔍 Query Chunks:", queryChunks);
 
   //   const encoder = encoding_for_model(model); // "gpt-4", "gpt-3.5-turbo", etc
   //   const MAX_TOKENS = model === "gpt-4" ? 8000 : 4000;
@@ -391,39 +465,24 @@ export const youtubeGPT = async (req, res) => {
   res.status(200).send(result);
 };
 
-//   // const result = await getMessage(messages);
-//   try {
-//     const formattedMessages = messages.map((message) => ({
-//       role: message.isBot ? "assistant" : "user",
-//       content: message.text,
-//     }));
-//     const completion = await openai.chat.completions.create({
-//       model: "gpt-4o-mini",
-//       store: true,
-//       messages: formattedMessages,
-//     });
-//     return completion.choices[0].message.content;
-//   } catch (error) {
-//     console.error(error);
-//     return "Something went wrong...";
-//   }
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+// ORIGINAL GPT CALL
+const youtubeTranscriptGPT = async (messages) => {
+  try {
+    const formattedMessages = messages.map((message) => ({
+      role: message.isBot ? "assistant" : "user",
+      content: message.text,
+    }));
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      store: true,
+      messages: formattedMessages,
+    });
+    return completion.choices[0].message.content;
+  } catch (error) {
+    console.error(error);
+    return "Something went wrong...";
+  }
+};
 
 // NEXT STEPS
 
@@ -445,7 +504,6 @@ export const youtubeGPT = async (req, res) => {
 
 // Yes, absolutely increase chunk size — but smartly:
 // 	•	Try sliding windows with overlap:
-
 
 //   chunks = [
 //   "Sentence 1. Sentence 2. Sentence 3.",
@@ -564,118 +622,3 @@ export const youtubeGPT = async (req, res) => {
 // Add tags/topics/entities to chunks
 // ðŸ¤– RAG
 // Build toward better prompting & retrieval with filtered context
-
-
-// one more question. right now, the transcript is the only informaiton I'm using as an input to answer these questions. is there ANY kind of visual processing I can do easily that would give more information about the video, without a ton of time taken to do so, and high cost, giving information that might ACTUALLY help? I have no idea what that would look like and if it is even worth considering...
-
-// Absolutely love that you’re thinking this way — going beyond just text to incorporate visual info could level up your app’s intelligence big time. While full visual understanding (like action recognition or object tracking) is heavy and expensive, there are some lightweight, affordable options that give you useful insight into the visual side of the video, even if you’re only using basic tools. Here’s the breakdown:
-
-// ⸻
-
-// ⚡️ LIGHTWEIGHT Visual Inputs That Might Actually Help
-
-// 1. Extract Key Frames
-// 	•	Take a frame every X seconds (e.g. every 5–10 sec).
-// 	•	Optionally, filter out similar-looking frames using basic perceptual hashing.
-
-// How it helps:
-// 	•	You can use image captioning models or CLIP (see below) to describe what’s visually happening.
-// 	•	These descriptions can be embedded alongside transcript chunks for richer retrieval.
-
-// Tools:
-// 	•	ffmpeg to extract frames:
-//   ffmpeg -i input.mp4 -vf fps=1 frame_%04d.jpg
-
-
-
-
-//   2. Use OpenAI’s CLIP or similar
-
-// CLIP (Contrastive Language-Image Pretraining) is a zero-shot model trained to embed both images and text in the same space.
-
-// You can:
-// 	•	Generate embeddings for each key frame
-// 	•	Store them in a frame_embeddings table
-// 	•	Do joint searches between text queries and both transcript+visual context
-
-// “What characters are these players using?” might match a frame with a character select screen.
-
-// Tools:
-// 	•	OpenAI CLIP via Hugging Face
-// 	•	CLIP-as-service or transformers
-
-// 3. Run a Free Image Captioning Model on Key Frames
-
-// Generate natural-language descriptions like:
-// 	•	“A player selecting a character on a game menu”
-// 	•	“Two players fighting in a 2D fighting game”
-
-// Then embed those captions and store them just like you do for transcript chunks.
-
-// Tools:
-// 	•	BLIP
-// 	•	MiniGPT-4 (heavier but more capable)
-// 	•	Xenova Transformers (runs in-browser)
-
-// ⸻
-
-// 4. OCR (Text Detection in Frames)
-
-// Extract text from video frames:
-// 	•	HUDs, scoreboards, subtitles, character names, etc.
-
-// Could be super useful in gaming videos, for example.
-
-// Tools:
-// 	•	Tesseract.js
-// 	•	ocr.space API (free tier)
-
-// ⸻
-
-// 🔥 Strategy Summary for You (Low-cost, High-impact)
-
-// Technique
-// What You Get
-// Cost/Time
-// Worth it?
-// ðŸ–¼ï¸ Key Frame Extraction
-// Screenshots from video
-// Very fast
-// âœ… Yes
-// ðŸ§  CLIP Embeddings
-// Searchable image representations
-// Fast
-// âœ… Yes
-// ðŸ“ Captioning Frames
-// â€œPlayer choosing characterâ€¦â€
-// Moderate
-// âœ… Yes
-// ðŸ”¤ OCR
-// Game UI text, subtitles, names
-// Fast
-// âœ… Yes
-// ðŸŽ¥ Action/Object Recognition
-// Detailed scene understanding
-// Expensive
-// âŒ Not worth it (yet)
-
-// 🚀 Combine With Your Current RAG Flow
-
-// Let’s say you add visual frame captions and embed them. Now at query time:
-// 	1.	Embed user question
-// 	2.	Search transcript chunks by similarity
-// 	3.	Search image caption/CLIP embeddings
-// 	4.	Merge and sort by similarity and time proximity
-// 	5.	Inject results into prompt
-
-// You just gave the model visual memory.
-
-// ⸻
-
-// If you want, I can help you wire up a basic version of this:
-// 	•	Extract key frames
-// 	•	Caption them
-// 	•	Store + embed captions
-// 	•	Use those in retrieval
-
-// Would that be helpful to prototype this next step?
