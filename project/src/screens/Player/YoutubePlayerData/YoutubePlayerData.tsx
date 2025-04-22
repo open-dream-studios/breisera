@@ -10,7 +10,7 @@ const YoutubePlayerData = () => {
   if (currentVideo === null || !currentUser) return;
 
   return (
-    <div className="w-[100%] h-[100px] px-[16px] pt-[12px]">
+    <div className="w-[100%] px-[16px] pt-[12px] pb-[18px]">
       <div className={`font-[600] ${appTextSizes.textHead1}`}>
         {currentVideo.snippet.title}
       </div>

@@ -1,6 +1,6 @@
 "use client";
 import React, { createContext, useState, useContext, useEffect } from "react";
-
+import { vid } from "../../video_db";
 export type YouTubePlayerVideo = {
   id: string;
   [key: string]: any;
@@ -33,6 +33,22 @@ type VideoContextType = {
   setExploreVideos: (newExploreVideos: ExploreVideos) => void;
   currentVideoTranscript: VideoTranscript;
   setCurrentVideoTranscript: (newVideoTranscript: VideoTranscript) => void;
+  loadingCurrentVideoTranscript: boolean;
+  setLoadingCurrentVideoTranscript: (
+    newLoadingCurrentVideoTranscript: boolean
+  ) => void;
+  currentKeyConcepts: KeyConcepts;
+  setCurrentKeyConcepts: (newKeyConcepts: KeyConcepts) => void;
+  loadingCurrentKeyConcepts: boolean;
+  setLoadingCurrentKeyConcepts: (
+    newLoadingCurrentKeyConcepts: boolean
+  ) => void;
+   currentSummary: Summary;
+  setCurrentSummary: (newSummary: Summary) => void;
+  loadingCurrentSummary: boolean;
+  setLoadingCurrentSummary: (
+    newLoadingCurrentSummary: boolean
+  ) => void;
 };
 
 export type VideoTranscriptBit = {
@@ -40,8 +56,16 @@ export type VideoTranscriptBit = {
   offset: number;
   duration: number;
   lang?: string;
-}
-export type VideoTranscript = null | VideoTranscriptBit[]
+};
+export type VideoTranscript = null | VideoTranscriptBit[];
+
+export type KeyConcept = {
+  key: string;
+  concept: string;
+};
+export type KeyConcepts = null | KeyConcept[];
+
+export type Summary = null | string;
 
 const VideoContext = createContext<VideoContextType | undefined>(undefined);
 
@@ -49,7 +73,7 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [currentVideo, setCurrentVideo] = useState<YouTubePlayerVideo | null>(
-    null
+    vid
   );
   const [messages, setMessages] = useState<GPTMessage[]>([]);
   const [userMessage, setUserMessage] = useState<string>("");
@@ -59,8 +83,19 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({
   const [exploreVideos, setExploreVideos] = useState<ExploreVideos>({
     recommended_1: [],
   });
-  const [currentVideoTranscript, setCurrentVideoTranscript] = useState<VideoTranscript>(null)
+  const [currentVideoTranscript, setCurrentVideoTranscript] =
+    useState<VideoTranscript>(null);
+  const [loadingCurrentVideoTranscript, setLoadingCurrentVideoTranscript] =
+    useState<boolean>(true);
+  const [currentKeyConcepts, setCurrentKeyConcepts] =
+    useState<KeyConcepts>(null);
+  const [loadingCurrentKeyConcepts, setLoadingCurrentKeyConcepts] =
+    useState<boolean>(true);
 
+  const [currentSummary, setCurrentSummary] =
+    useState<Summary>(null);
+  const [loadingCurrentSummary, setLoadingCurrentSummary] =
+    useState<boolean>(true);
 
   useEffect(() => {
     setMessages([]);
@@ -93,7 +128,17 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({
         exploreVideos,
         setExploreVideos,
         currentVideoTranscript,
-        setCurrentVideoTranscript
+        setCurrentVideoTranscript,
+        loadingCurrentVideoTranscript,
+        setLoadingCurrentVideoTranscript,
+        currentKeyConcepts,
+        setCurrentKeyConcepts,
+        loadingCurrentKeyConcepts,
+        setLoadingCurrentKeyConcepts,
+        currentSummary,
+        setCurrentSummary,
+        loadingCurrentSummary,
+        setLoadingCurrentSummary
       }}
     >
       {children}

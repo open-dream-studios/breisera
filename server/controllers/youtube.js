@@ -126,43 +126,46 @@ export const getYoutubeTranscript = async (req, res) => {
       // preserve ! and ?
       // .replace(/([a-z])([A-Z])/g, '$1. $2')
 
-      cleanedText = cleanedText.replace(/\[Music\]/gi, "");
-      cleanedText = cleanedText.replace(/\[\s*__\s*\]/g, "[ __ ]");
-      cleanedText = cleanedText.replace(/\[\u00a0__\u00a0\]/g, "[ __ ]");
+      // cleanedText = cleanedText.replace(/\[Music\]/gi, "");
+      // cleanedText = cleanedText.replace(/\[\s*__\s*\]/g, "[ __ ]");
+      // cleanedText = cleanedText.replace(/\[\u00a0__\u00a0\]/g, "[ __ ]");
       return cleanedText;
     }
+
     transcript = transcript.map((item) => ({
       ...item,
       text: cleanTranscript(item.text),
     }));
 
-    // Check if embeddings are already stored for this video
-    const { data, error } = await supabase
-      .from("transcript_chunks")
-      .select("video_id")
-      .eq("video_id", videoId)
-      .limit(1);
+    return res.status(200).json({ success: true, content: transcript });
 
-    if (error) {
-      console.error("Supabase query error:", error.message);
-      res.status(417).json({ success: false, content: "Database query error" });
-    } else {
-      if (data && data.length > 0) {
-        // Video is in the database
-        res.status(200).json({ success: true, content: "Video already in DB" });
-        return;
-      } else {
-        // Video is not in the DB  -> Being processing
-        const success = await chunkTranscriptWithSentences(transcript);
-        console.log(success);
-        if (success) {
-          // await storeTranscriptEmbeddings(videoId, transcript);
-          res.status(200).json({ success: true, content: success });
-        } else {
-          res.status(417).json({ success: false, error: "Processing error" });
-        }
-      }
-    }
+    // // Check if embeddings are already stored for this video
+    // const { data, error } = await supabase
+    //   .from("transcript_chunks")
+    //   .select("video_id")
+    //   .eq("video_id", videoId)
+    //   .limit(1);
+
+    // if (error) {
+    //   console.error("Supabase query error:", error.message);
+    //   res.status(417).json({ success: false, content: "Database query error" });
+    // } else {
+    //   if (data && data.length > 0) {
+    //     // Video is in the database
+    //     res.status(200).json({ success: true, content: "Video already in DB" });
+    //     return;
+    //   } else {
+    //     // Video is not in the DB  -> Being processing
+    //     const success = await chunkTranscriptWithSentences(transcript);
+    //     console.log(success);
+    //     if (success) {
+    //       // await storeTranscriptEmbeddings(videoId, transcript);
+    //       res.status(200).json({ success: true, content: success });
+    //     } else {
+    //       res.status(417).json({ success: false, error: "Processing error" });
+    //     }
+    //   }
+    // }
   } catch (error) {
     console.error("Transcript error:", error.message);
     res
@@ -179,23 +182,25 @@ const chunkTranscriptWithSentences = async (transcriptArray) => {
   console.log(fullTranscript);
 
   try {
-    const formattedMessage = [{
-      role: "user",
-      content: "Please return me a summary of what you assert takes place in this youtube video. This is a video from Extessy, playing a game of APEX Legends:" + fullTranscript
-    }];
+    const formattedMessage = [
+      {
+        role: "user",
+        content:
+          "Please return me a summary of what you assert takes place in this youtube video. This is a video from Extessy, playing a game of APEX Legends:" +
+          fullTranscript,
+      },
+    ];
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       store: true,
       messages: formattedMessage,
     });
-    console.log(completion.choices[0].message.content)
+    console.log(completion.choices[0].message.content);
     return completion.choices[0].message.content;
   } catch (error) {
     console.error(error);
     return "Something went wrong...";
   }
-
-
 };
 
 // function chunkTranscriptWithSentences_old(transcriptItems) {

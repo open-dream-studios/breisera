@@ -8,10 +8,18 @@ import StudyTools from "./StudyTools/StudyTools";
 import { useVideo } from "@/contexts/videoContext";
 import { LuSquareArrowOutUpLeft } from "react-icons/lu";
 import { makeRequest } from "@/util/axios";
+import PrimaryTools from "./PrimaryTools/PrimaryTools";
 
 const Player = () => {
   const { currentUser } = useContext(AuthContext);
-  const { playerState, setPlayerState, windowWidth, currentVideo, setCurrentVideoTranscript } = useVideo();
+  const {
+    playerState,
+    setPlayerState,
+    windowWidth,
+    currentVideo,
+    setCurrentVideoTranscript,
+    setLoadingCurrentVideoTranscript
+  } = useVideo();
   const [dividerPercent, setDividerPercent] = useState(66);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -22,16 +30,18 @@ const Player = () => {
           const res = await makeRequest.post("/api/youtube/get-transcript", {
             videoId: currentVideo.id,
           });
-          const data = res.data;
-          console.log(data)
-          setCurrentVideoTranscript(data)
+          if (res.data.success) {
+            setCurrentVideoTranscript(res.data.content);
+            setLoadingCurrentVideoTranscript(false)
+          }
         } catch (error) {
-          setCurrentVideoTranscript(null)
+          setCurrentVideoTranscript(null);
           console.error("Failed to fetch videos:", error);
         }
       }
     };
 
+    setLoadingCurrentVideoTranscript(true)
     fetchTranscript();
   }, [currentVideo]);
 
@@ -90,7 +100,7 @@ const Player = () => {
         </div>
       )}
       <div
-        className="select-none flex flex-col"
+        className="select-none flex flex-col h-[100%] overflow-scroll"
         style={{
           width:
             playerState === "sm" || (windowWidth !== null && windowWidth < 640)
@@ -100,6 +110,7 @@ const Player = () => {
       >
         <YouTubePlayer />
         <YoutubePlayerData />
+        <PrimaryTools />
       </div>
 
       <div
