@@ -1,6 +1,7 @@
 "use client";
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { vid } from "../../video_db";
+import { StudyToolTypes } from "@/screens/Player/StudyTools/StudyTools";
 export type YouTubePlayerVideo = {
   id: string;
   [key: string]: any;
@@ -40,15 +41,13 @@ type VideoContextType = {
   currentKeyConcepts: KeyConcepts;
   setCurrentKeyConcepts: (newKeyConcepts: KeyConcepts) => void;
   loadingCurrentKeyConcepts: boolean;
-  setLoadingCurrentKeyConcepts: (
-    newLoadingCurrentKeyConcepts: boolean
-  ) => void;
-   currentSummary: Summary;
+  setLoadingCurrentKeyConcepts: (newLoadingCurrentKeyConcepts: boolean) => void;
+  currentSummary: Summary;
   setCurrentSummary: (newSummary: Summary) => void;
   loadingCurrentSummary: boolean;
-  setLoadingCurrentSummary: (
-    newLoadingCurrentSummary: boolean
-  ) => void;
+  setLoadingCurrentSummary: (newLoadingCurrentSummary: boolean) => void;
+  currentStudyTool: StudyToolTypes;
+  setCurrentStudyTool: (newCurrentStudyTool: StudyToolTypes) => void;
 };
 
 export type VideoTranscriptBit = {
@@ -83,6 +82,10 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({
   const [exploreVideos, setExploreVideos] = useState<ExploreVideos>({
     recommended_1: [],
   });
+
+  const [currentStudyTool, setCurrentStudyTool] =
+    useState<StudyToolTypes>("Chat");
+
   const [currentVideoTranscript, setCurrentVideoTranscript] =
     useState<VideoTranscript>(null);
   const [loadingCurrentVideoTranscript, setLoadingCurrentVideoTranscript] =
@@ -92,8 +95,7 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({
   const [loadingCurrentKeyConcepts, setLoadingCurrentKeyConcepts] =
     useState<boolean>(true);
 
-  const [currentSummary, setCurrentSummary] =
-    useState<Summary>(null);
+  const [currentSummary, setCurrentSummary] = useState<Summary>(null);
   const [loadingCurrentSummary, setLoadingCurrentSummary] =
     useState<boolean>(true);
 
@@ -138,7 +140,9 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({
         currentSummary,
         setCurrentSummary,
         loadingCurrentSummary,
-        setLoadingCurrentSummary
+        setLoadingCurrentSummary,
+        currentStudyTool,
+        setCurrentStudyTool,
       }}
     >
       {children}

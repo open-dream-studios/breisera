@@ -43,9 +43,10 @@ const SummaryDisplay = () => {
         <>
           {[1, 2, 3, 4, 5].map((item: number, index: number) => {
             return (
-              <div className="flex flex-col gap-[9px]" key={index}>
-                <Skeleton className={`w-[30%] h-[25px] ${currentUser.theme === "dark" ? "brightness-25" : "brightness-[90%]"}`} />
-                <Skeleton className={`w-[100%] h-[80px] mb-[20px] ${currentUser.theme === "dark" ? "brightness-25" : "brightness-[90%]"}`} />
+              <div className="flex flex-col gap-[11px] mt-[2px]" key={index}>
+                <Skeleton className={`w-[40%] h-[30px] ${currentUser.theme === "dark" ? "brightness-25" : "brightness-[90%]"}`} />
+                <Skeleton className={`w-[80%] h-[30px] ${currentUser.theme === "dark" ? "brightness-25" : "brightness-[90%]"}`} />
+                <Skeleton className={`w-[100%] h-[100px] mb-[35px] ${currentUser.theme === "dark" ? "brightness-25" : "brightness-[90%]"}`} />
               </div>
             );
           })}

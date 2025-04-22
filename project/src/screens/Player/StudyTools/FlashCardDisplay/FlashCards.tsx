@@ -109,7 +109,7 @@ const FlashCards = () => {
         </motion.div>
       </motion.div>
 
-      <div className="mt-8 flex gap-8">
+      <div className="mt-8 flex gap-8 mb-[50px]">
         <button
           onClick={goBack}
           style={{

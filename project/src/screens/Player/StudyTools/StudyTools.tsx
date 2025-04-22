@@ -4,15 +4,17 @@ import { appTheme } from "../../../util/appTheme";
 import { AuthContext } from "../../../contexts/authContext";
 import React, { useState } from "react";
 import GPT from "@/components/GPT/GPT";
-import FlashCardDisplay from "@/components/StudyTools/FlashCardDisplay/FlashCardDisplay";
-import NotesDisplay from "@/components/StudyTools/NotesDisplay/NotesDisplay";
+import FlashCardDisplay from "./FlashCardDisplay/FlashCardDisplay";
+import NotesDisplay from "./NotesDisplay/NotesDisplay";
+import { useVideo } from "@/contexts/videoContext";
+
 export type StudyToolTypes = "Chat" | "Notes" | "Flash Cards";
 
 const StudyTools = () => {
   const { currentUser } = useContext(AuthContext);
-  const [currentStudyTool, setCurrentStudyTool] =
-    useState<StudyToolTypes>("Chat");
+  const { currentStudyTool, setCurrentStudyTool} = useVideo()
   const studyTools: StudyToolTypes[] = ["Chat", "Notes", "Flash Cards"];
+    
 
   const handleStudyToolClick = (tool: StudyToolTypes) => {
     setCurrentStudyTool(tool);
@@ -83,7 +85,7 @@ const StudyTools = () => {
           className={`w-[100%] h-[100%] ${
             currentStudyTool !== "Flash Cards" && "hidden"
           }`}
-        >
+        > 
           <FlashCardDisplay />
         </div>
       </div>
