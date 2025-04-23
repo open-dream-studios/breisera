@@ -27,6 +27,12 @@ const NotesList = ({
   const { currentUser } = useContext(AuthContext);
   const { currentNote, setCurrentNote, notesData } = useVideo();
 
+  const stripHtml = (html: string) => {
+    const div = document.createElement("div");
+    div.innerHTML = html;
+    return div.innerText;
+  };
+
   if (!currentUser) return <></>;
 
   return (
@@ -94,7 +100,7 @@ const NotesList = ({
                   >
                     {note.content === "<br>" || note.content.trim() === ""
                       ? "Blank Note"
-                      : note.content}
+                      : stripHtml(note.content)}
                   </div>
                   <LiaTrashAltSolid
                     onClick={() => handleDeleteNote(note.note_id)}
