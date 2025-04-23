@@ -134,13 +134,15 @@ const NotesDisplay = () => {
   }, [currentNote]);
 
   const handleNewNoteClick = async () => {
-    setNotesOpen(false);
     cancelTimer();
     await writeNote();
     setCurrentNote({ ...currentNote, note_id: null, title: "", content: "" });
-    if (editorRef.current) {
-      editorRef.current.focus();
-    }
+    setNotesOpen(false);
+    setTimeout(() => {
+      if (editorRef.current) {
+        editorRef.current.focus();
+      }
+    }, 100);
   };
 
   const editorRef = useRef<HTMLDivElement>(null);
