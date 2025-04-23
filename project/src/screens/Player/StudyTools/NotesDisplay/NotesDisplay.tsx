@@ -9,6 +9,107 @@ import axios from "axios";
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { FaPlus } from "react-icons/fa6";
 import { FaChevronDown } from "react-icons/fa6";
+import { LiaTrashAltSolid } from "react-icons/lia";
+
+type NotesListProps = {
+  notesOpen: boolean;
+  setNotesOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  handleDeleteNote: (note_id: string) => void;
+  smallScreen: boolean;
+};
+
+const NotesList = ({
+  notesOpen,
+  setNotesOpen,
+  handleDeleteNote,
+  smallScreen,
+}: NotesListProps) => {
+  const { currentUser } = useContext(AuthContext);
+  const { currentNote, setCurrentNote, notesData } = useVideo();
+
+  if (!currentUser) return <></>;
+
+  return (
+    <div
+      style={{
+        backgroundColor: appTheme[currentUser.theme].background_2,
+        color: appTheme[currentUser.theme].text_3,
+      }}
+      className={`${
+        smallScreen
+          ? !notesOpen
+            ? "hidden"
+            : "flex sm:hidden"
+          : "flex mt-[5px]"
+      } z-[502] relative w-[calc(100%+10px)] pr-[10px] h-[100%] flex-col overflow-scroll`}
+    >
+      <div
+        onClick={() => {
+          if (!smallScreen && notesOpen) {
+            setNotesOpen(false);
+          }
+        }}
+        className={`${
+          !smallScreen && notesOpen && "cursor-pointer dim hover:brightness-75"
+        } font-[600] text-[20px] leading-[20px] mb-[8px] flex flex-row justify-between`}
+        style={{
+          color: appTheme[currentUser.theme].text_1,
+        }}
+      >
+        {smallScreen ? "Saved Notes" : "Notes"}
+        <FaChevronDown
+          style={{ color: appTheme[currentUser.theme].text_2 }}
+          className={`w-[22px] h-[22px] transition-all duration-0.3 ease-in-out ${
+            notesOpen && "rotate-180"
+          }`}
+        />
+      </div>
+      {notesOpen && (
+        <div
+          className="flex flex-col mb-[20px]"
+          style={{ color: appTheme[currentUser.theme].text_3 }}
+        >
+          {notesData.map((note: any, index: number) => {
+            return (
+              <div className="" key={index}>
+                <div
+                  className="w-[100%] h-[1px] my-[10px] rounded-[2px] opacity-75"
+                  style={{
+                    backgroundColor: appTheme[currentUser.theme].text_3,
+                  }}
+                />
+                <div className="w-[100%] flex flex-row justify-between">
+                  <div
+                    onClick={() => {
+                      setNotesOpen(false);
+                      setCurrentNote({
+                        ...currentNote,
+                        title: note.title,
+                        content: note.content,
+                        note_id: note.note_id,
+                        video_id: note.video_id,
+                      });
+                    }}
+                    className="cursor-pointer dim hover:brightness-75 truncate w-[calc(100%-40px)] font-[600] text-[15px]"
+                  >
+                    {note.content === "<br>" || note.content.trim() === ""
+                      ? "Blank Note"
+                      : note.content}
+                  </div>
+                  <LiaTrashAltSolid
+                    onClick={() => handleDeleteNote(note.note_id)}
+                    className="w-[25px] h-[25px] mr-[5px] cursor-pointer dim hover:brightness-75"
+                    style={{}}
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const NotesDisplay = () => {
   const { currentUser } = useContext(AuthContext);
@@ -99,7 +200,21 @@ const NotesDisplay = () => {
 
   const handleOpenNotes = async () => {
     refetchNotesData();
-    setNotesOpen((prev) => !prev);
+    if (!notesOpen) {
+      setNotesOpen(true);
+    }
+  };
+
+  const handleDeleteNote = async (note_id: string) => {
+    try {
+      const res = await makeRequest.post("/api/users/delete-note", {
+        user_id: currentUser?.user_id,
+        note_id: note_id,
+      });
+      refetchNotesData();
+    } catch (error) {
+      console.error("Failed to delete note:", error);
+    }
   };
 
   if (!currentUser) return;
@@ -115,59 +230,12 @@ const NotesDisplay = () => {
         } rounded-[5px] px-[15px] pt-[8px] relative`}
         onClick={handleOpenNotes}
       >
-        <div
-          className="font-[600] text-[20px]"
-          style={{
-            color: appTheme[currentUser.theme].text_1,
-          }}
-        >
-          Notes
-        </div>
-        <div className="absolute right-[16px] top-[12px]">
-          <FaChevronDown
-            style={{ color: appTheme[currentUser.theme].text_2 }}
-            className={`w-[22px] h-[22px] transition-all duration-0.3 ease-in-out ${
-              notesOpen && "rotate-180"
-            }`}
-          />
-        </div>
-        {notesOpen && (
-          <div
-            className="flex flex-col"
-            style={{ color: appTheme[currentUser.theme].text_3 }}
-          >
-            {notesData.map((note: any, index: number) => {
-              return (
-                <div
-                  className=""
-                  key={index}
-                  onClick={() => {
-                    setNotesOpen(false);
-                    setCurrentNote({
-                      ...currentNote,
-                      title: note.title,
-                      content: note.content,
-                      note_id: note.note_id,
-                      video_id: note.video_id,
-                    });
-                  }}
-                >
-                  <div
-                    className="w-[100%] h-[1px] my-[10px] rounded-[2px] opacity-75"
-                    style={{
-                      backgroundColor: appTheme[currentUser.theme].text_3,
-                    }}
-                  />
-                  <div className="cursor-pointer dim hover:brightness-75 truncate w-[100%] font-[600] text-[15px]">
-                    {note.content === "<br>" || note.content.trim() === ""
-                      ? "Blank Note"
-                      : note.content}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
+        <NotesList
+          notesOpen={notesOpen}
+          setNotesOpen={setNotesOpen}
+          handleDeleteNote={handleDeleteNote}
+          smallScreen={false}
+        />
       </div>
 
       <div
@@ -178,7 +246,7 @@ const NotesDisplay = () => {
         className="w-[100%] h-[100%] pt-[15px] px-[17px] rounded-[5px] relative"
       >
         <div
-          onClick={handleOpenNotes}
+          onClick={() => setNotesOpen((prev) => !prev)}
           style={{
             backgroundColor: appTheme[currentUser.theme].background_1,
             color: appTheme[currentUser.theme].text_1,
@@ -222,61 +290,12 @@ const NotesDisplay = () => {
           }}
         />
 
-        <div
-          style={{
-            backgroundColor: appTheme[currentUser.theme].background_2,
-            color: appTheme[currentUser.theme].text_3,
-          }}
-          className={`${
-            !notesOpen ? "hidden" : "flex sm:hidden"
-          } z-[502] relative w-[100%] h-[100%] flex-col overflow-scroll`}
-        >
-          <div
-            className="font-[600] text-[20px] leading-[20px] mb-[8px]"
-            style={{
-              color: appTheme[currentUser.theme].text_1,
-            }}
-          >
-            Saved Notes
-          </div>
-          {notesOpen && (
-            <div
-              className="flex flex-col mb-[20px]"
-              style={{ color: appTheme[currentUser.theme].text_3 }}
-            >
-              {notesData.map((note: any, index: number) => {
-                return (
-                  <div
-                    className=""
-                    key={index}
-                    onClick={() => {
-                      setNotesOpen(false);
-                      setCurrentNote({
-                        ...currentNote,
-                        title: note.title,
-                        content: note.content,
-                        note_id: note.note_id,
-                        video_id: note.video_id,
-                      });
-                    }}
-                  >
-                    <div
-                      className="w-[100%] h-[1px] my-[10px] rounded-[2px] opacity-75"
-                      style={{
-                        backgroundColor: appTheme[currentUser.theme].text_3,
-                      }}
-                    />
-                    <div className="cursor-pointer dim hover:brightness-75 truncate w-[100%] font-[600] text-[15px]">
-                      {note.content === "<br>" || note.content.trim() === ""
-                        ? "Blank Note"
-                        : note.content}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+        <NotesList
+          notesOpen={notesOpen}
+          setNotesOpen={setNotesOpen}
+          handleDeleteNote={handleDeleteNote}
+          smallScreen={true}
+        />
       </div>
     </div>
   );

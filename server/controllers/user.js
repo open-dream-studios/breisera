@@ -235,6 +235,24 @@ export const writeNote = async (req, res) => {
   const { user_id, note_id, title, content, video_id } = req.body;
 
   try {
+    // Make sure the user doesn't have more than 100 notes already
+    const userNotes = await new Promise((resolve, reject) => {
+      db.query(
+        "SELECT * FROM notes WHERE user_id = ?",
+        [user_id],
+        (err, data) => {
+          if (err) {
+            console.error("DB Query Error: Could not fetch existing note", err);
+            return reject(err);
+          }
+          resolve(data.length);
+        }
+      );
+    });
+    if (userNotes && userNotes >= 100) {
+      return res.status(417).json({ message: "User notes limit exceeded" });
+    }
+
     // Search to see if the note already exists
     const existingNote = await new Promise((resolve, reject) => {
       db.query(
@@ -327,5 +345,27 @@ export const getNotes = async (req, res) => {
   } catch (error) {
     console.error("Error fetching notes:", error);
     return res.status(500).json({ success: false, notes: [] });
+  }
+};
+
+export const deleteNote = async (req, res) => {
+  try {
+    const token = req.cookies.accessToken;
+    if (!token) return res.status(401).json({ error: 'Not authenticated' });
+    const { user_id, note_id } = req.body;
+    if (!note_id || !user_id) {
+      return res.status(400).json({ error: 'Note ID is required' });
+    }
+    const [result] = await db.promise().query(
+      'DELETE FROM notes WHERE user_id = ? AND note_id = ?',
+      [user_id, note_id]
+    );
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: 'Note not found or not authorized to delete' });
+    }
+    return res.status(200).json({ success: true });
+  } catch (error) {
+    console.error('Error deleting note:', error);
+    return res.status(500).json({ success: false, error: 'Server error' });
   }
 };

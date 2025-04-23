@@ -107,10 +107,10 @@ const Player = () => {
               ? "100%"
               : `${dividerPercent}%`,
         }}
-        className="relative h-[100%] max-h-[100%] overflow-scroll"
+        className="relative h-[100%] min-h-[100%] overflow-scroll"
       >
         <div
-          className="select-none flex flex-col w-[100%]"
+          className="select-none flex flex-col w-[100%] h-[100%]"
         >
           <YouTubePlayer />
           <YoutubePlayerData />

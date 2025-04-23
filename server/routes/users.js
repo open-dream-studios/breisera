@@ -8,7 +8,8 @@ import {
   getCurrentUserBilling,
   updateCurrentUser,
   writeNote,
-  getNotes
+  getNotes,
+  deleteNote
 } from "../controllers/user.js";
 
 const router = express.Router();
@@ -23,5 +24,6 @@ router.get("/current-billing", getCurrentUserBilling);
 router.put("/update-current", updateCurrentUser);
 router.post("/write-note", writeNote);
 router.post("/get-notes", getNotes);
+router.post("/delete-note", deleteNote);
 
 export default router;
