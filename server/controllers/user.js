@@ -31,7 +31,7 @@ import { products } from "../payments/stripe.js";
 //     return res.json(data2);
 //   });
 // };
-// 
+//
 // export const deleteUser = (req, res) => {
 //   const token = req.cookies.accessToken
 //   if (!token) return res.status(401).json("Not logged in!");
@@ -51,7 +51,7 @@ import { products } from "../payments/stripe.js";
 // };
 
 export const getCurrentUser = (req, res) => {
-  const token = req.cookies.accessToken
+  const token = req.cookies.accessToken;
   if (!token) return res.json(null);
 
   jwt.verify(token, "jwtSecretKey", (err, userInfo) => {
@@ -75,7 +75,7 @@ export const getCurrentUser = (req, res) => {
 };
 
 export const getCurrentUserSubscription = (req, res) => {
-  const token = req.cookies.accessToken
+  const token = req.cookies.accessToken;
   if (!token) return res.json(null);
 
   jwt.verify(token, "jwtSecretKey", async (err, userInfo) => {
@@ -141,7 +141,7 @@ export const getCurrentUserSubscription = (req, res) => {
 };
 
 export const getCurrentUserBilling = (req, res) => {
-  const token = req.cookies.accessToken
+  const token = req.cookies.accessToken;
   if (!token) return res.json(null);
 
   jwt.verify(token, "jwtSecretKey", async (err, userInfo) => {
@@ -150,7 +150,7 @@ export const getCurrentUserBilling = (req, res) => {
     try {
       const transactions = await new Promise((resolve, reject) => {
         db.query(
-           "SELECT `payment_mode`, `stripe_latest_payment_status`, `stripe_amount`, `stripe_created_at` FROM transactions WHERE user_id = ?",
+          "SELECT `payment_mode`, `stripe_latest_payment_status`, `stripe_amount`, `stripe_created_at` FROM transactions WHERE user_id = ?",
           [userInfo.id],
           (err, data) => {
             if (err) {
@@ -187,8 +187,10 @@ export const getCurrentUserBilling = (req, res) => {
         ...subscription_transactions,
       ];
       sorted_transactions.sort(
-        (a, b) => new Date(formatDateForMySQL(b.stripe_created_at)) - new Date(formatDateForMySQL(a.stripe_created_at))
-      )
+        (a, b) =>
+          new Date(formatDateForMySQL(b.stripe_created_at)) -
+          new Date(formatDateForMySQL(a.stripe_created_at))
+      );
       return res.status(200).json(sorted_transactions);
     } catch (error) {
       return res.status(500).json(null);
@@ -197,7 +199,7 @@ export const getCurrentUserBilling = (req, res) => {
 };
 
 export const updateCurrentUser = (req, res) => {
-  const token = req.cookies.accessToken
+  const token = req.cookies.accessToken;
   if (!token) return res.status(401).json("Not authenticated!");
 
   jwt.verify(token, "jwtSecretKey", (err, userInfo) => {
@@ -225,4 +227,105 @@ export const updateCurrentUser = (req, res) => {
       return res.status(400).json("No changes made.");
     });
   });
+};
+
+export const writeNote = async (req, res) => {
+  const token = req.cookies.accessToken;
+  if (!token) return res.status(401).json("Not authenticated!");
+  const { user_id, note_id, title, content, video_id } = req.body;
+
+  try {
+    // Search to see if the note already exists
+    const existingNote = await new Promise((resolve, reject) => {
+      db.query(
+        "SELECT * FROM notes WHERE user_id = ? AND note_id = ?",
+        [user_id, note_id],
+        (err, data) => {
+          if (err) {
+            console.error("DB Query Error: Could not fetch existing note", err);
+            return reject(err);
+          }
+          resolve(data.length > 0 ? data[0].note_id : null);
+        }
+      );
+    });
+    let note = existingNote || null;
+
+    if (!note) {
+      // Create a new note
+      const success = await new Promise((resolve, reject) => {
+        db.query(
+          "INSERT INTO notes (`note_id`,`user_id`,`title`,`content`,`video_id`) VALUE (?)",
+          [[note_id, user_id, title, content, video_id]],
+          (err, data) => {
+            if (err) {
+              console.error(
+                "DB Mutation Error: Could not create new note",
+                err
+              );
+              return reject(err);
+            }
+            resolve(data);
+          }
+        );
+      });
+      if (success) {
+        return res.status(200).json({ message: "Note created" });
+      } else {
+        return res.status(417).json({ message: "Note creation failed" });
+      }
+    } else {
+      // Update new note
+      const success = await new Promise((resolve, reject) => {
+        db.query(
+          "UPDATE notes SET title = ?, content = ?, video_id = ? WHERE user_id = ? AND note_id = ?",
+          [title, content, video_id, user_id, note_id],
+          (err, data) => {
+            if (err) {
+              console.error("DB Mutation Error: Could not update note", err);
+              return reject(err);
+            }
+            resolve(data);
+          }
+        );
+      });
+      if (success) {
+        return res.status(200).json({ message: "Note updated" });
+      } else {
+        return res.status(417).json({ message: "Note update failed" });
+      }
+    }
+  } catch (error) {
+    return res.status(404).json(null);
+  }
+};
+
+export const getNotes = async (req, res) => {
+  const token = req.cookies.accessToken;
+  if (!token) return res.status(401).json("Not authenticated!");
+  const { user_id } = req.body;
+
+  try {
+    const notes = await new Promise((resolve, reject) => {
+      db.query(
+        "SELECT * FROM notes WHERE user_id = ?",
+        [user_id],
+        (err, data) => {
+          if (err) {
+            console.error("DB Query Error: Could not fetch notes", err);
+            return reject(err);
+          }
+          resolve(data);
+        }
+      );
+    });
+
+    return res.status(200).json({
+      success: true,
+      notes: notes.length > 0 ? notes : [],
+    });
+  } catch (error) {
+    console.error("Error fetching notes:", error);
+    return res.status(500).json({ success: false, notes: [] });
+  }
 };

@@ -1,3 +1,5 @@
+import crypto from "crypto"
+
 export const formatStripeDate = (date: any) => {
   return date
     ? new Date(date * 1000).toISOString().slice(0, 19).replace("T", " ")
@@ -34,3 +36,7 @@ export const validateEmail = (email: string) => {
 export const removeWhiteSpace = (input: string) => {
   return input.replace(/\s+/g, '')
 }
+
+export const generateUniqueId = () => {
+  return crypto.randomBytes(15).toString("hex");
+};

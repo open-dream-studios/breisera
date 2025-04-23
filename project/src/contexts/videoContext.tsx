@@ -2,6 +2,11 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { vid } from "../../video_db";
 import { StudyToolTypes } from "@/screens/Player/StudyTools/StudyTools";
+import { QueryObserverResult, useQuery, useQueryClient } from "@tanstack/react-query";
+import axios from "axios"
+import { AuthContext } from "./authContext";
+import { makeRequest } from "@/util/axios";
+
 export type YouTubePlayerVideo = {
   id: string;
   [key: string]: any;
@@ -18,6 +23,13 @@ export type ExploreVideos = {
   recommended_1: any[];
 };
 
+export type Note = {
+  note_id: string | null;
+  title: string;
+  content: string;
+  video_id: string | null;
+};
+
 type VideoContextType = {
   currentVideo: YouTubePlayerVideo | null;
   setCurrentVideo: (video: YouTubePlayerVideo) => void;
@@ -28,8 +40,8 @@ type VideoContextType = {
   playerState: PlayerStates;
   setPlayerState: (newState: PlayerStates) => void;
   windowWidth: number | null;
-  currentNote: string;
-  setCurrentNote: (newCurrentNote: string) => void;
+  currentNote: Note;
+  setCurrentNote: (newCurrentNote: Note) => void;
   exploreVideos: ExploreVideos;
   setExploreVideos: (newExploreVideos: ExploreVideos) => void;
   currentVideoTranscript: VideoTranscript;
@@ -48,6 +60,9 @@ type VideoContextType = {
   setLoadingCurrentSummary: (newLoadingCurrentSummary: boolean) => void;
   currentStudyTool: StudyToolTypes;
   setCurrentStudyTool: (newCurrentStudyTool: StudyToolTypes) => void;
+  notesData: any[],
+  isLoadingNotesData: boolean,
+  refetchNotesData: () => Promise<QueryObserverResult<any[], Error>>;
 };
 
 export type VideoTranscriptBit = {
@@ -71,6 +86,25 @@ const VideoContext = createContext<VideoContextType | undefined>(undefined);
 export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
+  const { currentUser } = useContext(AuthContext)
+  const {
+    data: notesData,
+    isLoading: isLoadingNotesData,
+    refetch: refetchNotesData,
+  } = useQuery<any>({
+    queryKey: ["notes", currentUser?.user_id],
+    queryFn: async () => {
+      const res = await makeRequest.post("/api/users/get-notes", {
+        user_id: currentUser?.user_id,
+      });
+      return res.data.notes;
+    },
+    enabled: !!currentUser?.user_id, 
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 10,
+    // refetchOnMount: true,
+  });
+
   const [currentVideo, setCurrentVideo] = useState<YouTubePlayerVideo | null>(
     vid
   );
@@ -78,7 +112,12 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({
   const [userMessage, setUserMessage] = useState<string>("");
   const [playerState, setPlayerState] = useState<PlayerStates>("hidden");
   const [windowWidth, setWindowWidth] = useState<number | null>(null);
-  const [currentNote, setCurrentNote] = useState<string>("");
+  const [currentNote, setCurrentNote] = useState<Note>({
+    note_id: null,
+    title: "",
+    content: "",
+    video_id: null
+  });
   const [exploreVideos, setExploreVideos] = useState<ExploreVideos>({
     recommended_1: [],
   });
@@ -143,6 +182,9 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({
         setLoadingCurrentSummary,
         currentStudyTool,
         setCurrentStudyTool,
+        notesData, 
+        isLoadingNotesData,
+        refetchNotesData
       }}
     >
       {children}

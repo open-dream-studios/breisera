@@ -78,7 +78,7 @@ const Player = () => {
   return (
     <div
       ref={containerRef}
-      className="relative flex flex-col sm:flex-row w-[100%] h-[100%] overflow-scroll"
+      className="relative flex flex-col sm:flex-row w-[100%] h-[100%] overflow-scroll min-h-[700px]"
       style={{ backgroundColor: appTheme[currentUser.theme].background_1 }}
     >
       {playerState === "sm" && (
@@ -101,53 +101,59 @@ const Player = () => {
         </div>
       )}
       <div
-        className="select-none flex flex-col md:h-[100%] min-h-[100%]"
         style={{
           width:
             playerState === "sm" || (windowWidth !== null && windowWidth < 640)
               ? "100%"
               : `${dividerPercent}%`,
         }}
+        className="relative h-[100%] max-h-[100%] overflow-scroll"
       >
-        <YouTubePlayer />
-        <YoutubePlayerData />
         <div
-          className="sm:hidden w-[calc(100%-24px)] ml-[12px] px-[4px] h-[37px] min-h-[37px] rounded-[6px] flex flex-row items-center justify-center"
-          style={{ background: appTheme[currentUser.theme].background_2 }}
+          className="select-none flex flex-col w-[100%]"
         >
-          {["Summary", "Study Tools"].map((tool: string, index: number) => {
-            return (
-              <div
-                key={index}
-                className="group flex flex-row w-[50%] h-[30px] relative"
-              >
+          <YouTubePlayer />
+          <YoutubePlayerData />
+          <div
+            className="sm:hidden w-[calc(100%-24px)] ml-[12px] px-[4px] h-[37px] min-h-[37px] rounded-[6px] flex flex-row items-center justify-center"
+            style={{ background: appTheme[currentUser.theme].background_2 }}
+          >
+            {["Summary", "Study Tools"].map((tool: string, index: number) => {
+              return (
                 <div
-                  style={{
-                    backgroundColor:
-                      (tool === "Summary" && showPrimaryTools) ||
-                      (tool === "Study Tools" && !showPrimaryTools)
-                        ? appTheme[currentUser.theme].background_1
-                        : appTheme[currentUser.theme].background_2,
-                  }}
-                  className={`cursor-pointer w-[100%] h-[100%] rounded-[5px] flex justify-center items-center text-[calc(10px+0.2vw)]`}
-                  onClick={() => {
-                    if (tool === "Summary") setShowPrimaryTools(true);
-                    if (tool === "Study Tools") setShowPrimaryTools(false);
-                  }}
+                  key={index}
+                  className="group flex flex-row w-[50%] h-[30px] relative"
                 >
-                  <p className="dim group-hover:brightness-75">{tool}</p>
+                  <div
+                    style={{
+                      backgroundColor:
+                        (tool === "Summary" && showPrimaryTools) ||
+                        (tool === "Study Tools" && !showPrimaryTools)
+                          ? appTheme[currentUser.theme].background_1
+                          : appTheme[currentUser.theme].background_2,
+                    }}
+                    className={`cursor-pointer w-[100%] h-[100%] rounded-[5px] flex justify-center items-center text-[calc(10px+0.2vw)]`}
+                    onClick={() => {
+                      if (tool === "Summary") setShowPrimaryTools(true);
+                      if (tool === "Study Tools") setShowPrimaryTools(false);
+                    }}
+                  >
+                    <p className="dim group-hover:brightness-75">{tool}</p>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
 
-        <div className={`${!showPrimaryTools && "hidden sm:flex"}`}>
-          <PrimaryTools />
-        </div>
+          <div className={`${!showPrimaryTools && "hidden sm:flex"}`}>
+            <PrimaryTools />
+          </div>
 
-        <div className={`${showPrimaryTools ? "hidden" : "sm:hidden"} h-[100%]`}>
-          <StudyTools />
+          <div
+            className={`${showPrimaryTools ? "hidden" : "sm:hidden"} h-[100%]`}
+          >
+            <StudyTools />
+          </div>
         </div>
       </div>
 
