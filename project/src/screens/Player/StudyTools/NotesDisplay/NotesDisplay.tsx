@@ -70,6 +70,7 @@ const NotesList = ({
           }`}
         />
       </div>
+      {notesOpen && notesData.length === 0 && <div className="mt-[5px]">You have no saved notes</div>}
       {notesOpen && (
         <div
           className="flex flex-col mb-[20px]"
@@ -219,6 +220,14 @@ const NotesDisplay = () => {
         user_id: currentUser?.user_id,
         note_id: note_id,
       });
+      if (note_id === currentNote.note_id) {
+        setCurrentNote({
+          ...currentNote,
+          note_id: null,
+          title: "",
+          content: "",
+        });
+      }
       refetchNotesData();
     } catch (error) {
       console.error("Failed to delete note:", error);

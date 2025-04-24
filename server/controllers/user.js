@@ -326,7 +326,7 @@ export const getNotes = async (req, res) => {
   try {
     const notes = await new Promise((resolve, reject) => {
       db.query(
-        "SELECT * FROM notes WHERE user_id = ?",
+        "SELECT * FROM notes WHERE user_id = ? ORDER BY updated_at DESC",
         [user_id],
         (err, data) => {
           if (err) {
