@@ -9,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 const FlashCards = () => {
   const { currentUser } = useContext(AuthContext);
-  const { currentFlashCards, setCurrentFlashCards } = useVideo();
+  const { currentFlashCards, loadingCurrentFlashCards } = useVideo();
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
@@ -53,12 +53,11 @@ const FlashCards = () => {
     );
   };
 
-  const [isLoading, setIsLoading] = useState(false);
-  if (!currentUser) return;
+  if (!currentUser || currentFlashCards.length === 0) return;
 
   return (
     <div className="h-[100%] pt-[20px] px-[20px]">
-      {isLoading ? (
+      {loadingCurrentFlashCards ? (
         <div className="w-[100%] flex flex-col items-center">
           <Skeleton
             className={`w-[100%] aspect-[2/1.5] mb-[18px] ${
@@ -90,26 +89,22 @@ const FlashCards = () => {
             style={{ transformStyle: "preserve-3d", cursor: "pointer" }}
           >
             <motion.div
-              className="absolute text-center w-full h-full rounded-2xl shadow-xl flex items-center justify-center text-2xl font-semibold p-6 select-text"
+              className="absolute break-words overflow-hidden text-center w-full h-full rounded-2xl shadow-xl flex items-center justify-center text-2xl font-semibold p-6 cursor-pointer"
               style={{
                 backfaceVisibility: "hidden",
                 rotateY: 0,
                 backgroundColor: appTheme[currentUser.theme].background_2,
-                userSelect: "text",
-                cursor: "pointer",
               }}
             >
               {card.question}
             </motion.div>
 
             <motion.div
-              className="absolute w-full h-full rounded-2xl shadow-xl flex items-center justify-center text-[20px] font-semibold p-6 select-text"
+              className="absolute overflow-hidden text-center w-full h-full rounded-2xl shadow-xl flex items-center justify-center text-[20px] font-semibold p-6 cursor-pointer"
               style={{
                 backfaceVisibility: "hidden",
                 rotateY: 180,
                 backgroundColor: appTheme[currentUser.theme].background_2_2,
-                userSelect: "text",
-                cursor: "pointer",
               }}
             >
               {card.answer}

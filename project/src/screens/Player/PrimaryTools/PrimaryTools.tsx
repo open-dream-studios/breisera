@@ -27,7 +27,7 @@ const PrimaryTools = () => {
   return (
     <div className="w-[100%] px-[10px] pt-[10px] pb-[12px] flex flex-col gap-[10px]">
       <div
-        className="px-[4px] h-[37px] rounded-[6px] flex flex-row items-center justify-center"
+        className="select-none px-[4px] h-[37px] rounded-[6px] flex flex-row items-center justify-center"
         style={{ background: appTheme[currentUser.theme].background_2 }}
       >
         {primaryTools.map((tool: PrimaryToolTypes, index: number) => {

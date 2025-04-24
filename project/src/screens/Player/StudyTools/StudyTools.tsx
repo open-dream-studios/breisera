@@ -25,7 +25,7 @@ const StudyTools = () => {
   return (
     <div className="w-[100%] h-[100%] px-[10px] pt-[8px] pb-[12px] flex flex-col gap-[10px]">
       <div
-        className="px-[4px] h-[37px] rounded-[6px] flex flex-row items-center justify-center"
+        className="select-none px-[4px] h-[37px] rounded-[6px] flex flex-row items-center justify-center"
         style={{ background: appTheme[currentUser.theme].background_2 }}
       >
         {studyTools.map((tool: StudyToolTypes, index: number) => {

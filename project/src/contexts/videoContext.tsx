@@ -69,6 +69,8 @@ type VideoContextType = {
   refetchNotesData: () => Promise<QueryObserverResult<any[], Error>>;
   currentFlashCards: FlashCard[];
   setCurrentFlashCards: (newCurrentFlashCards: FlashCard[]) => void;
+  loadingCurrentFlashCards: boolean;
+  setLoadingCurrentFlashCards: (newLoadingCurrentFlashCards: boolean) => void;
 };
 
 export type VideoTranscriptBit = {
@@ -149,14 +151,9 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({
   const [loadingCurrentSummary, setLoadingCurrentSummary] =
     useState<boolean>(true);
 
-  const [currentFlashCards, setCurrentFlashCards] = useState<FlashCard[]>([
-    { question: "What is the capital of France?", answer: "Paris" },
-    { question: "What is 2 + 2?", answer: "4" },
-    {
-      question: "What is minimum the boiling point of water?",
-      answer: "100°C",
-    },
-  ]);
+  const [currentFlashCards, setCurrentFlashCards] = useState<FlashCard[]>([]);
+  const [loadingCurrentFlashCards, setLoadingCurrentFlashCards] =
+    useState<boolean>(false);
 
   useEffect(() => {
     setMessages([]);
@@ -207,6 +204,8 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({
         refetchNotesData,
         currentFlashCards,
         setCurrentFlashCards,
+        loadingCurrentFlashCards,
+        setLoadingCurrentFlashCards,
       }}
     >
       {children}

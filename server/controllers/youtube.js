@@ -146,6 +146,8 @@ export const getYoutubeTranscript = async (req, res) => {
   }
 };
 
+
+// TO DO: SEND VIDEO LENGTH
 export const geminiQuery = async (req, res) => {
   const messages = req.body.messages;
   const conversation = messages.slice(0, -1)
@@ -185,6 +187,81 @@ export const geminiQuery = async (req, res) => {
           Here is the user's question, please provide an answer:
           QUESTION: ${question}
           ANSWER:`,
+        },
+      ],
+    },
+  ];
+
+  try {
+    const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent`;
+    const geminiResponse = await fetch(
+      `${GEMINI_API_URL}?key=${process.env.GOOGLE_API_KEY}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: prompt,
+        }),
+      }
+    );
+
+    const data = await geminiResponse.json();
+    const content =
+      data?.candidates?.[0]?.content?.parts?.[0]?.text || "No answer.";
+    res.status(200).json({ content });
+  } catch (err) {
+    console.error(err.response?.data || err.message);
+    res.status(500).json({ error: "Gemini API request failed" });
+  }
+};
+
+// TO DO: SEND VIDEO LENGTH
+export const geminiFlashcardsQuery = async (req, res) => {
+  const number = req.body.number
+  const topic = req.body.topic;
+  const transcript = req.body.transcript;
+  const geminiModel = "gemini-1.5-flash";
+
+  const formattedTranscript = transcript
+    .map((item) => `${formatTimeStamp(item.offset) + " " + item.text}`)
+    .join("\n");
+
+  const prompt = [
+    {
+      role: "user",
+      parts: [
+        {
+          text: `You are a helpful assistant. You must create a set of flash cards based on a YouTube video.
+              You must return an array of objects, where each object contains a question answer pair and a timestamp. Here is an example of the format to return:
+              [
+                {
+                  "question": "What is the primary function of the mitochondria?",
+                  "answer": "To generate ATP through cellular respiration",
+                  "timestamp": "00:03:45"
+                },
+                {
+                  "question": "Why is photosynthesis important for life on Earth?",
+                  "answer": "It produces oxygen and is the foundation of the food chain",
+                  "timestamp": "00:05:12"
+                }
+              ]
+
+              The timestamps you include, referencing the transcript, must be in the exact format HH:MM:SS
+              The video is approximately ${21} minutes and ${34} seconds long. 
+              Do not reference timestamps beyond this range.
+              Always use the format HH:MM:SS for timestamps. Example: 4 minutes = 00:04:00
+
+              Here is the full transcript, with timestamps listed at the beginning of each line given in the format HH:MM:SS.
+
+              \n
+              TRANSCRIPT:
+              ${formattedTranscript}`,
+        },
+        {
+          text: `
+          Create these flashcards based on the video, focusing on this topic: ${topic}
+          Keep the questions and answers concise and ask intelligent questions.
+          Return an array of ${number} flashcard objects:`,
         },
       ],
     },
