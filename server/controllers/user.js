@@ -249,9 +249,6 @@ export const writeNote = async (req, res) => {
         }
       );
     });
-    if (userNotes && userNotes >= 100) {
-      return res.status(417).json({ message: "User notes limit exceeded" });
-    }
 
     // Search to see if the note already exists
     const existingNote = await new Promise((resolve, reject) => {
@@ -271,6 +268,9 @@ export const writeNote = async (req, res) => {
 
     if (!note) {
       // Create a new note
+      if (userNotes && userNotes >= 100) {
+        return res.status(417).json({ message: "User notes limit exceeded" });
+      }
       const success = await new Promise((resolve, reject) => {
         db.query(
           "INSERT INTO notes (`note_id`,`user_id`,`title`,`content`,`video_id`) VALUE (?)",
@@ -351,21 +351,28 @@ export const getNotes = async (req, res) => {
 export const deleteNote = async (req, res) => {
   try {
     const token = req.cookies.accessToken;
-    if (!token) return res.status(401).json({ error: 'Not authenticated' });
+    if (!token) return res.status(401).json({ error: "Not authenticated" });
     const { user_id, note_id } = req.body;
     if (!note_id || !user_id) {
-      return res.status(400).json({ error: 'Note ID is required' });
+      return res.status(400).json({ error: "Note ID is required" });
     }
-    const [result] = await db.promise().query(
-      'DELETE FROM notes WHERE user_id = ? AND note_id = ?',
-      [user_id, note_id]
-    );
+    const [result] = await db
+      .promise()
+      .query("DELETE FROM notes WHERE user_id = ? AND note_id = ?", [
+        user_id,
+        note_id,
+      ]);
     if (result.affectedRows === 0) {
-      return res.status(404).json({ success: false, message: 'Note not found or not authorized to delete' });
+      return res
+        .status(404)
+        .json({
+          success: false,
+          message: "Note not found or not authorized to delete",
+        });
     }
     return res.status(200).json({ success: true });
   } catch (error) {
-    console.error('Error deleting note:', error);
-    return res.status(500).json({ success: false, error: 'Server error' });
+    console.error("Error deleting note:", error);
+    return res.status(500).json({ success: false, error: "Server error" });
   }
 };

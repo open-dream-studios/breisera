@@ -59,10 +59,6 @@ const GPT = () => {
     if (userMessage.trim() === "" || isLoading) return;
     const newUserMessage = userMessage;
     setUserMessage("");
-    setMessages((prevMessages) => [
-      ...prevMessages,
-      { text: newUserMessage, isBot: false },
-    ]);
     setTimeout(() => {
       if (gptMessageDisplay.current) {
         gptMessageDisplay.current.scrollTop =
@@ -78,10 +74,34 @@ const GPT = () => {
     setIsLoading(true);
 
     try {
-      const botMessage = await getMessage([
-        ...messages,
+      const oldMessages = messages;
+      setMessages((prevMessages) => [
+        ...prevMessages,
         { text: newUserMessage, isBot: false },
       ]);
+      
+      function truncateText(text: string, text_limit: number): string {
+        const words = text.split(/\s+/);
+        if (words.length <= text_limit) return text;
+        return (
+          words.slice(0, text_limit).join(" ") +
+          "... [max text limit reached, message hidden]"
+        );
+      }
+
+      const MAX_MESSAGES = 10;
+      const limitedMessages = oldMessages
+        .slice(-MAX_MESSAGES) 
+        .map((msg) => ({
+          ...msg,
+          text: truncateText(msg.text, 100),
+        }));
+
+      const botMessage = await getMessage([
+        ...limitedMessages,
+        { text: truncateText(newUserMessage, 1000), isBot: false },
+      ]);
+
       setMessages((prevMessages) => [
         ...prevMessages,
         { text: botMessage, isBot: true },
@@ -112,7 +132,6 @@ const GPT = () => {
           transcript: currentVideoTranscript,
         }
       );
-      console.log(res.data.content);
       if (res.status === 200) {
         const geminiResponse = res.data.content;
         return geminiResponse;

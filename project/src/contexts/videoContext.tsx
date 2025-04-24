@@ -81,13 +81,8 @@ export type VideoTranscriptBit = {
 };
 export type VideoTranscript = null | VideoTranscriptBit[];
 
-export type KeyConcept = {
-  key: string;
-  concept: string;
-};
-export type KeyConcepts = null | KeyConcept[];
-
 export type Summary = null | string;
+export type KeyConcepts = null | string;
 
 export type FlashCard = {
   question: string;

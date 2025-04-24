@@ -17,8 +17,13 @@ const Player = () => {
     setPlayerState,
     windowWidth,
     currentVideo,
+    currentVideoTranscript,
     setCurrentVideoTranscript,
     setLoadingCurrentVideoTranscript,
+    setCurrentKeyConcepts,
+    setLoadingCurrentKeyConcepts,
+    setLoadingCurrentSummary,
+    setCurrentSummary,
   } = useVideo();
   const [dividerPercent, setDividerPercent] = useState(66);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -26,7 +31,7 @@ const Player = () => {
 
   useEffect(() => {
     const fetchTranscript = async () => {
-      if (currentVideo) {
+      if (currentUser && currentVideo) {
         try {
           const res = await makeRequest.post("/api/youtube/get-transcript", {
             videoId: currentVideo.id,
@@ -46,6 +51,47 @@ const Player = () => {
     setLoadingCurrentVideoTranscript(true);
     fetchTranscript();
   }, [currentVideo]);
+
+  useEffect(() => {
+    const generateSummary = async () => {
+      try {
+        const res = await makeRequest.post("/api/youtube/gemini-summary", {
+          transcript: currentVideoTranscript,
+        });
+        if (res.status === 200) {
+          setCurrentSummary(res.data.content);
+        }
+      } catch (error) {
+        setCurrentSummary(null);
+        console.error("Failed to fetch videos:", error);
+      } finally {
+        setLoadingCurrentSummary(false);
+      }
+    };
+
+    const generateKeyConcepts = async () => {
+      try {
+        const res = await makeRequest.post("/api/youtube/gemini-key-concepts", {
+          transcript: currentVideoTranscript,
+        });
+        if (res.status === 200) {
+          setCurrentKeyConcepts(res.data.content);
+        }
+      } catch (error) {
+        setCurrentKeyConcepts(null);
+        console.error("Failed to fetch key concepts:", error);
+      } finally {
+        setLoadingCurrentKeyConcepts(false);
+      }
+    };
+
+    if (currentUser && currentVideoTranscript) {
+      setLoadingCurrentSummary(true);
+      setLoadingCurrentKeyConcepts(true);
+      generateSummary();
+      generateKeyConcepts();
+    }
+  }, [currentVideoTranscript]);
 
   const handleMouseMove = (e: MouseEvent) => {
     if (containerRef.current) {

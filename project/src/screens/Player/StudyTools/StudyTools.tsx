@@ -14,7 +14,6 @@ const StudyTools = () => {
   const { currentUser } = useContext(AuthContext);
   const { currentStudyTool, setCurrentStudyTool} = useVideo()
   const studyTools: StudyToolTypes[] = ["Chat", "Notes", "Flash Cards"];
-    
 
   const handleStudyToolClick = (tool: StudyToolTypes) => {
     setCurrentStudyTool(tool);
