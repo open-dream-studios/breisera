@@ -1,6 +1,7 @@
 import { AuthContext } from "@/contexts/authContext";
 import { useVideo } from "@/contexts/videoContext";
 import { appTheme, appTextSizes } from "@/util/appTheme";
+import { openWindow } from "@/util/functions/AppFunctions";
 import { formatSubs } from "@/util/functions/YouTubeData";
 import React, { useContext } from "react";
 
@@ -16,10 +17,7 @@ const YoutubePlayerData = () => {
       </div>
       <div
         onClick={() => {
-          window.open(
-            `https://www.youtube.com/channel/${currentVideo.snippet.channelId}`,
-            "_blank"
-          );
+          openWindow(`https://www.youtube.com/channel/${currentVideo.snippet.channelId}`)
         }}
         style={{ backgroundColor: appTheme[currentUser.theme].background_2 }}
         className="cursor-pointer dim hover:brightness-75 w-fit py-[8px] pl-[10px] pr-[15px] rounded-[5px] mt-[10px] flex flex-row gap-[10px]"

@@ -2,8 +2,12 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { vid } from "../../video_db";
 import { StudyToolTypes } from "@/screens/Player/StudyTools/StudyTools";
-import { QueryObserverResult, useQuery, useQueryClient } from "@tanstack/react-query";
-import axios from "axios"
+import {
+  QueryObserverResult,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
+import axios from "axios";
 import { AuthContext } from "./authContext";
 import { makeRequest } from "@/util/axios";
 
@@ -60,9 +64,11 @@ type VideoContextType = {
   setLoadingCurrentSummary: (newLoadingCurrentSummary: boolean) => void;
   currentStudyTool: StudyToolTypes;
   setCurrentStudyTool: (newCurrentStudyTool: StudyToolTypes) => void;
-  notesData: any[],
-  isLoadingNotesData: boolean,
+  notesData: any[];
+  isLoadingNotesData: boolean;
   refetchNotesData: () => Promise<QueryObserverResult<any[], Error>>;
+  currentFlashCards: FlashCard[];
+  setCurrentFlashCards: (newCurrentFlashCards: FlashCard[]) => void;
 };
 
 export type VideoTranscriptBit = {
@@ -81,12 +87,17 @@ export type KeyConcepts = null | KeyConcept[];
 
 export type Summary = null | string;
 
+export type FlashCard = {
+  question: string;
+  answer: string;
+};
+
 const VideoContext = createContext<VideoContextType | undefined>(undefined);
 
 export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const { currentUser } = useContext(AuthContext)
+  const { currentUser } = useContext(AuthContext);
   const {
     data: notesData,
     isLoading: isLoadingNotesData,
@@ -99,7 +110,7 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({
       });
       return res.data.notes;
     },
-    enabled: !!currentUser?.user_id, 
+    enabled: !!currentUser?.user_id,
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 10,
     // refetchOnMount: true,
@@ -116,7 +127,7 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({
     note_id: null,
     title: "",
     content: "",
-    video_id: null
+    video_id: null,
   });
   const [exploreVideos, setExploreVideos] = useState<ExploreVideos>({
     recommended_1: [],
@@ -137,6 +148,15 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({
   const [currentSummary, setCurrentSummary] = useState<Summary>(null);
   const [loadingCurrentSummary, setLoadingCurrentSummary] =
     useState<boolean>(true);
+
+  const [currentFlashCards, setCurrentFlashCards] = useState<FlashCard[]>([
+    { question: "What is the capital of France?", answer: "Paris" },
+    { question: "What is 2 + 2?", answer: "4" },
+    {
+      question: "What is minimum the boiling point of water?",
+      answer: "100°C",
+    },
+  ]);
 
   useEffect(() => {
     setMessages([]);
@@ -182,9 +202,11 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({
         setLoadingCurrentSummary,
         currentStudyTool,
         setCurrentStudyTool,
-        notesData, 
+        notesData,
         isLoadingNotesData,
-        refetchNotesData
+        refetchNotesData,
+        currentFlashCards,
+        setCurrentFlashCards,
       }}
     >
       {children}

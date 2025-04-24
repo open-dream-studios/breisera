@@ -10,6 +10,8 @@ import { v4 as uuidv4 } from "uuid";
 import { createClient } from "@supabase/supabase-js";
 import he from "he";
 import { usePython } from "../functions/python.js";
+import { formatTimeStamp } from "../functions/data.js";
+import fetch from "node-fetch";
 dotenv.config();
 
 const openai = new OpenAI({
@@ -115,7 +117,6 @@ export const getYoutubeTranscript = async (req, res) => {
   try {
     let transcript = await YoutubeTranscript.fetchTranscript(videoId);
 
-    // Clean the transcript
     function cleanTranscript(text) {
       let cleanedText = he.decode(he.decode(text));
       // cleanedText = cleanedText
@@ -123,7 +124,6 @@ export const getYoutubeTranscript = async (req, res) => {
       // .replace(/\s+/g, ' ')                            // normalize whitespace
       // .replace(/(oh|dude|bro|nah|yeah|well)[,.]*/gi, '$1.')  // add breaks after common interjections
       // .replace(/([!?])\s*/g, '$1 ')
-      // preserve ! and ?
       // .replace(/([a-z])([A-Z])/g, '$1. $2')
 
       // cleanedText = cleanedText.replace(/\[Music\]/gi, "");
@@ -137,40 +137,108 @@ export const getYoutubeTranscript = async (req, res) => {
       text: cleanTranscript(item.text),
     }));
 
-    return res.status(200).json({ success: true, content: transcript });
-
-    // // Check if embeddings are already stored for this video
-    // const { data, error } = await supabase
-    //   .from("transcript_chunks")
-    //   .select("video_id")
-    //   .eq("video_id", videoId)
-    //   .limit(1);
-
-    // if (error) {
-    //   console.error("Supabase query error:", error.message);
-    //   res.status(417).json({ success: false, content: "Database query error" });
-    // } else {
-    //   if (data && data.length > 0) {
-    //     // Video is in the database
-    //     res.status(200).json({ success: true, content: "Video already in DB" });
-    //     return;
-    //   } else {
-    //     // Video is not in the DB  -> Being processing
-    //     const success = await chunkTranscriptWithSentences(transcript);
-    //     console.log(success);
-    //     if (success) {
-    //       // await storeTranscriptEmbeddings(videoId, transcript);
-    //       res.status(200).json({ success: true, content: success });
-    //     } else {
-    //       res.status(417).json({ success: false, error: "Processing error" });
-    //     }
-    //   }
-    // }
+    return res.status(200).json({ content: transcript });
   } catch (error) {
-    console.error("Transcript error:", error.message);
+    console.error("Error:", error.message);
     res
       .status(404)
       .json({ success: false, content: "Error getting transcript" });
+  }
+};
+
+export const geminiQuery = async (req, res) => {
+  const messages = req.body.messages;
+  const conversation = messages.slice(0, -1)
+  .map((msg) => `${msg.isBot ? "Bot" : "User"}: ${msg.text}`)
+  .join("\n");
+  const question = messages[messages.length - 1].text;
+  const transcript = req.body.transcript;
+  const geminiModel = "gemini-1.5-flash";
+
+  const formattedTranscript = transcript
+    .map((item) => `${formatTimeStamp(item.offset) + " " + item.text}`)
+    .join("\n");
+
+  const prompt = [
+    {
+      role: "user",
+      parts: [
+        {
+          text: `You are a helpful assistant. You are answering questions about a YouTube video.
+              Here is the full transcript, with timestamps at the beginning of each line given in the format HH:MM:SS.
+
+              Please, whenever possible, include timestamps in your answers in the exact format HH:MM:SS.
+              The video is approximately ${21} minutes and ${34} seconds long. 
+              Do not reference timestamps beyond this range.
+              Always use the format HH:MM:SS for timestamps. example: 4 minutes = 00:04:00
+              \n
+              TRANSCRIPT:
+              ${formattedTranscript}`,
+        },
+        {
+          text: `Here is the chat history of the current conversation:\n
+          ${conversation}
+          `
+        },
+        {
+          text: `
+          Here is the user's question, please provide an answer:
+          QUESTION: ${question}
+          ANSWER:`,
+        },
+      ],
+    },
+  ];
+
+  try {
+    const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent`;
+    const geminiResponse = await fetch(
+      `${GEMINI_API_URL}?key=${process.env.GOOGLE_API_KEY}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: prompt,
+        }),
+      }
+    );
+
+    const data = await geminiResponse.json();
+    const content =
+      data?.candidates?.[0]?.content?.parts?.[0]?.text || "No answer.";
+    res.status(200).json({ content });
+  } catch (err) {
+    console.error(err.response?.data || err.message);
+    res.status(500).json({ error: "Gemini API request failed" });
+  }
+};
+
+const storeEmbeddings = async (videoId) => {
+  // Check if embeddings are already stored for this video
+  const { data, error } = await supabase
+    .from("transcript_chunks")
+    .select("video_id")
+    .eq("video_id", videoId)
+    .limit(1);
+
+  if (error) {
+    console.error("Supabase query error:", error.message);
+    res.status(417).json({ success: false, content: "Database query error" });
+  } else {
+    if (data && data.length > 0) {
+      // Video is in the database
+      res.status(200).json({ success: true, content: "Video already in DB" });
+      return;
+    } else {
+      // Video is not in the DB  -> Being processing
+      const success = await chunkTranscriptWithSentences(transcript);
+      if (success) {
+        // await storeTranscriptEmbeddings(videoId, transcript);
+        res.status(200).json({ success: true, content: success });
+      } else {
+        res.status(417).json({ success: false, error: "Processing error" });
+      }
+    }
   }
 };
 

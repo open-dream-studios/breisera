@@ -31,13 +31,14 @@ const Player = () => {
           const res = await makeRequest.post("/api/youtube/get-transcript", {
             videoId: currentVideo.id,
           });
-          if (res.data.success) {
+          if (res.status === 200) {
             setCurrentVideoTranscript(res.data.content);
-            setLoadingCurrentVideoTranscript(false);
           }
         } catch (error) {
           setCurrentVideoTranscript(null);
           console.error("Failed to fetch videos:", error);
+        } finally {
+          setLoadingCurrentVideoTranscript(false);
         }
       }
     };
@@ -109,9 +110,7 @@ const Player = () => {
         }}
         className="relative h-[100%] min-h-[100%] overflow-scroll"
       >
-        <div
-          className="select-none flex flex-col w-[100%] h-[100%]"
-        >
+        <div className="flex flex-col w-[100%] h-[100%]">
           <YouTubePlayer />
           <YoutubePlayerData />
           <div
@@ -180,7 +179,7 @@ const Player = () => {
             "--max-width": `calc(100% - ${dividerPercent}%)`,
           } as React.CSSProperties
         }
-        className={`hidden sm:flex select-none flex-grow max-w-[100%] md:max-w-[var(--max-width)] ${
+        className={`hidden sm:flex flex-grow max-w-[100%] md:max-w-[var(--max-width)] ${
           playerState === "sm" && "w-0"
         }`}
       >

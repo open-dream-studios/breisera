@@ -1,7 +1,7 @@
 export const vid = {
   kind: "youtube#video",
   etag: "5nNyEW9Zg9sDPP8yn7SSmlkYAus",
-  id: "JfbnpYLe3Ms",
+  id: "VNZ0so0LCoM",
   snippet: {
     publishedAt: "2022-10-18T18:14:24Z",
     channelId: "UCb8vrqP8Z7Oz9ZTYvUtjUHQ",

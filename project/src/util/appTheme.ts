@@ -13,6 +13,7 @@ export const appTheme = {
     component_bg_1: "#f3f4f6",
     bot_message: "#DDDDDD",
     user_message: "#DDDDDD",
+    bot_time_stamp: "#CCCCCC",
 
     // Texts
     text_1: "#000000",
@@ -37,6 +38,7 @@ export const appTheme = {
     component_bg_1: "#161616",
     bot_message: "#222222",
     user_message: "#222222",
+    bot_time_stamp: "#393939",
 
     // Texts
     text_1: "#FFFFFF",

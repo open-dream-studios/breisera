@@ -11,19 +11,28 @@ import { AuthContext } from "@/contexts/authContext";
 import { GPTMessage, useVideo } from "@/contexts/videoContext";
 import { HiOutlinePencilAlt } from "react-icons/hi";
 import { makeRequest } from "@/util/axios";
+import { timeStampInjection } from "@/util/functions/YouTubeData";
+import { openWindow } from "@/util/functions/AppFunctions";
 
 // height: -webkit-fill-available
 
 const GPT = () => {
   const { currentUser } = useContext(AuthContext);
-  const { currentVideo, messages, setMessages, userMessage, setUserMessage } =
-    useVideo();
+  const {
+    currentVideo,
+    currentVideoTranscript,
+    messages,
+    setMessages,
+    userMessage,
+    setUserMessage,
+  } = useVideo();
   const [isLoading, setIsLoading] = useState(false);
   const [loading, setLoading] = useState("");
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const gptMessageDisplay = useRef<HTMLDivElement>(null);
+  const [modelDisplayed, setModelDisplayed] = useState<boolean>(false);
 
   function startLoadingAnimation() {
     if (!isLoading) {
@@ -95,23 +104,19 @@ const GPT = () => {
   };
 
   async function getMessage(messages: GPTMessage[]) {
-    // const proxyUrl = `${BACKEND_URL}/gpt-message`;
-    // try {
-    //   const response = await axios.post(proxyUrl, { messages });
-    //   return response.data;
-    // } catch (error) {
-    //   console.error(error);
-    //   return "Something went wrong...";
-    // }
-
-    if (currentVideo) {
-      const res2 = await makeRequest.post("/api/youtube/gpt", {
-        videoId: currentVideo.id,
-        messages: messages,
-      });
-      const data2 = res2.data;
-      console.log(data2);
-      return data2
+    if (currentVideo && currentVideoTranscript) {
+      const res = await makeRequest.post(
+        BACKEND_URL + "/api/youtube/gemini-query",
+        {
+          messages: messages,
+          transcript: currentVideoTranscript,
+        }
+      );
+      console.log(res.data.content);
+      if (res.status === 200) {
+        const geminiResponse = res.data.content;
+        return geminiResponse;
+      }
     }
     return "Something went wrong...";
   }
@@ -170,8 +175,17 @@ const GPT = () => {
             backgroundColor: appTheme[currentUser.theme].background_2,
           }}
           className="text-[14px] leading-[14px] font-[100] cursor-pointer dim hover:brightness-75 px-[18px] py-[6px] rounded-[15px]"
+          onClick={() => {
+            if (modelDisplayed) {
+              openWindow(
+                "https://ai.google.dev/gemini-api/docs/models#gemini-1.5-flash"
+              );
+            } else {
+              setModelDisplayed(true);
+            }
+          }}
         >
-          Model
+          {modelDisplayed ? "gemini 1.5 flash 001" : "Model"}
         </div>
       </div>
       <div
@@ -200,9 +214,11 @@ const GPT = () => {
                     ? appTheme[currentUser.theme].bot_message
                     : appTheme[currentUser.theme].user_message,
                 }}
-                className="text-[15px] leading-[21px] w-fit max-w-[92%] px-[15px] py-[7px] rounded-[18px] flex flex-row items-start justify-start"
+                className="text-[15px] leading-[21px] w-fit max-w-[92%] px-[15px] py-[7px] rounded-[18px]"
               >
-                {message.text}
+                {message.isBot
+                  ? timeStampInjection(currentUser.theme, message.text)
+                  : message.text}
               </div>
             </div>
           ))}
