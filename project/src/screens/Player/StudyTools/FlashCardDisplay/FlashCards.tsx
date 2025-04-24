@@ -9,14 +9,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 const FlashCards = () => {
   const { currentUser } = useContext(AuthContext);
-  const { currentFlashCards, loadingCurrentFlashCards } = useVideo();
+  const { currentFlashCards, loadingCurrentFlashCards, currentIndex, setCurrentIndex, isAnimating, setIsAnimating, flipped, setFlipped, disableAnimation, setDisableAnimation } = useVideo();
 
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [flipped, setFlipped] = useState(false);
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [disableAnimation, setDisableAnimation] = useState(false);
-
-  const card = currentFlashCards[currentIndex];
+  const card = currentFlashCards.content[currentIndex];
 
   const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
     const selection = window.getSelection();
@@ -43,17 +38,17 @@ const FlashCards = () => {
 
   const goNext = () => {
     if (flipped) instantReset(); // avoid animation if showing answer
-    setCurrentIndex((prev) => (prev + 1) % currentFlashCards.length);
+    setCurrentIndex((prev) => (prev + 1) % currentFlashCards.content.length);
   };
 
   const goBack = () => {
     if (flipped) instantReset(); // avoid animation if showing answer
     setCurrentIndex(
-      (prev) => (prev - 1 + currentFlashCards.length) % currentFlashCards.length
+      (prev) => (prev - 1 + currentFlashCards.content.length) % currentFlashCards.content.length
     );
   };
 
-  if (!currentUser || currentFlashCards.length === 0) return;
+  if (!currentUser || currentFlashCards.content.length === 0 || !currentFlashCards.flashcard_id) return;
 
   return (
     <div className="h-[100%] pt-[20px] px-[20px]">
@@ -112,7 +107,7 @@ const FlashCards = () => {
           </motion.div>
 
           <div className="mt-[17px] font-[300] text-[15px] lg:text-[20px]">
-            {currentIndex + 1} / {currentFlashCards.length}
+            {currentIndex + 1} / {currentFlashCards.content.length}
           </div>
 
           <div className="mt-8 flex gap-8 mb-[50px]">
@@ -133,7 +128,7 @@ const FlashCards = () => {
                 backgroundColor: appTheme[currentUser.theme].background_2,
               }}
               className={`${
-                currentIndex === currentFlashCards.length - 1 &&
+                currentIndex === currentFlashCards.content.length - 1 &&
                 "opacity-50 pointer-events-none"
               } w-14 h-14 rounded-full shadow-lg dim cursor-pointer hover:brightness-75 flex items-center justify-center`}
             >

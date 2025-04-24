@@ -376,3 +376,152 @@ export const deleteNote = async (req, res) => {
     return res.status(500).json({ success: false, error: "Server error" });
   }
 };
+
+export const writeFlashCards = async (req, res) => {
+  const token = req.cookies.accessToken;
+  if (!token) return res.status(401).json("Not authenticated!");
+  const { user_id, flashcard_id, title, content, video_id } = req.body;
+
+  try {
+    // Make sure the user doesn't have more than 100 flash card sets already
+    const userFlashCards = await new Promise((resolve, reject) => {
+      db.query(
+        "SELECT * FROM flashcards WHERE user_id = ?",
+        [user_id],
+        (err, data) => {
+          if (err) {
+            console.error("DB Query Error: Could not fetch any existing flashcard sets", err);
+            return reject(err);
+          }
+          resolve(data.length);
+        }
+      );
+    });
+    const newTitle = `Set ${userFlashCards + 1}`
+
+    // Search to see if the flashcards already exists
+    const existingFlashCards = await new Promise((resolve, reject) => {
+      db.query(
+        "SELECT * FROM flashcards WHERE user_id = ? AND flashcard_id = ?",
+        [user_id, flashcard_id],
+        (err, data) => {
+          if (err) {
+            console.error("DB Query Error: Could not fetch existing flashcards", err);
+            return reject(err);
+          }
+          resolve(data.length > 0 ? data[0].flashcard_id : null);
+        }
+      );
+    });
+    let flashcards = existingFlashCards || null;
+
+    if (!flashcards) {
+      // Create a new flashcard set
+      if (userFlashCards && userFlashCards >= 100) {
+        return res.status(417).json({ message: "User flashcard limit exceeded" });
+      }
+      const success = await new Promise((resolve, reject) => {
+        db.query(
+          "INSERT INTO flashcards (`flashcard_id`,`user_id`,`title`,`content`,`video_id`) VALUE (?)",
+          [[flashcard_id, user_id, newTitle, content, video_id]],
+          (err, data) => {
+            if (err) {
+              console.error(
+                "DB Mutation Error: Could not create new flashcard set",
+                err
+              );
+              return reject(err);
+            }
+            resolve(data);
+          }
+        );
+      });
+      if (success) {
+        return res.status(200).json({ message: "Flashcard set created" });
+      } else {
+        return res.status(417).json({ message: "Flashcard set creation failed" });
+      }
+    } else {
+      // Update flashcard set
+      const success = await new Promise((resolve, reject) => {
+        db.query(
+          "UPDATE flashcards SET content = ?, video_id = ? WHERE user_id = ? AND flashcard_id = ?",
+          [content, video_id, user_id, flashcard_id],
+          (err, data) => {
+            if (err) {
+              console.error("DB Mutation Error: Could not update flashcards", err);
+              return reject(err);
+            }
+            resolve(data);
+          }
+        );
+      });
+      if (success) {
+        return res.status(200).json({ message: "Flashcard set updated" });
+      } else {
+        return res.status(417).json({ message: "Flashcard set update failed" });
+      }
+    }
+  } catch (error) {
+    return res.status(404).json(null);
+  }
+};
+
+export const getFlashCards = async (req, res) => {
+  const token = req.cookies.accessToken;
+  if (!token) return res.status(401).json("Not authenticated!");
+  const { user_id } = req.body;
+
+  try {
+    const flashcards = await new Promise((resolve, reject) => {
+      db.query(
+        "SELECT * FROM flashcards WHERE user_id = ? ORDER BY updated_at DESC",
+        [user_id],
+        (err, data) => {
+          if (err) {
+            console.error("DB Query Error: Could not fetch flashcards", err);
+            return reject(err);
+          }
+          resolve(data);
+        }
+      );
+    });
+
+    return res.status(200).json({
+      success: true,
+      flashcards: flashcards.length > 0 ? flashcards : [],
+    });
+  } catch (error) {
+    console.error("Error fetching flashcards:", error);
+    return res.status(500).json({ success: false, flashcards: [] });
+  }
+};
+
+export const deleteFlashCards = async (req, res) => {
+  try {
+    const token = req.cookies.accessToken;
+    if (!token) return res.status(401).json({ error: "Not authenticated" });
+    const { user_id, flashcard_id } = req.body;
+    if (!flashcard_id || !user_id) {
+      return res.status(400).json({ error: "Flashcard ID is required" });
+    }
+    const [result] = await db
+      .promise()
+      .query("DELETE FROM flashcards WHERE user_id = ? AND flashcard_id = ?", [
+        user_id,
+        flashcard_id,
+      ]);
+    if (result.affectedRows === 0) {
+      return res
+        .status(404)
+        .json({
+          success: false,
+          message: "Flashcard set not found or not authorized to delete",
+        });
+    }
+    return res.status(200).json({ success: true });
+  } catch (error) {
+    console.error("Error deleting flashcards:", error);
+    return res.status(500).json({ success: false, error: "Server error" });
+  }
+};

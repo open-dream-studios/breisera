@@ -225,7 +225,7 @@ const Player = () => {
             "--max-width": `calc(100% - ${dividerPercent}%)`,
           } as React.CSSProperties
         }
-        className={`hidden sm:flex flex-grow max-w-[100%] md:max-w-[var(--max-width)] ${
+        className={`hidden sm:flex flex-grow max-w-[100%] sm:max-w-[var(--max-width)] ${
           playerState === "sm" && "w-0"
         }`}
       >

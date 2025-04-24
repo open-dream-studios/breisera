@@ -9,7 +9,10 @@ import {
   updateCurrentUser,
   writeNote,
   getNotes,
-  deleteNote
+  deleteNote,
+  writeFlashCards,
+  getFlashCards,
+  deleteFlashCards
 } from "../controllers/user.js";
 
 const router = express.Router();
@@ -25,5 +28,9 @@ router.put("/update-current", updateCurrentUser);
 router.post("/write-note", writeNote);
 router.post("/get-notes", getNotes);
 router.post("/delete-note", deleteNote);
+router.post("/write-flashcards", writeFlashCards);
+router.post("/get-flashcards", getFlashCards);
+router.post("/delete-flashcards", deleteFlashCards);
+
 
 export default router;

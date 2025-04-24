@@ -2,12 +2,7 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { vid } from "../../video_db";
 import { StudyToolTypes } from "@/screens/Player/StudyTools/StudyTools";
-import {
-  QueryObserverResult,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
-import axios from "axios";
+import { QueryObserverResult, useQuery } from "@tanstack/react-query";
 import { AuthContext } from "./authContext";
 import { makeRequest } from "@/util/axios";
 
@@ -34,45 +29,6 @@ export type Note = {
   video_id: string | null;
 };
 
-type VideoContextType = {
-  currentVideo: YouTubePlayerVideo | null;
-  setCurrentVideo: (video: YouTubePlayerVideo) => void;
-  messages: GPTMessage[];
-  setMessages: React.Dispatch<React.SetStateAction<GPTMessage[]>>;
-  userMessage: string;
-  setUserMessage: (message: string) => void;
-  playerState: PlayerStates;
-  setPlayerState: (newState: PlayerStates) => void;
-  windowWidth: number | null;
-  currentNote: Note;
-  setCurrentNote: (newCurrentNote: Note) => void;
-  exploreVideos: ExploreVideos;
-  setExploreVideos: (newExploreVideos: ExploreVideos) => void;
-  currentVideoTranscript: VideoTranscript;
-  setCurrentVideoTranscript: (newVideoTranscript: VideoTranscript) => void;
-  loadingCurrentVideoTranscript: boolean;
-  setLoadingCurrentVideoTranscript: (
-    newLoadingCurrentVideoTranscript: boolean
-  ) => void;
-  currentKeyConcepts: KeyConcepts;
-  setCurrentKeyConcepts: (newKeyConcepts: KeyConcepts) => void;
-  loadingCurrentKeyConcepts: boolean;
-  setLoadingCurrentKeyConcepts: (newLoadingCurrentKeyConcepts: boolean) => void;
-  currentSummary: Summary;
-  setCurrentSummary: (newSummary: Summary) => void;
-  loadingCurrentSummary: boolean;
-  setLoadingCurrentSummary: (newLoadingCurrentSummary: boolean) => void;
-  currentStudyTool: StudyToolTypes;
-  setCurrentStudyTool: (newCurrentStudyTool: StudyToolTypes) => void;
-  notesData: any[];
-  isLoadingNotesData: boolean;
-  refetchNotesData: () => Promise<QueryObserverResult<any[], Error>>;
-  currentFlashCards: FlashCard[];
-  setCurrentFlashCards: (newCurrentFlashCards: FlashCard[]) => void;
-  loadingCurrentFlashCards: boolean;
-  setLoadingCurrentFlashCards: (newLoadingCurrentFlashCards: boolean) => void;
-};
-
 export type VideoTranscriptBit = {
   text: string;
   offset: number;
@@ -87,6 +43,66 @@ export type KeyConcepts = null | string;
 export type FlashCard = {
   question: string;
   answer: string;
+  timeStamp?: string;
+  [key: string]: any;
+};
+export type FlashCards = {
+  flashcard_id: string | null;
+  title: string;
+  content: FlashCard[];
+  video_id: string | null;
+};
+
+type VideoContextType = {
+  currentVideo: YouTubePlayerVideo | null;
+  setCurrentVideo: React.Dispatch<React.SetStateAction<YouTubePlayerVideo | null>>;
+  messages: GPTMessage[];
+  setMessages: React.Dispatch<React.SetStateAction<GPTMessage[]>>;
+  userMessage: string;
+  setUserMessage: React.Dispatch<React.SetStateAction<string>>;
+  playerState: PlayerStates;
+  setPlayerState: React.Dispatch<React.SetStateAction<PlayerStates>>;
+  windowWidth: number | null;
+  currentNote: Note;
+  setCurrentNote: React.Dispatch<React.SetStateAction<Note>>;
+  exploreVideos: ExploreVideos;
+  setExploreVideos: React.Dispatch<React.SetStateAction<ExploreVideos>>;
+  currentVideoTranscript: VideoTranscript;
+  setCurrentVideoTranscript: React.Dispatch<
+    React.SetStateAction<VideoTranscript>
+  >;
+  loadingCurrentVideoTranscript: boolean;
+  setLoadingCurrentVideoTranscript: React.Dispatch<
+    React.SetStateAction<boolean>
+  >;
+  currentKeyConcepts: KeyConcepts;
+  setCurrentKeyConcepts: React.Dispatch<React.SetStateAction<KeyConcepts>>;
+  loadingCurrentKeyConcepts: boolean;
+  setLoadingCurrentKeyConcepts: React.Dispatch<React.SetStateAction<boolean>>;
+  currentSummary: Summary;
+  setCurrentSummary: React.Dispatch<React.SetStateAction<Summary>>;
+  loadingCurrentSummary: boolean;
+  setLoadingCurrentSummary: React.Dispatch<React.SetStateAction<boolean>>;
+  currentStudyTool: StudyToolTypes;
+  setCurrentStudyTool: React.Dispatch<React.SetStateAction<StudyToolTypes>>;
+  notesData: any[];
+  isLoadingNotesData: boolean;
+  refetchNotesData: () => Promise<QueryObserverResult<any[], Error>>;
+  currentFlashCards: FlashCards;
+  setCurrentFlashCards: React.Dispatch<React.SetStateAction<FlashCards>>;
+  loadingCurrentFlashCards: boolean;
+  setLoadingCurrentFlashCards: React.Dispatch<React.SetStateAction<boolean>>;
+  flashCardData: any[];
+  isLoadingFlashCardData: boolean;
+  refetchFlashCardData: () => Promise<QueryObserverResult<any[], Error>>;
+  currentIndex: number;
+  setCurrentIndex: React.Dispatch<React.SetStateAction<number>>;
+  flipped: boolean;
+  setFlipped: React.Dispatch<React.SetStateAction<boolean>>;
+  isAnimating: boolean;
+  setIsAnimating: React.Dispatch<React.SetStateAction<boolean>>;
+  disableAnimation: boolean;
+  setDisableAnimation: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 const VideoContext = createContext<VideoContextType | undefined>(undefined);
@@ -106,6 +122,24 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({
         user_id: currentUser?.user_id,
       });
       return res.data.notes;
+    },
+    enabled: !!currentUser?.user_id,
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 10,
+    // refetchOnMount: true,
+  });
+
+  const {
+    data: flashCardData,
+    isLoading: isLoadingFlashCardData,
+    refetch: refetchFlashCardData,
+  } = useQuery<any>({
+    queryKey: ["flashcards", currentUser?.user_id],
+    queryFn: async () => {
+      const res = await makeRequest.post("/api/users/get-flashcards", {
+        user_id: currentUser?.user_id,
+      });
+      return res.data.flashcards;
     },
     enabled: !!currentUser?.user_id,
     staleTime: 1000 * 60 * 5,
@@ -146,9 +180,19 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({
   const [loadingCurrentSummary, setLoadingCurrentSummary] =
     useState<boolean>(true);
 
-  const [currentFlashCards, setCurrentFlashCards] = useState<FlashCard[]>([]);
+  const [currentFlashCards, setCurrentFlashCards] = useState<FlashCards>({
+    flashcard_id: null,
+    title: "",
+    content: [],
+    video_id: null,
+  });
   const [loadingCurrentFlashCards, setLoadingCurrentFlashCards] =
     useState<boolean>(false);
+
+  const [currentIndex, setCurrentIndex] = useState<number>(0);
+  const [flipped, setFlipped] = useState<boolean>(false);
+  const [isAnimating, setIsAnimating] = useState<boolean>(false);
+  const [disableAnimation, setDisableAnimation] = useState<boolean>(false);
 
   useEffect(() => {
     setMessages([]);
@@ -201,6 +245,17 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({
         setCurrentFlashCards,
         loadingCurrentFlashCards,
         setLoadingCurrentFlashCards,
+        flashCardData,
+        isLoadingFlashCardData,
+        refetchFlashCardData,
+        currentIndex,
+        setCurrentIndex,
+        flipped,
+        setFlipped,
+        isAnimating,
+        setIsAnimating,
+        disableAnimation,
+        setDisableAnimation,
       }}
     >
       {children}
