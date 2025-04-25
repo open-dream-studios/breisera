@@ -163,6 +163,7 @@ const FlashCardDisplay = () => {
           number: 10,
           topic: topic,
           transcript: currentVideoTranscript,
+          video: currentVideo
         }
       );
       if (res.status === 200) {

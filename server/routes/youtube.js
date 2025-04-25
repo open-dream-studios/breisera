@@ -4,11 +4,13 @@ import {
   getYoutubeTranscript,
   generateYoutubeTranscript,
   youtubeGPT,
+} from "../controllers/youtube.js";
+import {
   geminiQuery,
   geminiSummaryQuery,
   geminiKeyConceptsQuery,
-  geminiFlashcardsQuery
-} from "../controllers/youtube.js";
+  geminiFlashcardsQuery,
+} from "../controllers/gemini.js";
 import { rateLimiter } from "../connection/middlewares.js";
 
 const router = express.Router();
@@ -20,7 +22,6 @@ router.post("/gemini-query", rateLimiter, geminiQuery);
 router.post("/gemini-summary", rateLimiter, geminiSummaryQuery);
 router.post("/gemini-key-concepts", rateLimiter, geminiKeyConceptsQuery);
 router.post("/gemini-flashcards", rateLimiter, geminiFlashcardsQuery);
-
 
 router.post("/gpt", rateLimiter, youtubeGPT);
 

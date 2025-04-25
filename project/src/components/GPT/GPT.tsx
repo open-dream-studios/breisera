@@ -130,6 +130,7 @@ const GPT = () => {
         {
           messages: messages,
           transcript: currentVideoTranscript,
+          video: currentVideo
         }
       );
       if (res.status === 200) {

@@ -57,6 +57,7 @@ const Player = () => {
       try {
         const res = await makeRequest.post("/api/youtube/gemini-summary", {
           transcript: currentVideoTranscript,
+          video: currentVideo
         });
         if (res.status === 200) {
           setCurrentSummary(res.data.content);
@@ -73,6 +74,7 @@ const Player = () => {
       try {
         const res = await makeRequest.post("/api/youtube/gemini-key-concepts", {
           transcript: currentVideoTranscript,
+          video: currentVideo
         });
         if (res.status === 200) {
           setCurrentKeyConcepts(res.data.content);
