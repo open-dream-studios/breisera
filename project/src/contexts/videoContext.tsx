@@ -1,6 +1,6 @@
 "use client";
 import React, { createContext, useState, useContext, useEffect } from "react";
-import { vid } from "../../video_db";
+// import { vid } from "../../video_db";
 import { StudyToolTypes } from "@/screens/Player/StudyTools/StudyTools";
 import {
   QueryObserverResult,
@@ -157,7 +157,7 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({
   });
 
   const [currentVideo, setCurrentVideo] = useState<YouTubePlayerVideo | null>(
-    vid
+    null
   );
   const [messages, setMessages] = useState<GPTMessage[]>([]);
   const [userMessage, setUserMessage] = useState<string>("");

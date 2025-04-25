@@ -10,6 +10,8 @@ import { LuSquareArrowOutUpLeft } from "react-icons/lu";
 import { makeRequest } from "@/util/axios";
 import PrimaryTools from "./PrimaryTools/PrimaryTools";
 import { ChevronDown } from "lucide-react";
+import toast from 'react-hot-toast';
+import { showToast } from "@/components/CustomToast";
 
 const Player = () => {
   const { currentUser } = useContext(AuthContext);
@@ -34,6 +36,7 @@ const Player = () => {
     const fetchTranscript = async () => {
       if (currentUser && currentVideo) {
         try {
+          console.log("calling get transript")
           const res = await makeRequest.post("/api/youtube/get-transcript", {
             videoId: currentVideo.id,
           });
@@ -42,11 +45,13 @@ const Player = () => {
           } else {
             setLoadingCurrentSummary(false);
             setLoadingCurrentKeyConcepts(false);
+            showToast("Transcript not available", "error");
           }
         } catch (error) {
           setLoadingCurrentSummary(false);
           setLoadingCurrentKeyConcepts(false);
-          console.error("Failed to fetch videos:", error);
+          console.error("Video transcript not available:", error);
+          toast.error("Video transcript not available");
         } finally {
           setLoadingCurrentVideoTranscript(false);
         }

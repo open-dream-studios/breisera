@@ -22,6 +22,53 @@ const supabase = createClient(
   process.env.SUPABASE_KEY
 );
 
+export const getVideoById = async (req, res) => {
+  const token = req.cookies.accessToken;
+  if (!token) return res.status(401).json("Not authenticated!");
+
+  const { videoId } = req.body;
+  if (!videoId) return res.status(400).json({ error: "No video ID provided" });
+
+  try {
+    const videoRes = await axios.get("https://www.googleapis.com/youtube/v3/videos", {
+      params: {
+        part: "snippet,statistics,contentDetails",
+        id: videoId,
+        key: process.env.YOUTUBE_PUBLIC_KEY,
+      },
+    });
+
+    const video = videoRes.data.items[0];
+    if (!video) return res.status(404).json({ error: "Video not found" });
+    const channelId = video.snippet.channelId;
+    const channelRes = await axios.get("https://www.googleapis.com/youtube/v3/channels", {
+      params: {
+        part: "snippet,statistics",
+        id: channelId,
+        key: process.env.YOUTUBE_PUBLIC_KEY,
+      },
+    });
+
+    const channel = channelRes.data.items[0];
+
+    const enrichedVideo = {
+      ...video,
+      channelInfo: channel
+        ? {
+            title: channel.snippet.title,
+            thumbnail: channel.snippet.thumbnails.default.url,
+            subs: channel.statistics.subscriberCount,
+          }
+        : {},
+    };
+
+    res.json(enrichedVideo);
+  } catch (err) {
+    console.error("Error fetching video by ID:", err.message);
+    res.status(500).json({ error: "Failed to fetch video by ID" });
+  }
+};
+
 export const youtubeSearch = async (req, res) => {
   const token = req.cookies.accessToken;
   if (!token) return res.status(401).json("Not authenticated!");

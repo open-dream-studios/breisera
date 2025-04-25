@@ -9,7 +9,7 @@ import { AuthContext, AuthContextProvider } from "@/contexts/authContext";
 import { useVideo, VideoProvider } from "@/contexts/videoContext";
 import Navbar from "@/components/Navbar/Navbar";
 import LeftBar from "@/components/LeftBar/LeftBar";
-import { appTheme, ThemeType } from "@/util/appTheme";
+import { appTheme } from "@/util/appTheme";
 import { io, Socket } from "socket.io-client";
 import { BACKEND_URL } from "@/util/config";
 import { handleUpdateUser } from "@/util/functions/User";
@@ -24,6 +24,7 @@ import {
   useLeftBarRefStore,
 } from "@/store/useLeftBarOpenStore";
 import { QueryProvider } from "@/contexts/queryContext";
+import CustomToast from "@/components/CustomToast";
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   const [queryClient] = useState(() => new QueryClient());
@@ -33,6 +34,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       <AuthContextProvider>
         <QueryProvider>
           <VideoProvider>
+            <CustomToast />
             <AppRoot>{children}</AppRoot>
           </VideoProvider>
         </QueryProvider>
@@ -83,18 +85,6 @@ const AppRoot = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     localStorage.setItem("user", JSON.stringify(currentUser));
   }, [currentUser]);
-
-  useEffect(() => {
-    if (leftBarRef && leftBarRef.current) {
-      leftBarRef.current.style.transition = "right 0.3s ease-in-out";
-    }
-    setLeftBarOpen(false);
-    setTimeout(() => {
-      if (leftBarRef && leftBarRef.current) {
-        leftBarRef.current.style.transition = "none";
-      }
-    }, 300);
-  }, [pathname]);
 
   return currentUser ? (
     <ProtectedLayout>{children}</ProtectedLayout>
