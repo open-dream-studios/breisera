@@ -23,7 +23,6 @@ import Link from "next/link";
 import { useVideo } from "@/contexts/videoContext";
 
 const Navbar = () => {
-  const queryClient = useQueryClient();
   const { currentUser, currentUserSubscription } = useContext(AuthContext);
   const { playerState, setPlayerState } = useVideo();
   const modal1 = useModal1Store((state: any) => state.modal1);
@@ -72,42 +71,6 @@ const Navbar = () => {
       borderRadius: "rounded-[15px] md:rounded-[20px]",
       content: <Settings initialPage={"Account"} />,
     });
-  };
-
-  const toggleThemeMutation = useMutation<
-    void,
-    Error,
-    ThemeType,
-    { previousUser: User | null }
-  >({
-    mutationFn: async (newTheme) => {
-      await makeRequest.put("/api/users/update-current", { theme: newTheme });
-    },
-    onMutate: (newTheme) => {
-      queryClient.cancelQueries({ queryKey: ["currentUser"] });
-      const previousUser =
-        queryClient.getQueryData<User | null>(["currentUser"]) ?? null;
-
-      // Optimistically update UI
-      queryClient.setQueryData(["currentUser"], (oldData: User | null) =>
-        oldData ? { ...oldData, theme: newTheme } : oldData
-      );
-      return { previousUser };
-    },
-    onError: (_, __, context) => {
-      if (context?.previousUser) {
-        queryClient.setQueryData(["currentUser"], context.previousUser);
-      }
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["currentUser"] });
-    },
-  });
-
-  const handleThemeChange = () => {
-    if (!currentUser) return;
-    const newTheme = currentUser.theme === "light" ? "dark" : "light";
-    toggleThemeMutation.mutate(newTheme);
   };
 
   if (!currentUser) return;
@@ -220,26 +183,6 @@ const Navbar = () => {
         </div>
 
         <div className="h-[100%] mr-[10px] pr-[2px] hidden min-[500px]:flex flex-row items-center gap-[18px]">
-          <div
-            className="dim cursor-pointer hover:brightness-75"
-            onClick={handleThemeChange}
-          >
-            {currentUser.theme === "dark" ? (
-              <LuSun
-                size={23}
-                title="Light Mode"
-                className=""
-                color={appTheme[currentUser.theme].text_1}
-              />
-            ) : (
-              <IoMoonOutline
-                size={23}
-                title="Dark Mode"
-                className=""
-                color={appTheme[currentUser.theme].text_1}
-              />
-            )}
-          </div>
 
           {currentUserSubscription && (
             <div

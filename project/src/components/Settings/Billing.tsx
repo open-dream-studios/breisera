@@ -11,7 +11,7 @@ import { AuthContext } from "../../contexts/authContext";
 
 const Billing = ({ currentUserBilling }: { currentUserBilling: any }) => {
   const { currentUser } = useContext(AuthContext)
-  if (!currentUser || !currentUserBilling || currentUserBilling.length === 0) return;
+  if (!currentUser) return;
   return (
     <div className="w-full h-full flex flex-col pt-[50px]">
       <div className="w-[90%] ml-[1%] md:ml-[2%] flex flex-col items-center justify-center">
@@ -19,7 +19,7 @@ const Billing = ({ currentUserBilling }: { currentUserBilling: any }) => {
           Billing
         </p>
       </div>
-      <div className="flex h-[calc(100%-55px)] pl-[20px] w-full flex-col gap-[10px] mt-[15px] overflow-auto pb-[40px] pr-[50px]">
+      {(!currentUserBilling || currentUserBilling.length === 0) && <div className="flex h-[calc(100%-55px)] pl-[20px] w-full flex-col gap-[10px] mt-[15px] overflow-auto pb-[40px] pr-[50px]">
         {[...currentUserBilling].map((billingItem: any, index: number) => {
           const billingDate = formatStripeDate(billingItem.stripe_created_at);
           return (
@@ -45,7 +45,7 @@ const Billing = ({ currentUserBilling }: { currentUserBilling: any }) => {
             </div>
           );
         })}
-      </div>
+      </div>}
     </div>
   );
 };

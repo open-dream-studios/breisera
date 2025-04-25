@@ -1,15 +1,17 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import { BACKEND_URL, FRONTEND_URL } from "@/util/config";
+import React, { useContext, useEffect, useState } from "react";
+import { FRONTEND_URL } from "@/util/config";
 import Link from "next/link";
 import { useVideo, YouTubePlayerVideo } from "@/contexts/videoContext";
 import { makeRequest } from "@/util/axios";
 import { useContextQueries } from "@/contexts/queryContext";
+import { appTheme } from "@/util/appTheme";
+import { AuthContext } from "@/contexts/authContext";
 
 const HomePage = () => {
-  const { newVideoLoaded } = useContextQueries()
+  const { newVideoLoaded } = useContextQueries();
   const { setCurrentVideo, exploreVideos, setExploreVideos } = useVideo();
-  
+  const { currentUser } = useContext(AuthContext);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -32,17 +34,19 @@ const HomePage = () => {
     };
 
     if (exploreVideos.recommended_1.length === 0) {
-      setLoading(true)
+      setLoading(true);
       fetchVideos();
     }
   }, []);
 
   const handleVideoClick = (video: YouTubePlayerVideo) => {
     setCurrentVideo(video);
-    newVideoLoaded(video)
+    newVideoLoaded(video);
   };
 
   if (loading) return <div>Loading...</div>;
+
+  if (!currentUser) return;
 
   return (
     <div
@@ -69,6 +73,7 @@ const HomePage = () => {
             overflow: "hidden",
             boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
           }}
+          className="dim hover:brightness-75"
         >
           <div>
             <img
@@ -77,10 +82,16 @@ const HomePage = () => {
               className="w-[100%] aspect-[16/9] flex object-cover"
             />
             <div className="p-[8px]">
-              <h4 className="text-white text-[14px] mb-[5px]">
+              <h4
+                style={{ color: appTheme[currentUser.theme].text_1 }}
+                className="text-[14px] mb-[5px]"
+              >
                 {video.snippet.title}
               </h4>
-              <p className="text-[#666] text-[12px] mb-[10px]">
+              <p
+                style={{ color: appTheme[currentUser.theme].text_3 }}
+                className="text-[12px] mb-[10px]"
+              >
                 {video.snippet.channelTitle}
               </p>
             </div>
