@@ -150,7 +150,7 @@ const FlashCardDisplay = () => {
   const [flashcardSetsOpen, setFlashcardSetsOpen] = useState<boolean>(false);
 
   const generateFlashcards = async () => {
-    const topic = "How will Taiwan defend itself";
+    const topic = "Intelligent questions and answers";
     if (currentVideo && currentVideoTranscript) {
       setLoadingCurrentFlashCards(true);
       setCurrentIndex(0);

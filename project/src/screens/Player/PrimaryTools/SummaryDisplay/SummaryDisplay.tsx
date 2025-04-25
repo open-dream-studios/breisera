@@ -14,7 +14,7 @@ const SummaryDisplay = () => {
       <p className="text-[23px] mb-[18px] font-[600]">
         Summary
       </p>
-      {!loadingCurrentSummary && currentSummary ? (
+      {!currentSummary ? <div style={{color: appTheme[currentUser.theme].text_4}}>Captions are not available for this video</div> :  !loadingCurrentSummary ? (
         <div>
         {timeStampInjectionAndFormatting(currentSummary, currentUser.theme)}
         </div>

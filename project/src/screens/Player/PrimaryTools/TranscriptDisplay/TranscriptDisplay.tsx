@@ -20,13 +20,15 @@ const TranscriptDisplay = () => {
     }
   };
 
-  if (!currentUser || !currentVideoTranscript) return <></>;
+  if (!currentUser) return <></>;
   return (
     <div className="flex flex-col pb-[60px]">
       <p className="text-[23px] mb-[18px] font-[600]">Transcript</p>
-      {!loadingCurrentVideoTranscript &&
-      currentVideoTranscript &&
-      Array.isArray(currentVideoTranscript) ? (
+      {!currentVideoTranscript || !Array.isArray(currentVideoTranscript) ? (
+        <div style={{ color: appTheme[currentUser.theme].text_4 }}>
+          Transcript is not available for this video
+        </div>
+      ) : !loadingCurrentVideoTranscript ? (
         currentVideoTranscript.map((transcriptItem: any, index: number) => {
           return (
             <div key={index} className="flex flex-col gap-[6px] mb-[20px]">

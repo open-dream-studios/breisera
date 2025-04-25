@@ -11,10 +11,11 @@ const KeyConceptsDisplay = () => {
   const { currentUser } = useContext(AuthContext);
   const { currentKeyConcepts, loadingCurrentKeyConcepts } = useVideo();
   if (!currentUser) return <></>;
+
   return (
     <div className="flex flex-col pb-[60px]">
       <p className="text-[23px] mb-[18px] font-[600]">Key Concepts</p>
-      {!loadingCurrentKeyConcepts && currentKeyConcepts ? (
+      {!currentKeyConcepts ? <div style={{color: appTheme[currentUser.theme].text_4}}>Captions are not available for this video</div> : !loadingCurrentKeyConcepts ? (
         <div>
           {timeStampInjectionAndFormatting(
             currentKeyConcepts,

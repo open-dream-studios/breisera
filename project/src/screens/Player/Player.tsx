@@ -2,13 +2,14 @@
 import { useState, useEffect, useRef, useContext } from "react";
 import { appTheme } from "@/util/appTheme";
 import { AuthContext } from "@/contexts/authContext";
-import YouTubePlayer from "./YouTubePlayer/YouTubePlayer";
+import YouTubePlayer, { pauseVideo } from "./YouTubePlayer/YouTubePlayer";
 import YoutubePlayerData from "./YoutubePlayerData/YoutubePlayerData";
 import StudyTools from "./StudyTools/StudyTools";
 import { useVideo } from "@/contexts/videoContext";
 import { LuSquareArrowOutUpLeft } from "react-icons/lu";
 import { makeRequest } from "@/util/axios";
 import PrimaryTools from "./PrimaryTools/PrimaryTools";
+import { ChevronDown } from "lucide-react";
 
 const Player = () => {
   const { currentUser } = useContext(AuthContext);
@@ -23,7 +24,7 @@ const Player = () => {
     setCurrentKeyConcepts,
     setLoadingCurrentKeyConcepts,
     setLoadingCurrentSummary,
-    setCurrentSummary
+    setCurrentSummary,
   } = useVideo();
   const [dividerPercent, setDividerPercent] = useState(66);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -41,6 +42,10 @@ const Player = () => {
           }
         } catch (error) {
           setCurrentVideoTranscript(null);
+          setCurrentKeyConcepts(null);
+          setCurrentSummary(null);
+          setLoadingCurrentSummary(false)
+          setLoadingCurrentKeyConcepts(false)
           console.error("Failed to fetch videos:", error);
         } finally {
           setLoadingCurrentVideoTranscript(false);
@@ -57,7 +62,7 @@ const Player = () => {
       try {
         const res = await makeRequest.post("/api/youtube/gemini-summary", {
           transcript: currentVideoTranscript,
-          video: currentVideo
+          video: currentVideo,
         });
         if (res.status === 200) {
           setCurrentSummary(res.data.content);
@@ -74,7 +79,7 @@ const Player = () => {
       try {
         const res = await makeRequest.post("/api/youtube/gemini-key-concepts", {
           transcript: currentVideoTranscript,
-          video: currentVideo
+          video: currentVideo,
         });
         if (res.status === 200) {
           setCurrentKeyConcepts(res.data.content);
@@ -92,6 +97,12 @@ const Player = () => {
       setLoadingCurrentKeyConcepts(true);
       generateSummary();
       generateKeyConcepts();
+    } else {
+      setCurrentVideoTranscript(null);
+      setCurrentKeyConcepts(null);
+      setCurrentSummary(null);
+      setLoadingCurrentSummary(false);
+      setLoadingCurrentKeyConcepts(false);
     }
   }, [currentVideoTranscript]);
 
@@ -127,7 +138,9 @@ const Player = () => {
   return (
     <div
       ref={containerRef}
-      className={`${playerState !== "sm" && "overflow-scroll"} relative flex flex-col sm:flex-row w-[100%] h-[100%] min-h-[700px]`}
+      className={`${
+        playerState !== "sm" && "overflow-scroll"
+      } relative flex flex-col sm:flex-row w-[100%] h-[100%] min-h-[700px]`}
       style={{ backgroundColor: appTheme[currentUser.theme].background_1 }}
     >
       {playerState === "sm" && (
@@ -149,6 +162,26 @@ const Player = () => {
           />
         </div>
       )}
+      {playerState === "sm" && (
+        <div
+          style={{
+            backgroundColor: appTheme[currentUser.theme].background_1,
+            border: `1px solid ${appTheme[currentUser.theme].background_2}`,
+          }}
+          onClick={() => {
+            setPlayerState("hidden");
+            pauseVideo();
+          }}
+          className="z-[600] cursor-pointer dim hover:brightness-75 absolute top-[27px] left-[-20px] rounded-full w-[40px] h-[40px] flex justify-center items-center"
+        >
+          <ChevronDown
+            className="mt-[1px] ml-[1px] w-[29x] h-[29px]"
+            style={{
+              color: appTheme[currentUser.theme].text_1,
+            }}
+          />
+        </div>
+      )}
       <div
         style={{
           width:
@@ -156,7 +189,9 @@ const Player = () => {
               ? "100%"
               : `${dividerPercent}%`,
         }}
-        className={`relative h-[100%] min-h-[100%] ${playerState === "sm" ? "overflow-hidden" : "overflow-scroll"}`}
+        className={`relative h-[100%] min-h-[100%] ${
+          playerState === "sm" ? "overflow-hidden" : "overflow-scroll"
+        }`}
       >
         <div className="flex flex-col w-[100%] h-[100%]">
           <YouTubePlayer />

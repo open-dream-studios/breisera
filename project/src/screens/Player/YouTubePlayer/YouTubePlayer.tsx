@@ -11,9 +11,15 @@ export const setVideoTime = (time: number) => {
 
 export const getVideoTime = () => {
   if (playerRef) {
-    return playerRef.getCurrentTime()
+    return playerRef.getCurrentTime();
   }
-  return null
+  return null;
+};
+
+export const pauseVideo = () => {
+  if (playerRef) {
+    playerRef.pauseVideo();
+  }
 };
 
 const YouTubePlayer = () => {

@@ -10,20 +10,16 @@ import { appTheme } from "../../util/appTheme";
 import appDetails from "../../util/appDetails.json";
 import { AuthContext } from "@/contexts/authContext";
 import Link from "next/link";
-import { useVideo } from "@/contexts/videoContext";
+import { useVideo, YouTubePlayerVideo } from "@/contexts/videoContext";
 import { FRONTEND_URL } from "@/util/config";
 import { LuCircleFadingPlus } from "react-icons/lu";
 import { MdLibraryBooks } from "react-icons/md";
 import { useContextQueries } from "@/contexts/queryContext";
 
 const LeftBar = () => {
-  const {
-    currentVideo,
-    playerState,
-    setCurrentVideo,
-    setPlayerState,
-  } = useVideo(); 
-  const { recentVideosData, newVideoLoaded } = useContextQueries()
+  const { currentVideo, playerState, setCurrentVideo, setPlayerState } =
+    useVideo();
+  const { recentVideosData, newVideoLoaded } = useContextQueries();
   const { currentUser, handleLogout } = useContext(AuthContext);
   const modal2 = useModal2Store((state: any) => state.modal2);
   const setModal2 = useModal2Store((state: any) => state.setModal2);
@@ -169,9 +165,14 @@ const LeftBar = () => {
         subs: "35000000",
       },
     };
-    newVideoLoaded(vid)
+    newVideoLoaded(vid);
     setCurrentVideo(vid);
     setPlayerState("screen");
+  };
+
+  const handleVideoClick = (video: YouTubePlayerVideo) => {
+    setCurrentVideo(video);
+    newVideoLoaded(video);
   };
 
   if (!currentUser) return;
@@ -201,10 +202,47 @@ const LeftBar = () => {
           } absolute top-0 h-[100%] w-[100%] flex justify-center
           `}
         >
-          <div className="w-[100%] px-[20px] pt-[10px] relative items-start flex flex-col">
+          <div
+            style={{
+              color: appTheme[currentUser.theme].text_1,
+            }}
+            className="relative w-[100%] h-[100%] px-[20px] pt-[10px] items-start flex flex-col"
+          >
+            {playerState === "hidden" && (
+              <div className="w-[100%] mt-[5px] mb-[15px]">
+                <p
+                  style={{
+                    color: appTheme[currentUser.theme].text_3,
+                  }}
+                  className="font-[300] text-[15px] leading-[15px] mb-[10px]"
+                >
+                  Currently Watching
+                </p>
+
+                {currentVideo !== null && (
+                  <Link
+                    href={`${FRONTEND_URL}/www.youtube.com/watch?v=${currentVideo.id}`}
+                    className="dim hover:brightness-75 cursor-pointer w-[100%] flex justify-between items-center rounded-[8px] pr-[20px] pl-[12px] py-[7px] text-[14px] leading-[14px] font-[400]"
+                    style={{
+                      backgroundColor: appTheme[currentUser.theme].background_2,
+                    }}
+                  >
+                    <img
+                      alt=""
+                      className="w-[35%] aspect-[16/9] object-cover min-w-[35%]"
+                      src={currentVideo.snippet?.thumbnails?.standard?.url}
+                    />
+                    <p className="pb-[2px] truncate pl-[10px]">
+                      {currentVideo.snippet.title}
+                    </p>
+                  </Link>
+                )}
+              </div>
+            )}
+
             <Link
               href="/"
-              className="dim hover:brightness-75 cursor-pointer w-[100%] flex gap-[7px] items-center rounded-[10px] px-[12px] py-[5px] mt-[15px]"
+              className="mt-[5px] dim hover:brightness-75 cursor-pointer w-[100%] flex gap-[7px] items-center rounded-[10px] px-[12px] py-[5px]"
               style={{
                 backgroundColor: appTheme[currentUser.theme].background_2,
                 color: appTheme[currentUser.theme].text_1,
@@ -240,49 +278,49 @@ const LeftBar = () => {
             >
               <MdLibraryBooks className="w-[17px] h-[17px]" />
               <p>Library</p>
-            </Link>
+            </Link> 
 
             <div
               style={{
                 color: appTheme[currentUser.theme].text_2,
               }}
+              className={`relative flex flex-col w-[100%] ${
+                playerState === "hidden"
+                  ? "h-[calc(100%-255px)]"
+                  : "h-[calc(100%-165px)]"
+              }`}
             >
-              <p>Recent Videos</p>
-              {recentVideosData &&
-                recentVideosData.map((recent_video: any, index: number) => {
-                  return <div key={index}>{recent_video.id}</div>;
-                })}
-            </div>
-
-            {/* {currentVideo !== null && (
-              <Link
-                href={`${FRONTEND_URL}/www.youtube.com/watch?v=${currentVideo.id}`}
-                className="dim hover:brightness-75 cursor-pointer w-[100%] flex justify-between rounded-[5px] px-[12px] py-[10px]"
+              <p className="mt-[20px]">Recent Videos</p>
+              <div
+                className="mt-[20px] h-[1px] w-[100%] rounded-[1px]"
                 style={{
                   backgroundColor: appTheme[currentUser.theme].background_2,
-                  color: appTheme[currentUser.theme].text_1,
                 }}
-              >
-                <p>Current Video</p>
-                <img
-                  alt=""
-                  className="w-[30%] aspect-[16/9] object-cover"
-                  src={currentVideo.snippet.thumbnails.standard.url}
-                />
-              </Link>
-            )} */}
-          </div>
-
-          <div
-            onClick={handleVid}
-            className="dim select-none cursor-pointer w-[80%] hover:brightness-75 h-[40px] absolute bottom-[70px] flex items-center justify-center font-[600]"
-            style={{
-              borderRadius: "6px",
-              backgroundColor: appTheme[currentUser.theme].background_2,
-              color: appTheme[currentUser.theme].text_2,
-            }}
-          >
-            Set Video
+              ></div>
+              <div className="pt-[15px] w-[calc(100%+10px)] pr-[10px] h-[100%] relative overflow-y-scroll flex flex-col pb-[3px]">
+                {recentVideosData &&
+                  recentVideosData
+                    .map((recent_video: any, index: number) => {
+                      return (
+                        <Link
+                          key={index}
+                          onClick={(e) => {
+                            handleVideoClick(
+                              recent_video as YouTubePlayerVideo
+                            );
+                          }}
+                          href={`${FRONTEND_URL}/www.youtube.com/watch?v=${recent_video.id}`}
+                          className="min-h-[25px] w-[100%] truncate my-[1.8px] dim hover:brightness-75"
+                          style={{
+                            color: appTheme[currentUser.theme].text_4,
+                          }}
+                        >
+                          {recent_video.snippet.title}
+                        </Link>
+                      );
+                    })}
+              </div>
+            </div>
           </div>
 
           <div
