@@ -24,11 +24,34 @@ const TranscriptDisplay = () => {
   return (
     <div className="flex flex-col pb-[60px]">
       <p className="text-[23px] mb-[18px] font-[600]">Transcript</p>
-      {!currentVideoTranscript || !Array.isArray(currentVideoTranscript) ? (
+      {loadingCurrentVideoTranscript && !currentVideoTranscript ? (
+        <>
+          {[1, 2, 3, 4, 5].map((item: number, index: number) => {
+            return (
+              <div className="flex flex-col gap-[9px]" key={index}>
+                <Skeleton
+                  className={`w-[100px] h-[25px] ${
+                    currentUser.theme === "dark"
+                      ? "brightness-25"
+                      : "brightness-[90%]"
+                  }`}
+                />
+                <Skeleton
+                  className={`w-[50%] h-[25px] mb-[20px] ${
+                    currentUser.theme === "dark"
+                      ? "brightness-25"
+                      : "brightness-[90%]"
+                  }`}
+                />
+              </div>
+            );
+          })}
+        </>
+      ) : !currentVideoTranscript || !Array.isArray(currentVideoTranscript) ? (
         <div style={{ color: appTheme[currentUser.theme].text_4 }}>
           Transcript is not available for this video
         </div>
-      ) : !loadingCurrentVideoTranscript ? (
+      ) : (
         currentVideoTranscript.map((transcriptItem: any, index: number) => {
           return (
             <div key={index} className="flex flex-col gap-[6px] mb-[20px]">
@@ -54,29 +77,6 @@ const TranscriptDisplay = () => {
             </div>
           );
         })
-      ) : (
-        <>
-          {[1, 2, 3, 4, 5].map((item: number, index: number) => {
-            return (
-              <div className="flex flex-col gap-[9px]" key={index}>
-                <Skeleton
-                  className={`w-[100px] h-[25px] ${
-                    currentUser.theme === "dark"
-                      ? "brightness-25"
-                      : "brightness-[90%]"
-                  }`}
-                />
-                <Skeleton
-                  className={`w-[50%] h-[25px] mb-[20px] ${
-                    currentUser.theme === "dark"
-                      ? "brightness-25"
-                      : "brightness-[90%]"
-                  }`}
-                />
-              </div>
-            );
-          })}
-        </>
       )}
     </div>
   );

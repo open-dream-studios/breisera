@@ -137,12 +137,11 @@ export const getYoutubeTranscript = async (req, res) => {
       text: cleanTranscript(item.text),
     }));
 
-    return res.status(200).json({ content: transcript });
+    return res.status(200).json({ success: true, content: transcript });
   } catch (error) {
-    console.error("Error:", error.message);
     res
-      .status(404)
-      .json({ success: false, content: "Error getting transcript" });
+      .status(200)
+      .json({ success: false, content: null });
   }
 };
 

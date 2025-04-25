@@ -11,14 +11,8 @@ const SummaryDisplay = () => {
   if (!currentUser) return <></>;
   return (
     <div className="flex flex-col pb-[60px]">
-      <p className="text-[23px] mb-[18px] font-[600]">
-        Summary
-      </p>
-      {!currentSummary ? <div style={{color: appTheme[currentUser.theme].text_4}}>Captions are not available for this video</div> :  !loadingCurrentSummary ? (
-        <div>
-        {timeStampInjectionAndFormatting(currentSummary, currentUser.theme)}
-        </div>
-      ) : (
+      <p className="text-[23px] mb-[18px] font-[600]">Summary</p>
+      {loadingCurrentSummary && !currentSummary ? (
         <>
           {[1, 2, 3, 4, 5].map((item: number, index: number) => {
             return (
@@ -48,6 +42,14 @@ const SummaryDisplay = () => {
             );
           })}
         </>
+      ) : !currentSummary ? (
+        <div style={{ color: appTheme[currentUser.theme].text_4 }}>
+          Captions are not available for this video
+        </div>
+      ) : (
+        <div>
+          {timeStampInjectionAndFormatting(currentSummary, currentUser.theme)}
+        </div>
       )}
     </div>
   );

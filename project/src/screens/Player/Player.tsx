@@ -37,15 +37,15 @@ const Player = () => {
           const res = await makeRequest.post("/api/youtube/get-transcript", {
             videoId: currentVideo.id,
           });
-          if (res.status === 200) {
+          if (res.status === 200 && res.data.success) {
             setCurrentVideoTranscript(res.data.content);
+          } else {
+            setLoadingCurrentSummary(false);
+            setLoadingCurrentKeyConcepts(false);
           }
         } catch (error) {
-          setCurrentVideoTranscript(null);
-          setCurrentKeyConcepts(null);
-          setCurrentSummary(null);
-          setLoadingCurrentSummary(false)
-          setLoadingCurrentKeyConcepts(false)
+          setLoadingCurrentSummary(false);
+          setLoadingCurrentKeyConcepts(false);
           console.error("Failed to fetch videos:", error);
         } finally {
           setLoadingCurrentVideoTranscript(false);
@@ -53,7 +53,12 @@ const Player = () => {
       }
     };
 
+    setCurrentVideoTranscript(null);
+    setCurrentKeyConcepts(null);
+    setCurrentSummary(null);
     setLoadingCurrentVideoTranscript(true);
+    setLoadingCurrentKeyConcepts(true);
+    setLoadingCurrentSummary(true);
     fetchTranscript();
   }, [currentVideo]);
 
@@ -93,16 +98,8 @@ const Player = () => {
     };
 
     if (currentUser && currentVideoTranscript) {
-      setLoadingCurrentSummary(true);
-      setLoadingCurrentKeyConcepts(true);
       generateSummary();
       generateKeyConcepts();
-    } else {
-      setCurrentVideoTranscript(null);
-      setCurrentKeyConcepts(null);
-      setCurrentSummary(null);
-      setLoadingCurrentSummary(false);
-      setLoadingCurrentKeyConcepts(false);
     }
   }, [currentVideoTranscript]);
 

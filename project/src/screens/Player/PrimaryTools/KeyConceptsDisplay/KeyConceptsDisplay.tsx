@@ -1,9 +1,7 @@
 import { AuthContext } from "@/contexts/authContext";
 import { useVideo } from "@/contexts/videoContext";
 import { appTheme } from "@/util/appTheme";
-import {
-  timeStampInjectionAndFormatting,
-} from "@/util/functions/YouTubeData";
+import { timeStampInjectionAndFormatting } from "@/util/functions/YouTubeData";
 import React, { useContext, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -15,14 +13,7 @@ const KeyConceptsDisplay = () => {
   return (
     <div className="flex flex-col pb-[60px]">
       <p className="text-[23px] mb-[18px] font-[600]">Key Concepts</p>
-      {!currentKeyConcepts ? <div style={{color: appTheme[currentUser.theme].text_4}}>Captions are not available for this video</div> : !loadingCurrentKeyConcepts ? (
-        <div>
-          {timeStampInjectionAndFormatting(
-            currentKeyConcepts,
-            currentUser.theme
-          )}
-        </div>
-      ) : (
+      {loadingCurrentKeyConcepts && !currentKeyConcepts? (
         <>
           {[1, 2, 3, 4, 5].map((item: number, index: number) => {
             return (
@@ -45,6 +36,17 @@ const KeyConceptsDisplay = () => {
             );
           })}
         </>
+      ) : !currentKeyConcepts ? (
+        <div style={{ color: appTheme[currentUser.theme].text_4 }}>
+          Captions are not available for this video
+        </div>
+      ) : (
+        <div>
+          {timeStampInjectionAndFormatting(
+            currentKeyConcepts,
+            currentUser.theme
+          )}
+        </div>
       )}
     </div>
   );
