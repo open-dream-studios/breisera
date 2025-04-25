@@ -23,7 +23,7 @@ const Player = () => {
     setCurrentKeyConcepts,
     setLoadingCurrentKeyConcepts,
     setLoadingCurrentSummary,
-    setCurrentSummary,
+    setCurrentSummary
   } = useVideo();
   const [dividerPercent, setDividerPercent] = useState(66);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -125,7 +125,7 @@ const Player = () => {
   return (
     <div
       ref={containerRef}
-      className="relative flex flex-col sm:flex-row w-[100%] h-[100%] overflow-scroll min-h-[700px]"
+      className={`${playerState !== "sm" && "overflow-scroll"} relative flex flex-col sm:flex-row w-[100%] h-[100%] min-h-[700px]`}
       style={{ backgroundColor: appTheme[currentUser.theme].background_1 }}
     >
       {playerState === "sm" && (
@@ -137,7 +137,7 @@ const Player = () => {
           onClick={() => {
             setPlayerState("screen");
           }}
-          className="cursor-pointer dim hover:brightness-75 absolute top-[-20px] left-[-20px] rounded-full w-[40px] h-[40px] flex justify-center items-center"
+          className="z-[600] cursor-pointer dim hover:brightness-75 absolute top-[-20px] left-[-20px] rounded-full w-[40px] h-[40px] flex justify-center items-center"
         >
           <LuSquareArrowOutUpLeft
             className="w-[20px] h-[20px]"
@@ -154,7 +154,7 @@ const Player = () => {
               ? "100%"
               : `${dividerPercent}%`,
         }}
-        className="relative h-[100%] min-h-[100%] overflow-scroll"
+        className={`relative h-[100%] min-h-[100%] ${playerState === "sm" ? "overflow-hidden" : "overflow-scroll"}`}
       >
         <div className="flex flex-col w-[100%] h-[100%]">
           <YouTubePlayer />

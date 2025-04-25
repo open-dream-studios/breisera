@@ -2,7 +2,12 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { vid } from "../../video_db";
 import { StudyToolTypes } from "@/screens/Player/StudyTools/StudyTools";
-import { QueryObserverResult, useQuery } from "@tanstack/react-query";
+import {
+  QueryObserverResult,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { AuthContext } from "./authContext";
 import { makeRequest } from "@/util/axios";
 
@@ -55,7 +60,9 @@ export type FlashCards = {
 
 type VideoContextType = {
   currentVideo: YouTubePlayerVideo | null;
-  setCurrentVideo: React.Dispatch<React.SetStateAction<YouTubePlayerVideo | null>>;
+  setCurrentVideo: React.Dispatch<
+    React.SetStateAction<YouTubePlayerVideo | null>
+  >;
   messages: GPTMessage[];
   setMessages: React.Dispatch<React.SetStateAction<GPTMessage[]>>;
   userMessage: string;
@@ -111,6 +118,8 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const { currentUser } = useContext(AuthContext);
+  const queryClient = useQueryClient();
+
   const {
     data: notesData,
     isLoading: isLoadingNotesData,

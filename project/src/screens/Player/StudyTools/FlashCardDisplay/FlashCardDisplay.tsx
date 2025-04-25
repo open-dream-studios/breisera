@@ -167,7 +167,6 @@ const FlashCardDisplay = () => {
       );
       if (res.status === 200) {
         const geminiResponse = extractJsonArray(res.data.content);
-        console.log(geminiResponse);
         setCurrentFlashCards({
           flashcard_id: generateUniqueId(),
           title: "",

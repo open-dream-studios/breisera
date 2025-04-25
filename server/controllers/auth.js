@@ -3,6 +3,8 @@ import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import nodemailer from "nodemailer";
 import { db } from "../connection/connect.js";
+import dotenv from "dotenv"
+dotenv.config()
 
 // Helper methods
 const generateUserId = () => {
@@ -59,7 +61,7 @@ export const googleAuth = (req, res) => {
 
     if (data.length) {
       // If user exists, generate token and log them in
-      const token = jwt.sign({ id: data[0].user_id }, "jwtSecretKey", {
+      const token = jwt.sign({ id: data[0].user_id }, process.env.JWT_SECRET, {
         expiresIn: "7d",
       });
       // return res.status(200).json({ accessToken: token });
@@ -93,7 +95,7 @@ export const googleAuth = (req, res) => {
               .status(500)
               .json({ message: "Error inserting new user", error: err });
           }
-          const token = jwt.sign({ id: newUserId }, "jwtSecretKey", {
+          const token = jwt.sign({ id: newUserId }, process.env.JWT_SECRET, {
             expiresIn: "7d",
           });
           res.cookie("accessToken", token, {
@@ -147,7 +149,7 @@ export const register = (req, res) => {
             console.error("Registration error:", err);
             return res.status(500).json(err);
           }
-          const token = jwt.sign({ id: newUserId }, "jwtSecretKey", {
+          const token = jwt.sign({ id: newUserId }, process.env.JWT_SECRET, {
             expiresIn: "7d",
           });
           res.cookie("accessToken", token, {
@@ -208,7 +210,7 @@ export const login = (req, res) => {
 
     // Otherwise, login was successful
     // Establish a secret key for the user
-    const token = jwt.sign({ id: data[0].user_id }, "jwtSecretKey", {
+    const token = jwt.sign({ id: data[0].user_id }, process.env.JWT_SECRET, {
       expiresIn: "7d",
     });
     res.cookie("accessToken", token, {
@@ -337,7 +339,7 @@ export const checkCode = async (req, res) => {
           isWithinOneHour(currentTime, data[0].password_reset_timestamp)
         ) {
           // Establish a secret key for the user
-          const token = jwt.sign({ id: data[0].user_id }, "jwtSecretKey", {
+          const token = jwt.sign({ id: data[0].user_id }, process.env.JWT_SECRET, {
             expiresIn: "7d",
           });
           return res.status(200).json({
@@ -386,7 +388,7 @@ export const passwordReset = async (req, res) => {
           .json({ success: false, message: data[0].auth_provider });
       }
 
-      jwt.verify(accessToken, "jwtSecretKey", (err) => {
+      jwt.verify(accessToken, process.env.JWT_SECRET, (err) => {
         if (err) return res.status(403).json("Token is not valid!");
         const q = "UPDATE users SET `password`=? WHERE user_id=?";
 

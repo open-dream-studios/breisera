@@ -19,6 +19,11 @@ import Player from "@/screens/Player/Player";
 import { usePathname } from "next/navigation";
 import LandingNav from "@/screens/Landing/LandingNav/LandingNav";
 import LandingLeftBar from "@/screens/Landing/LandingLeftBar/LandingLeftBar";
+import {
+  useLeftBarOpenStore,
+  useLeftBarRefStore,
+} from "@/store/useLeftBarOpenStore";
+import { QueryProvider } from "@/contexts/queryContext";
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   const [queryClient] = useState(() => new QueryClient());
@@ -26,9 +31,11 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthContextProvider>
-        <VideoProvider>
-          <AppRoot>{children}</AppRoot>
-        </VideoProvider>
+        <QueryProvider>
+          <VideoProvider>
+            <AppRoot>{children}</AppRoot>
+          </VideoProvider>
+        </QueryProvider>
       </AuthContextProvider>
     </QueryClientProvider>
   );
@@ -39,6 +46,11 @@ const AppRoot = ({ children }: { children: ReactNode }) => {
   const queryClientRef = useRef(queryClient);
   const { currentUser } = useContext(AuthContext);
   const socketRef = useRef<Socket | null>(null);
+  const pathname = usePathname();
+  const leftBarRef = useLeftBarRefStore((state) => state.leftBarRef);
+  const setLeftBarOpen = useLeftBarOpenStore(
+    (state: any) => state.setLeftBarOpen
+  );
 
   useEffect(() => {
     queryClient.invalidateQueries({ queryKey: ["currentUser"] });
@@ -71,6 +83,18 @@ const AppRoot = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     localStorage.setItem("user", JSON.stringify(currentUser));
   }, [currentUser]);
+
+  useEffect(() => {
+    if (leftBarRef && leftBarRef.current) {
+      leftBarRef.current.style.transition = "right 0.3s ease-in-out";
+    }
+    setLeftBarOpen(false);
+    setTimeout(() => {
+      if (leftBarRef && leftBarRef.current) {
+        leftBarRef.current.style.transition = "none";
+      }
+    }, 300);
+  }, [pathname]);
 
   return currentUser ? (
     <ProtectedLayout>{children}</ProtectedLayout>
@@ -107,7 +131,13 @@ const ProtectedLayout = ({ children }: { children: ReactNode }) => {
         >
           <Player />
         </div>
-        <div className={`z-[500] w-[100%] h-[100%] ${playerState === "screen" && "hidden"}`}>{children}</div>
+        <div
+          className={`z-[500] w-[100%] h-[100%] ${
+            playerState === "screen" && "hidden"
+          }`}
+        >
+          {children}
+        </div>
       </PageLayout>
     </>
   );

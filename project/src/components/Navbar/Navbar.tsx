@@ -173,7 +173,7 @@ const Navbar = () => {
             </p>
           </Link>
 
-          <div className="ml-[28px] hidden md:flex flex-row h-[22px] gap-[28px]">
+          {/* <div className="ml-[28px] hidden md:flex flex-row h-[22px] gap-[28px]">
             <Link
               onClick={() => {
                 if (playerState === "screen") {
@@ -216,7 +216,7 @@ const Navbar = () => {
             >
               Explore
             </Link>
-          </div>
+          </div> */}
         </div>
 
         <div className="h-[100%] mr-[10px] pr-[2px] hidden min-[500px]:flex flex-row items-center gap-[18px]">

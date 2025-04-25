@@ -16,8 +16,6 @@ export const handleUpdateUser = (queryClient: QueryClient) => {
 //         return res.data;
 //       },
 //     });
-
-//     console.log("Updated user:", updatedUser);
 //   } catch (error) {
 //     console.error("Error fetching updated user:", error);
 //   }

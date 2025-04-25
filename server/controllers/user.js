@@ -3,6 +3,9 @@ import jwt from "jsonwebtoken";
 import { formatDateForMySQL } from "../functions/data.js";
 import { db } from "../connection/connect.js";
 import { products } from "../payments/stripe.js";
+import { decodeToken } from "../functions/auth.js"
+import dotenv from "dotenv"
+dotenv.config()
 
 // export const getUser = (req, res) => {
 //   const userId = req.params.userId;
@@ -36,7 +39,7 @@ import { products } from "../payments/stripe.js";
 //   const token = req.cookies.accessToken
 //   if (!token) return res.status(401).json("Not logged in!");
 
-//   jwt.verify(token, "jwtSecretKey", (err, userInfo) => {
+//   jwt.verify(token, process.env.JWT_SECRET, (err, userInfo) => {
 //     if (err) return res.status(403).json("Token is invalid!");
 
 //     const q = "DELETE FROM users WHERE `user_id`= ?";
@@ -54,7 +57,7 @@ export const getCurrentUser = (req, res) => {
   const token = req.cookies.accessToken;
   if (!token) return res.json(null);
 
-  jwt.verify(token, "jwtSecretKey", (err, userInfo) => {
+  jwt.verify(token, process.env.JWT_SECRET, (err, userInfo) => {
     if (err) return res.status(403).json("Token is invalid!");
 
     const q = "SELECT * FROM users WHERE user_id = ?";
@@ -78,7 +81,7 @@ export const getCurrentUserSubscription = (req, res) => {
   const token = req.cookies.accessToken;
   if (!token) return res.json(null);
 
-  jwt.verify(token, "jwtSecretKey", async (err, userInfo) => {
+  jwt.verify(token, process.env.JWT_SECRET, async (err, userInfo) => {
     if (err) return res.status(403).json(null);
 
     try {
@@ -144,7 +147,7 @@ export const getCurrentUserBilling = (req, res) => {
   const token = req.cookies.accessToken;
   if (!token) return res.json(null);
 
-  jwt.verify(token, "jwtSecretKey", async (err, userInfo) => {
+  jwt.verify(token, process.env.JWT_SECRET, async (err, userInfo) => {
     if (err) return res.status(403).json(null);
 
     try {
@@ -202,7 +205,7 @@ export const updateCurrentUser = (req, res) => {
   const token = req.cookies.accessToken;
   if (!token) return res.status(401).json("Not authenticated!");
 
-  jwt.verify(token, "jwtSecretKey", (err, userInfo) => {
+  jwt.verify(token, process.env.JWT_SECRET, (err, userInfo) => {
     if (err) return res.status(403).json("Token is not valid!");
 
     if (Object.keys(req.body).length === 0) {
@@ -363,12 +366,10 @@ export const deleteNote = async (req, res) => {
         note_id,
       ]);
     if (result.affectedRows === 0) {
-      return res
-        .status(404)
-        .json({
-          success: false,
-          message: "Note not found or not authorized to delete",
-        });
+      return res.status(404).json({
+        success: false,
+        message: "Note not found or not authorized to delete",
+      });
     }
     return res.status(200).json({ success: true });
   } catch (error) {
@@ -390,14 +391,17 @@ export const writeFlashCards = async (req, res) => {
         [user_id],
         (err, data) => {
           if (err) {
-            console.error("DB Query Error: Could not fetch any existing flashcard sets", err);
+            console.error(
+              "DB Query Error: Could not fetch any existing flashcard sets",
+              err
+            );
             return reject(err);
           }
           resolve(data.length);
         }
       );
     });
-    const newTitle = `Set ${userFlashCards + 1}`
+    const newTitle = `Set ${userFlashCards + 1}`;
 
     // Search to see if the flashcards already exists
     const existingFlashCards = await new Promise((resolve, reject) => {
@@ -406,7 +410,10 @@ export const writeFlashCards = async (req, res) => {
         [user_id, flashcard_id],
         (err, data) => {
           if (err) {
-            console.error("DB Query Error: Could not fetch existing flashcards", err);
+            console.error(
+              "DB Query Error: Could not fetch existing flashcards",
+              err
+            );
             return reject(err);
           }
           resolve(data.length > 0 ? data[0].flashcard_id : null);
@@ -418,7 +425,9 @@ export const writeFlashCards = async (req, res) => {
     if (!flashcards) {
       // Create a new flashcard set
       if (userFlashCards && userFlashCards >= 100) {
-        return res.status(417).json({ message: "User flashcard limit exceeded" });
+        return res
+          .status(417)
+          .json({ message: "User flashcard limit exceeded" });
       }
       const success = await new Promise((resolve, reject) => {
         db.query(
@@ -439,7 +448,9 @@ export const writeFlashCards = async (req, res) => {
       if (success) {
         return res.status(200).json({ message: "Flashcard set created" });
       } else {
-        return res.status(417).json({ message: "Flashcard set creation failed" });
+        return res
+          .status(417)
+          .json({ message: "Flashcard set creation failed" });
       }
     } else {
       // Update flashcard set
@@ -449,7 +460,10 @@ export const writeFlashCards = async (req, res) => {
           [content, video_id, user_id, flashcard_id],
           (err, data) => {
             if (err) {
-              console.error("DB Mutation Error: Could not update flashcards", err);
+              console.error(
+                "DB Mutation Error: Could not update flashcards",
+                err
+              );
               return reject(err);
             }
             resolve(data);
@@ -512,16 +526,78 @@ export const deleteFlashCards = async (req, res) => {
         flashcard_id,
       ]);
     if (result.affectedRows === 0) {
-      return res
-        .status(404)
-        .json({
-          success: false,
-          message: "Flashcard set not found or not authorized to delete",
-        });
+      return res.status(404).json({
+        success: false,
+        message: "Flashcard set not found or not authorized to delete",
+      });
     }
     return res.status(200).json({ success: true });
   } catch (error) {
     console.error("Error deleting flashcards:", error);
     return res.status(500).json({ success: false, error: "Server error" });
+  }
+};
+
+export const updateRecentVideos = async (req, res) => {
+  try {
+    const token = req.cookies.accessToken;
+    if (!token) return res.status(401).json({ error: "Not authenticated" });
+    const { updated_recent_videos } = req.body;
+    const user_id = decodeToken(token)
+
+    const success = await new Promise((resolve, reject) => {
+      db.query(
+        "UPDATE users SET recent_videos = ? WHERE user_id = ?",
+        [updated_recent_videos, user_id],
+        (err, data) => {
+          if (err) {
+            console.error(
+              "DB Mutation Error: Could not update user",
+              err
+            );
+            return reject(err);
+          }
+          resolve(data);
+        }
+      );
+    });
+    if (success) {
+      return res.status(200).json({ message: "User recent videos updated" });
+    } else {
+      return res.status(417).json({ message: "User recent videos update failed" });
+    }
+  } catch (error) {
+    console.error("Error fetching recent videos:", error);
+    return res.status(500).json({ success: false, recent_videos: [] });
+  }
+};
+
+export const getRecentVideos = async (req, res) => {
+  try {
+    const token = req.cookies.accessToken;
+    if (!token) return res.status(401).json({ error: "Not authenticated" });
+    const user_id = decodeToken(token)
+
+    const recent_videos = await new Promise((resolve, reject) => {
+      db.query(
+        "SELECT recent_videos FROM users WHERE user_id = ?",
+        [user_id],
+        (err, data) => {
+          if (err) {
+            console.error("DB Query Error: Could not fetch recent videos", err);
+            return reject(err);
+          }
+          resolve(data.length > 0 ? data[0].recent_videos : []);
+        }
+      );
+    });
+
+    return res.status(200).json({
+      success: true,
+      recent_videos,
+    });
+  } catch (error) {
+    console.error("Error fetching recent videos:", error);
+    return res.status(500).json({ success: false, recent_videos: [] });
   }
 };

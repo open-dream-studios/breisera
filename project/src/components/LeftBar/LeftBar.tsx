@@ -12,9 +12,18 @@ import { AuthContext } from "@/contexts/authContext";
 import Link from "next/link";
 import { useVideo } from "@/contexts/videoContext";
 import { FRONTEND_URL } from "@/util/config";
+import { LuCircleFadingPlus } from "react-icons/lu";
+import { MdLibraryBooks } from "react-icons/md";
+import { useContextQueries } from "@/contexts/queryContext";
 
 const LeftBar = () => {
-  const { currentVideo, setCurrentVideo, setPlayerState } = useVideo();
+  const {
+    currentVideo,
+    playerState,
+    setCurrentVideo,
+    setPlayerState,
+  } = useVideo(); 
+  const { recentVideosData, newVideoLoaded } = useContextQueries()
   const { currentUser, handleLogout } = useContext(AuthContext);
   const modal2 = useModal2Store((state: any) => state.modal2);
   const setModal2 = useModal2Store((state: any) => state.setModal2);
@@ -62,7 +71,7 @@ const LeftBar = () => {
     }
   }, [showLeftBar]);
 
-  const toggleLeftBar = () => {
+  const closeLeftBar = () => {
     if (leftBarRef && leftBarRef.current) {
       leftBarRef.current.style.transition = "right 0.3s ease-in-out";
     }
@@ -160,6 +169,7 @@ const LeftBar = () => {
         subs: "35000000",
       },
     };
+    newVideoLoaded(vid)
     setCurrentVideo(vid);
     setPlayerState("screen");
   };
@@ -191,8 +201,60 @@ const LeftBar = () => {
           } absolute top-0 h-[100%] w-[100%] flex justify-center
           `}
         >
-          <div className="w-[100%] px-[20px] pt-[10px] relative flex items-start">
-            {currentVideo !== null && (
+          <div className="w-[100%] px-[20px] pt-[10px] relative items-start flex flex-col">
+            <Link
+              href="/"
+              className="dim hover:brightness-75 cursor-pointer w-[100%] flex gap-[7px] items-center rounded-[10px] px-[12px] py-[5px] mt-[15px]"
+              style={{
+                backgroundColor: appTheme[currentUser.theme].background_2,
+                color: appTheme[currentUser.theme].text_1,
+              }}
+              onClick={() => {
+                if (playerState === "screen") {
+                  setPlayerState("sm");
+                }
+              }}
+            >
+              <LuCircleFadingPlus className="w-[17px] h-[17px]" />
+              <p>New</p>
+            </Link>
+
+            <div
+              style={{
+                backgroundColor: appTheme[currentUser.theme].background_2,
+              }}
+              className="w-[100%] h-[1px] rounded-[1px] my-[15px]"
+            ></div>
+
+            <Link
+              style={{
+                color: appTheme[currentUser.theme].text_2,
+              }}
+              className="dim hover:brightness-75 cursor-pointer w-[100%] flex gap-[8px] items-center rounded-[10px] px-[12px] py-[5px]"
+              href="/library"
+              onClick={() => {
+                if (playerState === "screen") {
+                  setPlayerState("sm");
+                }
+              }}
+            >
+              <MdLibraryBooks className="w-[17px] h-[17px]" />
+              <p>Library</p>
+            </Link>
+
+            <div
+              style={{
+                color: appTheme[currentUser.theme].text_2,
+              }}
+            >
+              <p>Recent Videos</p>
+              {recentVideosData &&
+                recentVideosData.map((recent_video: any, index: number) => {
+                  return <div key={index}>{recent_video.id}</div>;
+                })}
+            </div>
+
+            {/* {currentVideo !== null && (
               <Link
                 href={`${FRONTEND_URL}/www.youtube.com/watch?v=${currentVideo.id}`}
                 className="dim hover:brightness-75 cursor-pointer w-[100%] flex justify-between rounded-[5px] px-[12px] py-[10px]"
@@ -202,13 +264,13 @@ const LeftBar = () => {
                 }}
               >
                 <p>Current Video</p>
-                {/* <img
+                <img
                   alt=""
                   className="w-[30%] aspect-[16/9] object-cover"
                   src={currentVideo.snippet.thumbnails.standard.url}
-                /> */}
+                />
               </Link>
-            )}
+            )} */}
           </div>
 
           <div
@@ -245,7 +307,7 @@ const LeftBar = () => {
         >
           <div
             ref={showLeftBarRef}
-            onClick={toggleLeftBar}
+            onClick={closeLeftBar}
             className="absolute top-0 left-0 w-[100vw] h-[100vh] flex items-center justify-center"
             style={{
               opacity: 0,

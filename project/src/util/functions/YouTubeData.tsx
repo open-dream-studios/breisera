@@ -49,7 +49,6 @@ export const timeStampInjection = (
         <button
           key={index}
           onClick={() => {
-            console.log(time);
             const currentTime = getVideoTime();
             const seconds = convertToSeconds(time);
             if (currentTime !== seconds && seconds) {

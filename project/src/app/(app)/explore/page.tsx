@@ -7,9 +7,11 @@ import { BACKEND_URL, FRONTEND_URL } from "@/util/config";
 import Link from "next/link";
 import { useVideo, YouTubePlayerVideo } from "@/contexts/videoContext";
 import { makeRequest } from "@/util/axios";
+import { useContextQueries } from "@/contexts/queryContext";
 
 const ExplorePage = () => {
   const { currentUser } = useContext(AuthContext);
+  const { newVideoLoaded } = useContextQueries()
   const { setCurrentVideo, exploreVideos, setExploreVideos } = useVideo();
   if (!currentUser) return <></>;
   
@@ -42,6 +44,7 @@ const ExplorePage = () => {
 
   const handleVideoClick = (video: YouTubePlayerVideo) => {
     setCurrentVideo(video);
+    newVideoLoaded(video)
   };
 
   if (loading) return <div>Loading...</div>;
