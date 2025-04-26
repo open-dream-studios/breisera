@@ -9,8 +9,8 @@ import { useVideo } from "@/contexts/videoContext";
 import { makeRequest } from "@/util/axios";
 import { BACKEND_URL } from "@/util/config";
 import { extractJsonArray } from "@/util/functions/YouTubeData";
-import { LiaTrashAltSolid } from "react-icons/lia";
 import { generateUniqueId } from "@/util/functions/Data";
+import { GoTrash } from "react-icons/go";
 
 type FlashCardsListProps = {
   flashCardsOpen: boolean;
@@ -42,7 +42,7 @@ const FlashCardsList = ({
     <div
       style={{
         backgroundColor: appTheme[currentUser.theme].background_2,
-        color: appTheme[currentUser.theme].text_3,
+        color: appTheme[currentUser.theme].text_1,
       }}
       className={`${
         smallScreen
@@ -81,7 +81,7 @@ const FlashCardsList = ({
       {flashCardsOpen && (
         <div
           className="flex flex-col mb-[20px]"
-          style={{ color: appTheme[currentUser.theme].text_3 }}
+          style={{ color: appTheme[currentUser.theme].text_1 }}
         >
           {flashCardData.map((flashcards: any, index: number) => {
             return (
@@ -108,15 +108,15 @@ const FlashCardsList = ({
                         video_id: flashcards.video_id,
                       });
                     }}
-                    className="cursor-pointer dim hover:brightness-75 truncate w-[calc(100%-40px)] font-[600] text-[15px]"
+                    className="cursor-pointer dim hover:brightness-75 truncate w-[calc(100%-40px)] font-[400] text-[15px]"
                   >
                     {flashcards.title}
                   </div>
-                  <LiaTrashAltSolid
+                  <GoTrash
                     onClick={() =>
                       handleDeleteFlashCards(flashcards.flashcard_id)
                     }
-                    className="w-[25px] h-[25px] mr-[5px] cursor-pointer dim hover:brightness-75"
+                    className="w-[19px] h-[19px] mr-[5px] cursor-pointer dim hover:brightness-75"
                     style={{}}
                   />
                 </div>

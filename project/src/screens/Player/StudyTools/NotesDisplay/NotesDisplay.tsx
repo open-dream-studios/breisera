@@ -9,7 +9,7 @@ import axios from "axios";
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { FaPlus } from "react-icons/fa6";
 import { FaChevronDown } from "react-icons/fa6";
-import { LiaTrashAltSolid } from "react-icons/lia";
+import { GoTrash } from "react-icons/go";
 
 type NotesListProps = {
   notesOpen: boolean;
@@ -74,18 +74,18 @@ const NotesList = ({
       {notesOpen && (
         <div
           className="flex flex-col mb-[20px]"
-          style={{ color: appTheme[currentUser.theme].text_3 }}
+          style={{ color: appTheme[currentUser.theme].text_1 }}
         >
           {notesData.map((note: any, index: number) => {
             return (
-              <div className="" key={index}>
+              <div key={index}>
                 <div
-                  className="w-[100%] h-[1px] my-[10px] rounded-[2px] opacity-75"
+                  className="opacity-75 w-[100%] h-[1px] mb-[10px] mt-[2px] rounded-[2px]"
                   style={{
                     backgroundColor: appTheme[currentUser.theme].text_3,
                   }}
                 />
-                <div className="w-[100%] flex flex-row justify-between">
+                <div className="w-[100%] flex flex-row justify-between mb-[6px]">
                   <div
                     onClick={() => {
                       setNotesOpen(false);
@@ -97,16 +97,16 @@ const NotesList = ({
                         video_id: note.video_id,
                       });
                     }}
-                    className="cursor-pointer dim hover:brightness-75 truncate w-[calc(100%-40px)] font-[600] text-[15px]"
+                    className="cursor-pointer dim hover:brightness-75 truncate w-[calc(100%-40px)] font-[400] text-[14px]"
                   >
                     {note.content === "<br>" || note.content.trim() === ""
                       ? "Blank Note"
                       : stripHtml(note.content)}
                   </div>
-                  <LiaTrashAltSolid
+                  <GoTrash
                     onClick={() => handleDeleteNote(note.note_id)}
-                    className="w-[25px] h-[25px] mr-[5px] cursor-pointer dim hover:brightness-75"
-                    style={{}}
+                    className="w-[19px] h-[19px] mr-[2px] cursor-pointer opacity-dim hover:brightness-75"
+                    style={{ color: appTheme[currentUser.theme].text_1 }}
                   />
                 </div>
               </div>
