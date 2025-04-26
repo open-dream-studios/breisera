@@ -123,7 +123,7 @@ const LeftBar = () => {
   };
 
   const handleVideoClick = (video: YouTubePlayerVideo) => {
-    closeLeftBar()
+    closeLeftBar();
     setCurrentVideo(video);
     newVideoLoaded(video);
   };
@@ -176,7 +176,7 @@ const LeftBar = () => {
                   <Link
                     href={`${FRONTEND_URL}/www.youtube.com/watch?v=${currentVideo.id}`}
                     className="dim hover:brightness-75 cursor-pointer w-[100%] flex justify-between items-center rounded-[8px] pr-[20px] pl-[12px] py-[7px] text-[14px] leading-[14px] font-[400]"
-                    onClick={()=>console.log(33)}
+                    onClick={() => console.log(33)}
                     style={{
                       backgroundColor: appTheme[currentUser.theme].background_2,
                     }}
@@ -202,7 +202,7 @@ const LeftBar = () => {
                 color: appTheme[currentUser.theme].text_1,
               }}
               onClick={() => {
-                closeLeftBar()
+                closeLeftBar();
                 if (playerState === "screen") {
                   setPlayerState("sm");
                 }
@@ -226,7 +226,7 @@ const LeftBar = () => {
               className="dim hover:brightness-75 cursor-pointer w-[100%] flex gap-[8px] items-center rounded-[10px] px-[12px] py-[5px]"
               href="/library"
               onClick={() => {
-                closeLeftBar()
+                closeLeftBar();
                 if (playerState === "screen") {
                   setPlayerState("sm");
                 }
@@ -234,7 +234,7 @@ const LeftBar = () => {
             >
               <MdLibraryBooks className="w-[17px] h-[17px]" />
               <p>Library</p>
-            </Link> 
+            </Link>
 
             <div
               style={{
@@ -255,26 +255,23 @@ const LeftBar = () => {
               ></div>
               <div className="pt-[15px] w-[calc(100%+10px)] pr-[10px] h-[100%] relative overflow-y-scroll flex flex-col pb-[3px]">
                 {recentVideosData &&
-                  recentVideosData
-                    .map((recent_video: any, index: number) => {
-                      return (
-                        <Link
-                          key={index}
-                          onClick={(e) => {
-                            handleVideoClick(
-                              recent_video as YouTubePlayerVideo
-                            );
-                          }}
-                          href={`${FRONTEND_URL}/www.youtube.com/watch?v=${recent_video.id}`}
-                          className="min-h-[25px] w-[100%] truncate my-[1.8px] dim hover:brightness-75"
-                          style={{
-                            color: appTheme[currentUser.theme].text_4,
-                          }}
-                        >
-                          {recent_video.snippet.title}
-                        </Link>
-                      );
-                    })}
+                  recentVideosData.map((recent_video: any, index: number) => {
+                    return (
+                      <Link
+                        key={index}
+                        onClick={(e) => {
+                          handleVideoClick(recent_video as YouTubePlayerVideo);
+                        }}
+                        href={`${FRONTEND_URL}/www.youtube.com/watch?v=${recent_video.id}`}
+                        className="min-h-[25px] w-[100%] truncate my-[1.8px] dim hover:brightness-75"
+                        style={{
+                          color: appTheme[currentUser.theme].text_4,
+                        }}
+                      >
+                        {recent_video.snippet.title}
+                      </Link>
+                    );
+                  })}
               </div>
             </div>
           </div>
