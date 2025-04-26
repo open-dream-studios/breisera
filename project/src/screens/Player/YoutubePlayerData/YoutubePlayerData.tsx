@@ -1,16 +1,52 @@
+"use client";
 import { showToast } from "@/components/CustomToast";
 import { AuthContext } from "@/contexts/authContext";
 import { useVideo } from "@/contexts/videoContext";
+import { useModal2Store } from "@/store/useModalStore";
 import { appTheme, appTextSizes } from "@/util/appTheme";
+import { BACKEND_URL } from "@/util/config";
 import { openWindow } from "@/util/functions/AppFunctions";
 import { formatSubs } from "@/util/functions/YouTubeData";
-import React, { useContext } from "react";
+import Modal2Continue from "@/util/modals/Modal2Continue";
+import React, { useContext, useState } from "react";
 import { RxCopy } from "react-icons/rx";
 import { TfiDownload } from "react-icons/tfi";
 
 const YoutubePlayerData = () => {
   const { currentUser } = useContext(AuthContext);
   const { currentVideo } = useVideo();
+  const modal2 = useModal2Store((state: any) => state.modal2);
+  const setModal2 = useModal2Store((state: any) => state.setModal2);
+
+  const [loading, setLoading] = useState<boolean>(false);
+  const [start, setStart] = useState<string>("00:00");
+  const [end, setEnd] = useState<string>("00:40");
+
+  const handleDownload = async () => {
+    if (!currentVideo) return;
+    setLoading(true);
+    showToast("Downloading...", "success");
+    try {
+      const response = await fetch(`${BACKEND_URL}/create-video`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          link: `https://www.youtube.com/watch?v=${currentVideo.id}`,
+          start: start,
+          end: end,
+        }),
+      });
+      const responseData = await response.json();
+      if (response.status === 200) {
+        showToast("Downloaded!", "success");
+        window.open(`${BACKEND_URL}/download-video`, "_self");
+      }
+    } catch (error) {
+      console.error("Error downloading the video:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const copyToClipboard = () => {
     if (!currentVideo) return;
@@ -18,6 +54,26 @@ const YoutubePlayerData = () => {
       .writeText(`https://www.youtube.com/watch?v=${currentVideo.id}`)
       .then(() => showToast("Copied link to clipboard", "success"))
       .catch((err) => console.error("Failed to copy: ", err));
+  };
+
+  const handleDownloadClick = () => {
+    if (!currentUser) return;
+    setModal2({
+      ...modal2,
+      open: !modal2.open,
+      showClose: false,
+      offClickClose: true,
+      width: "w-[300px]",
+      maxWidth: "max-w-[400px]",
+      aspectRatio: "aspect-[5/2]",
+      borderRadius: "rounded-[12px] md:rounded-[15px]",
+      content: (
+        <Modal2Continue
+          text={"Download this YouTube video?"}
+          onContinue={handleDownload}
+        />
+      ),
+    });
   };
 
   if (currentVideo === null || !currentUser) return;
@@ -59,8 +115,9 @@ const YoutubePlayerData = () => {
           </div>
         </div>
         <div className="flex flex-row gap-[8px]">
-          <div
-            // onClick={copyToClipboard}
+          <button
+            disabled={loading}
+            onClick={handleDownloadClick}
             className="flex flex-col h-[34px] pb-[1px] w-[65px] rounded-[11px] cursor-pointer hover:brightness-75 dim text-[15px] leading-[15px] items-center justify-center"
             style={{
               backgroundColor:
@@ -74,8 +131,8 @@ const YoutubePlayerData = () => {
               color: appTheme[currentUser.theme].text_2,
             }}
           >
-          <TfiDownload className="w-[19px] h-[19px]"/>
-          </div>
+            <TfiDownload className="w-[19px] h-[19px]" />
+          </button>
 
           <div
             onClick={copyToClipboard}

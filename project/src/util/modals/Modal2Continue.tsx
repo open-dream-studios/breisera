@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { useContext } from "react";
 import { appTheme } from "../appTheme";
 import { AuthContext } from "../../contexts/authContext";
@@ -9,7 +9,10 @@ type Modal2ContinueProps = {
   onContinue: () => void;
 };
 
-const Modal2Continue: React.FC<Modal2ContinueProps> = ({ text, onContinue }) => {
+const Modal2Continue: React.FC<Modal2ContinueProps> = ({
+  text,
+  onContinue,
+}) => {
   const modal2 = useModal2Store((state: any) => state.modal2);
   const setModal2 = useModal2Store((state: any) => state.setModal2);
 
@@ -45,7 +48,10 @@ const Modal2Continue: React.FC<Modal2ContinueProps> = ({ text, onContinue }) => 
             color: appTheme[currentUser.theme].background_1_2,
             backgroundColor: appTheme[currentUser.theme].text_3,
           }}
-          onClick={onContinue}
+          onClick={() => {
+            setModal2({ ...modal2, open: false });
+            onContinue();
+          }}
         >
           Continue
         </div>

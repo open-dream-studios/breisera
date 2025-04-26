@@ -18,6 +18,8 @@ import {
 } from "./payments/transactions.js";
 import { db } from "./connection/connect.js";
 import { initializeWebSocket, getIO } from "./connection/websocket.js";
+import { spawn } from "child_process";
+import path from "path";
 dotenv.config();
 
 const isProduction = true
@@ -37,6 +39,7 @@ const server = isProduction
       app
     );
 const io = initializeWebSocket(server);
+const __dirname = new URL(".", import.meta.url).pathname;
 
 // STRIPE Webhooks
 // TEST COMMAND
@@ -254,6 +257,38 @@ app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/payment", paymentRoutes);
 app.use("/api/youtube", youtubeSearchRoutes)
+
+// Download Videos
+app.use("/temp", express.static(path.join(__dirname, "temp")));
+app.use("/create-video", (req, res) => {
+  const video_name = "video.mp4"
+  const { link, start, end } = req.body;
+  if (!link || !start || !end) {
+    return res.status(400).json({ error: "Missing required parameters" });
+  }
+  const pythonProcess = spawn("python3", ["python/video.py", link, start, end, video_name]);
+  pythonProcess.stdout.on("data", (data) => {
+    // console.log(`stdout: ${data.toString()}`);
+  });
+  pythonProcess.stderr.on("data", (data) => {
+    console.error(`stderr: ${data.toString()}`);
+  });
+  pythonProcess.on("close", (code) => {
+    // console.log(`Python script exited with code ${code}`);
+    res.status(200).json({ message: "Processing started" });
+  });
+});
+
+app.get("/download-video", (req, res) => {
+  const video_name = "video.mp4"
+  const filePath = path.join(__dirname, "temp", video_name);
+  res.download(filePath, video_name, (err) => {
+    if (err) {
+      console.error("Error downloading the file:", err);
+      res.status(500).send("Error downloading the file.");
+    }
+  });
+});
 
 // GPT Endpoint
 app.post("/gpt-message", async (req, res) => {
