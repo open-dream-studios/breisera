@@ -16,11 +16,15 @@ import { LuCircleFadingPlus } from "react-icons/lu";
 import { MdLibraryBooks } from "react-icons/md";
 import { useContextQueries } from "@/contexts/queryContext";
 import { iso8601ToSeconds } from "@/util/functions/Data";
+import { playVideo } from "@/screens/Player/YouTubePlayer/YouTubePlayer";
 
 const LeftBar = () => {
   const { currentVideo, playerState, setCurrentVideo, setPlayerState } =
     useVideo();
-  const { recentVideosData, updateRecentVideo } = useContextQueries();
+  const {
+    recentVideosData,
+    updateRecentVideo,
+  } = useContextQueries();
   const { currentUser, handleLogout } = useContext(AuthContext);
   const modal2 = useModal2Store((state: any) => state.modal2);
   const setModal2 = useModal2Store((state: any) => state.setModal2);
@@ -174,10 +178,13 @@ const LeftBar = () => {
                 </p>
 
                 {currentVideo !== null && (
-                  <Link
-                    href={`${FRONTEND_URL}/www.youtube.com/watch?v=${currentVideo.id}&start=10`}
+                  <div
                     className="dim hover:brightness-75 cursor-pointer w-[100%] flex justify-between items-center rounded-[8px] pr-[20px] pl-[12px] py-[7px] text-[14px] leading-[14px] font-[400]"
-                    onClick={() => console.log(33)}
+                    onClick={() => {
+                      closeLeftBar();
+                      setPlayerState("screen");
+                      playVideo()
+                    }}
                     style={{
                       backgroundColor: appTheme[currentUser.theme].background_2,
                     }}
@@ -190,7 +197,7 @@ const LeftBar = () => {
                     <p className="pb-[2px] truncate pl-[10px]">
                       {currentVideo.snippet.title}
                     </p>
-                  </Link>
+                  </div>
                 )}
               </div>
             )}
@@ -255,16 +262,17 @@ const LeftBar = () => {
                 }}
               ></div>
               <div className="pt-[15px] w-[calc(100%+10px)] pr-[10px] h-[100%] relative overflow-y-scroll flex flex-col pb-[3px]">
-                {recentVideosData && recentVideosData.length > 0 &&
+                {recentVideosData &&
+                  recentVideosData.length > 0 &&
                   recentVideosData.map((recent_video: any, index: number) => {
-                    const video_data = recent_video.video_data
+                    const video_data = recent_video.video_data;
                     return (
                       <Link
                         key={index}
                         onClick={(e) => {
                           handleVideoClick(video_data as YouTubePlayerVideo);
                         }}
-                        href={`${FRONTEND_URL}/www.youtube.com/watch?v=${video_data.id}&start=${iso8601ToSeconds(recent_video.last_timestamp)}`}
+                        href={`${FRONTEND_URL}/www.youtube.com/watch?v=${video_data.id}&start=${recent_video.last_timestamp}`}
                         className="min-h-[25px] w-[100%] truncate my-[1.8px] dim hover:brightness-75"
                         style={{
                           color: appTheme[currentUser.theme].text_4,

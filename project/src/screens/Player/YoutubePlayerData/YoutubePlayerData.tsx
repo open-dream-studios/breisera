@@ -1,6 +1,7 @@
 "use client";
 import { showToast } from "@/components/CustomToast";
 import { AuthContext } from "@/contexts/authContext";
+import { useContextQueries } from "@/contexts/queryContext";
 import { useVideo } from "@/contexts/videoContext";
 import { useModal2Store } from "@/store/useModalStore";
 import { appTheme, appTextSizes } from "@/util/appTheme";
@@ -11,9 +12,11 @@ import Modal2Continue from "@/util/modals/Modal2Continue";
 import React, { useContext, useState } from "react";
 import { RxCopy } from "react-icons/rx";
 import { TfiDownload } from "react-icons/tfi";
+import { LuLibrary } from "react-icons/lu";
 
 const YoutubePlayerData = () => {
   const { currentUser } = useContext(AuthContext);
+  const { updateVideoCollection } = useContextQueries();
   const { currentVideo } = useVideo();
   const modal2 = useModal2Store((state: any) => state.modal2);
   const setModal2 = useModal2Store((state: any) => state.setModal2);
@@ -76,6 +79,12 @@ const YoutubePlayerData = () => {
     });
   };
 
+  const handleSaveVideo = () => {
+    if (currentVideo) {
+      updateVideoCollection(currentVideo, "saved-videos-collection");
+    }
+  };
+
   if (currentVideo === null || !currentUser) return;
 
   return (
@@ -115,6 +124,25 @@ const YoutubePlayerData = () => {
           </div>
         </div>
         <div className="flex flex-row gap-[8px]">
+          <button
+            disabled={loading}
+            onClick={handleSaveVideo}
+            className="flex flex-col h-[34px] pb-[1px] w-[65px] rounded-[11px] cursor-pointer hover:brightness-75 dim text-[15px] leading-[15px] items-center justify-center"
+            style={{
+              backgroundColor:
+                currentUser.theme === "dark"
+                  ? "transparent"
+                  : appTheme[currentUser.theme].background_2,
+              border:
+                currentUser.theme === "dark"
+                  ? `1px solid ${appTheme[currentUser.theme].background_2}`
+                  : "none",
+              color: appTheme[currentUser.theme].text_2,
+            }}
+          >
+            <LuLibrary className="w-[19px] h-[19px]" />
+          </button>
+
           <button
             disabled={loading}
             onClick={handleDownloadClick}

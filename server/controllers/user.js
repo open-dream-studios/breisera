@@ -1,11 +1,11 @@
 import Stripe from "stripe";
 import jwt from "jsonwebtoken";
-import { formatDateForMySQL } from "../functions/data.js";
+import { formatDateForMySQL, generateId } from "../functions/data.js";
 import { db } from "../connection/connect.js";
 import { products } from "../payments/stripe.js";
-import { decodeToken } from "../functions/auth.js"
-import dotenv from "dotenv"
-dotenv.config()
+import { decodeToken } from "../functions/auth.js";
+import dotenv from "dotenv";
+dotenv.config();
 
 // export const getUser = (req, res) => {
 //   const userId = req.params.userId;
@@ -538,6 +538,42 @@ export const deleteFlashCards = async (req, res) => {
   }
 };
 
+export const getRecentVideos = async (req, res) => {
+  try {
+    const token = req.cookies.accessToken;
+    if (!token) return res.status(401).json({ error: "Not authenticated" });
+    const user_id = decodeToken(token);
+
+    const recentVideos = await new Promise((resolve, reject) => {
+      db.query(
+        `
+          SELECT video_data, last_timestamp 
+          FROM recent_videos 
+          WHERE user_id = ? 
+          ORDER BY updated_at DESC 
+          LIMIT 500
+        `,
+        [user_id],
+        (err, data) => {
+          if (err) {
+            console.error("DB Query Error:", err);
+            return reject(err);
+          }
+          resolve(data);
+        }
+      );
+    });
+
+    return res.status(200).json({
+      success: true,
+      recentVideos,
+    });
+  } catch (error) {
+    console.error("Error fetching recent videos:", error);
+    return res.status(500).json({ success: false, recentVideos: [] });
+  }
+};
+
 export const updateRecentVideo = async (req, res) => {
   try {
     const token = req.cookies.accessToken;
@@ -577,20 +613,20 @@ export const updateRecentVideo = async (req, res) => {
   }
 };
 
-
-export const getRecentVideos = async (req, res) => {
+export const getVideoCollections = async (req, res) => {
   try {
     const token = req.cookies.accessToken;
     if (!token) return res.status(401).json({ error: "Not authenticated" });
+
     const user_id = decodeToken(token);
 
-    const recentVideos = await new Promise((resolve, reject) => {
+    const videos = await new Promise((resolve, reject) => {
       db.query(
         `
-          SELECT video_data, last_timestamp 
-          FROM recent_videos 
-          WHERE user_id = ? 
-          ORDER BY updated_at DESC 
+          SELECT collection_id, video_data 
+          FROM video_collections
+          WHERE user_id = ?
+          ORDER BY updated_at DESC
           LIMIT 500
         `,
         [user_id],
@@ -604,12 +640,65 @@ export const getRecentVideos = async (req, res) => {
       );
     });
 
+    const collectionsMap = {};
+    for (const video of videos) {
+      const { collection_id, ...videoInfo } = video;
+      if (!collectionsMap[collection_id]) {
+        collectionsMap[collection_id] = [];
+      }
+      collectionsMap[collection_id].push(videoInfo.video_data);
+    }
+
+    const groupedCollections = Object.entries(collectionsMap).map(
+      ([collection_id, videos]) => ({
+        collection_id,
+        videos,
+      })
+    );
+
     return res.status(200).json({
       success: true,
-      recentVideos,
+      collections: groupedCollections,
     });
   } catch (error) {
-    console.error("Error fetching recent videos:", error);
-    return res.status(500).json({ success: false, recentVideos: [] });
+    console.error("Error fetching video collections:", error);
+    return res.status(500).json({ success: false, collections: [] });
+  }
+};
+
+export const updateVideoCollections = async (req, res) => {
+  try {
+    const token = req.cookies.accessToken;
+    if (!token) return res.status(401).json({ error: "Not authenticated" });
+
+    const user_id = decodeToken(token);
+    let { video_id, video_data, collection_id } = req.body;
+    collection_id = collection_id ? collection_id : generateId(15)
+
+    if (!video_id || !video_data || !collection_id) {
+      return res.status(400).json({ error: "Missing video data" });
+    }
+
+    await new Promise((resolve, reject) => {
+      db.query(
+        `
+          INSERT IGNORE INTO video_collections (user_id, collection_id, video_id, video_data)
+          VALUES (?, ?, ?, ?)
+        `,
+        [user_id, collection_id, video_id, video_data],
+        (err, result) => {
+          if (err) {
+            console.error("DB Query Error:", err);
+            return reject(err);
+          }
+          resolve(result);
+        }
+      );
+    });
+
+    return res.status(200).json({ success: true });
+  } catch (error) {
+    console.error("Error updating video collection:", error);
+    return res.status(500).json({ success: false });
   }
 };

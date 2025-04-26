@@ -1,15 +1,10 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import crypto from "crypto";
 import nodemailer from "nodemailer";
 import { db } from "../connection/connect.js";
 import dotenv from "dotenv"
+import { generateId } from "../functions/data.js";
 dotenv.config()
-
-// Helper methods
-const generateUserId = () => {
-  return crypto.randomBytes(15).toString("hex");
-};
 
 const checkUserIdUnique = (userId) => {
   return new Promise((resolve, reject) => {
@@ -28,7 +23,7 @@ const createUniqueUserId = async () => {
   let isUnique = false;
   try {
     while (!isUnique) {
-      userId = generateUserId();
+      userId = generateId(15);
       isUnique = await checkUserIdUnique(userId);
     }
     return userId;

@@ -1,3 +1,9 @@
+import crypto from "crypto"
+
+export const generateId = (length) => {
+  return crypto.randomBytes(length).toString("hex");
+};
+
 export const formatDateForMySQL = (date) => {
   return date
     ? new Date(date * 1000).toISOString().slice(0, 19).replace("T", " ")

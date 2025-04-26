@@ -25,6 +25,13 @@ export const pauseVideo = () => {
     playerRef.pauseVideo();
   }
 };
+
+export const playVideo = () => {
+  if (playerRef) {
+    playerRef.playVideo();
+  }
+};
+
 const YouTubePlayer = () => {
   const { currentVideo } = useVideo();
   const { updateRecentVideo } = useContextQueries();
@@ -35,14 +42,18 @@ const YouTubePlayer = () => {
   const searchParams = useSearchParams();
   const startTime = Number(searchParams.get("start")) || 0;
 
+  const updateRecent = () => {
+    if (playerRef && currentVideo) {
+      const currentVideoCopy = currentVideo;
+      currentVideoCopy.last_timestamp = playerRef.getCurrentTime().toFixed(2);
+      updateRecentVideo(currentVideoCopy);
+    }
+  };
+
   const startInterval = () => {
     if (!intervalRef.current) {
       intervalRef.current = setInterval(() => {
-        if (playerRef && currentVideo) {
-          const currentVideoCopy = currentVideo;
-          currentVideoCopy.last_timestamp = playerRef.getCurrentTime().toFixed(2);
-          updateRecentVideo(currentVideoCopy);
-        }
+        updateRecent();
       }, 5000);
     }
   };
@@ -61,7 +72,7 @@ const YouTubePlayer = () => {
       stopInterval();
     }
 
-    return () => stopInterval(); // clean up when unmounting
+    return () => stopInterval();
   }, [isPlaying]);
 
   if (!currentVideo) return null;
@@ -79,7 +90,7 @@ const YouTubePlayer = () => {
             playerVars: {
               autoplay: 1,
               controls: 1,
-              start: startTime
+              start: startTime,
             },
           }}
           onReady={(event) => {
@@ -91,6 +102,7 @@ const YouTubePlayer = () => {
               setIsPlaying(true);
             } else if (playerState === 2) {
               setIsPlaying(false);
+              updateRecent();
             }
           }}
         />
