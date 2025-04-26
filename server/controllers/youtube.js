@@ -30,24 +30,30 @@ export const getVideoById = async (req, res) => {
   if (!videoId) return res.status(400).json({ error: "No video ID provided" });
 
   try {
-    const videoRes = await axios.get("https://www.googleapis.com/youtube/v3/videos", {
-      params: {
-        part: "snippet,statistics,contentDetails",
-        id: videoId,
-        key: process.env.YOUTUBE_PUBLIC_KEY,
-      },
-    });
+    const videoRes = await axios.get(
+      "https://www.googleapis.com/youtube/v3/videos",
+      {
+        params: {
+          part: "snippet,statistics,contentDetails",
+          id: videoId,
+          key: process.env.YOUTUBE_PUBLIC_KEY,
+        },
+      }
+    );
 
     const video = videoRes.data.items[0];
     if (!video) return res.status(404).json({ error: "Video not found" });
     const channelId = video.snippet.channelId;
-    const channelRes = await axios.get("https://www.googleapis.com/youtube/v3/channels", {
-      params: {
-        part: "snippet,statistics",
-        id: channelId,
-        key: process.env.YOUTUBE_PUBLIC_KEY,
-      },
-    });
+    const channelRes = await axios.get(
+      "https://www.googleapis.com/youtube/v3/channels",
+      {
+        params: {
+          part: "snippet,statistics",
+          id: channelId,
+          key: process.env.YOUTUBE_PUBLIC_KEY,
+        },
+      }
+    );
 
     const channel = channelRes.data.items[0];
 
@@ -186,9 +192,7 @@ export const getYoutubeTranscript = async (req, res) => {
 
     return res.status(200).json({ success: true, content: transcript });
   } catch (error) {
-    res
-      .status(200)
-      .json({ success: false, content: null });
+    res.status(200).json({ success: false, content: null });
   }
 };
 
@@ -376,17 +380,20 @@ export const generateYoutubeTranscript = async (req, res) => {
     });
 
     // 2. Send audio to Whisper
-    const video_prompt = `Video title: "${video.snippet.title}". Channel: "${video.snippet.channelTitle}". Description: "${video.snippet.description}}".`.slice(0, 400);
-    console.log(video_prompt)
+    const video_prompt =
+      `Video title: "${video.snippet.title}". Channel: "${video.snippet.channelTitle}". Description: "${video.snippet.description}".`.slice(
+        0,
+        400
+      );
     const transcription = await openai.audio.transcriptions.create({
       file: fs.createReadStream(tempFilePath),
       model: "whisper-1",
       response_format: "verbose_json",
       timestamp_granularities: ["segment"],
-      prompt: video_prompt
+      prompt: video_prompt,
     });
 
-    fs.unlinkSync(tempFilePath); 
+    fs.unlinkSync(tempFilePath);
 
     const segments = transcription.segments || [];
 
@@ -402,6 +409,10 @@ export const generateYoutubeTranscript = async (req, res) => {
   } catch (error) {
     console.error("Whisper error:", error.message);
     res.status(500).json({ error: "Whisper transcription failed" });
+  } finally {
+    if (fs.existsSync(tempFilePath)) {
+      fs.unlinkSync(tempFilePath);
+    }
   }
 };
 

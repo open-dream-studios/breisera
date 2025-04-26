@@ -538,66 +538,78 @@ export const deleteFlashCards = async (req, res) => {
   }
 };
 
-export const updateRecentVideos = async (req, res) => {
+export const updateRecentVideo = async (req, res) => {
   try {
     const token = req.cookies.accessToken;
     if (!token) return res.status(401).json({ error: "Not authenticated" });
-    const { updated_recent_videos } = req.body;
-    const user_id = decodeToken(token)
 
-    const success = await new Promise((resolve, reject) => {
+    const user_id = decodeToken(token);
+    const { video_id, video_data, last_timestamp } = req.body;
+
+    if (!video_id || !video_data || !last_timestamp) {
+      return res.status(400).json({ error: "Missing video data" });
+    }
+
+    await new Promise((resolve, reject) => {
       db.query(
-        "UPDATE users SET recent_videos = ? WHERE user_id = ?",
-        [updated_recent_videos, user_id],
+        `
+          INSERT INTO recent_videos (user_id, video_id, video_data, last_timestamp)
+          VALUES (?, ?, ?, ?)
+          ON DUPLICATE KEY UPDATE 
+            last_timestamp = VALUES(last_timestamp),
+            updated_at = CURRENT_TIMESTAMP
+        `,
+        [user_id, video_id, video_data, last_timestamp],
+        (err, result) => {
+          if (err) {
+            console.error("DB Query Error:", err);
+            return reject(err);
+          }
+          resolve(result);
+        }
+      );
+    });
+
+    return res.status(200).json({ success: true });
+  } catch (error) {
+    console.error("Error updating recent video:", error);
+    return res.status(500).json({ success: false });
+  }
+};
+
+
+export const getRecentVideos = async (req, res) => {
+  try {
+    const token = req.cookies.accessToken;
+    if (!token) return res.status(401).json({ error: "Not authenticated" });
+    const user_id = decodeToken(token);
+
+    const recentVideos = await new Promise((resolve, reject) => {
+      db.query(
+        `
+          SELECT video_data, last_timestamp 
+          FROM recent_videos 
+          WHERE user_id = ? 
+          ORDER BY updated_at DESC 
+          LIMIT 500
+        `,
+        [user_id],
         (err, data) => {
           if (err) {
-            console.error(
-              "DB Mutation Error: Could not update user",
-              err
-            );
+            console.error("DB Query Error:", err);
             return reject(err);
           }
           resolve(data);
         }
       );
     });
-    if (success) {
-      return res.status(200).json({ message: "User recent videos updated" });
-    } else {
-      return res.status(417).json({ message: "User recent videos update failed" });
-    }
-  } catch (error) {
-    console.error("Error fetching recent videos:", error);
-    return res.status(500).json({ success: false, recent_videos: [] });
-  }
-};
-
-export const getRecentVideos = async (req, res) => {
-  try {
-    const token = req.cookies.accessToken;
-    if (!token) return res.status(401).json({ error: "Not authenticated" });
-    const user_id = decodeToken(token)
-
-    const recent_videos = await new Promise((resolve, reject) => {
-      db.query(
-        "SELECT recent_videos FROM users WHERE user_id = ?",
-        [user_id],
-        (err, data) => {
-          if (err) {
-            console.error("DB Query Error: Could not fetch recent videos", err);
-            return reject(err);
-          }
-          resolve(data.length > 0 ? data[0].recent_videos : []);
-        }
-      );
-    });
 
     return res.status(200).json({
       success: true,
-      recent_videos,
+      recentVideos,
     });
   } catch (error) {
     console.error("Error fetching recent videos:", error);
-    return res.status(500).json({ success: false, recent_videos: [] });
+    return res.status(500).json({ success: false, recentVideos: [] });
   }
 };

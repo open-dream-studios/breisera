@@ -10,7 +10,7 @@ import { LuSquareArrowOutUpLeft } from "react-icons/lu";
 import { makeRequest } from "@/util/axios";
 import PrimaryTools from "./PrimaryTools/PrimaryTools";
 import { ChevronDown } from "lucide-react";
-import toast from 'react-hot-toast';
+import toast from "react-hot-toast";
 import { showToast } from "@/components/CustomToast";
 
 const Player = () => {
@@ -23,12 +23,15 @@ const Player = () => {
     currentVideoTranscript,
     setCurrentVideoTranscript,
     setLoadingCurrentVideoTranscript,
+    currentWhisperTranscript,
     setCurrentWhisperTranscript,
     setLoadingCurrentWhisperTranscript,
     setCurrentKeyConcepts,
     setLoadingCurrentKeyConcepts,
     setLoadingCurrentSummary,
     setCurrentSummary,
+    generateSummary,
+    generateKeyConcepts,
   } = useVideo();
   const [dividerPercent, setDividerPercent] = useState(66);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -38,7 +41,7 @@ const Player = () => {
     const fetchTranscript = async () => {
       if (currentUser && currentVideo) {
         try {
-          console.log("calling get transript")
+          console.log("calling get transript");
           const res = await makeRequest.post("/api/youtube/get-transcript", {
             videoId: currentVideo.id,
           });
@@ -72,45 +75,18 @@ const Player = () => {
   }, [currentVideo]);
 
   useEffect(() => {
-    const generateSummary = async () => {
-      try {
-        const res = await makeRequest.post("/api/youtube/gemini-summary", {
-          transcript: currentVideoTranscript,
-          video: currentVideo,
-        });
-        if (res.status === 200) {
-          setCurrentSummary(res.data.content);
-        }
-      } catch (error) {
-        setCurrentSummary(null);
-        console.error("Failed to fetch videos:", error);
-      } finally {
-        setLoadingCurrentSummary(false);
-      }
-    };
-
-    const generateKeyConcepts = async () => {
-      try {
-        const res = await makeRequest.post("/api/youtube/gemini-key-concepts", {
-          transcript: currentVideoTranscript,
-          video: currentVideo,
-        });
-        if (res.status === 200) {
-          setCurrentKeyConcepts(res.data.content);
-        }
-      } catch (error) {
-        setCurrentKeyConcepts(null);
-        console.error("Failed to fetch key concepts:", error);
-      } finally {
-        setLoadingCurrentKeyConcepts(false);
-      }
-    };
-
     if (currentUser && currentVideoTranscript) {
-      generateSummary();
-      generateKeyConcepts();
+      generateSummary(currentVideoTranscript);
+      generateKeyConcepts(currentVideoTranscript);
     }
   }, [currentVideoTranscript]);
+
+  useEffect(() => {
+    if (currentUser && currentWhisperTranscript && currentWhisperTranscript.length > 0) {
+      generateSummary(currentWhisperTranscript);
+      generateKeyConcepts(currentWhisperTranscript);
+    }
+  }, [currentWhisperTranscript]);
 
   const handleMouseMove = (e: MouseEvent) => {
     if (containerRef.current) {

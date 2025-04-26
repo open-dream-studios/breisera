@@ -11,7 +11,7 @@ import { useContextQueries } from "@/contexts/queryContext";
 
 const ExplorePage = () => {
   const { currentUser } = useContext(AuthContext);
-  const { newVideoLoaded } = useContextQueries()
+  const { updateRecentVideo } = useContextQueries()
   const { setCurrentVideo, exploreVideos, setExploreVideos } = useVideo();
   if (!currentUser) return <></>;
   
@@ -44,7 +44,7 @@ const ExplorePage = () => {
 
   const handleVideoClick = (video: YouTubePlayerVideo) => {
     setCurrentVideo(video);
-    newVideoLoaded(video)
+    updateRecentVideo(video)
   };
 
   if (loading) return <div>Loading...</div>;

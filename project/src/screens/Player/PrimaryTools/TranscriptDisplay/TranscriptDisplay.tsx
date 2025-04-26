@@ -15,10 +15,6 @@ import { SiOpenai } from "react-icons/si";
 import { makeRequest } from "@/util/axios";
 import { showToast } from "@/components/CustomToast";
 
-const TranscriptTextDisplay = () => {
-  return <></>;
-};
-
 const TranscriptDisplay = () => {
   const { currentUser } = useContext(AuthContext);
   const {
@@ -42,6 +38,11 @@ const TranscriptDisplay = () => {
         if (res.status === 200) {
           setCurrentWhisperTranscript(res.data);
           showToast("Whisper transcript generated!", "success");
+          if (res.data && res.data.length > 0) {
+
+          
+
+          }
         }
       } catch (error) {
         console.error("Video transcript not available:", error);

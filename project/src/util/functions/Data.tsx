@@ -40,3 +40,28 @@ export const removeWhiteSpace = (input: string) => {
 export const generateUniqueId = () => {
   return crypto.randomBytes(15).toString("hex");
 };
+
+export function secondsToISO8601(seconds: number): string {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
+  
+  let isoString = 'PT';
+  if (hours) isoString += `${hours}H`;
+  if (minutes) isoString += `${minutes}M`;
+  if (secs) isoString += `${secs}S`;
+  
+  return isoString;
+}
+
+export function iso8601ToSeconds(isoString: string): number {
+  const regex = /PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(\.\d+)?)S)?/;
+  const match = isoString.match(regex);
+  if (!match) return 0;
+  const [, hours, minutes, seconds] = match;
+  return (
+    (parseInt(hours || "0") * 3600) +
+    (parseInt(minutes || "0") * 60) +
+    (parseFloat(seconds || "0"))   
+  );
+}

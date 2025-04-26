@@ -9,7 +9,7 @@ import { appTheme } from "@/util/appTheme";
 import { AuthContext } from "@/contexts/authContext";
 
 const HomePage = () => {
-  const { newVideoLoaded } = useContextQueries();
+  const { updateRecentVideo } = useContextQueries();
   const { setCurrentVideo, exploreVideos, setExploreVideos } = useVideo();
   const { currentUser } = useContext(AuthContext);
   const [loading, setLoading] = useState(false);
@@ -41,7 +41,7 @@ const HomePage = () => {
 
   const handleVideoClick = (video: YouTubePlayerVideo) => {
     setCurrentVideo(video);
-    newVideoLoaded(video);
+    updateRecentVideo(video);
   };
 
   if (loading) return <div>Loading...</div>;

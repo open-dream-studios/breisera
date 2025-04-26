@@ -13,6 +13,7 @@ import { makeRequest } from "@/util/axios";
 
 export type YouTubePlayerVideo = {
   id: string;
+  last_timestamp?: number;
   [key: string]: any;
 };
 
@@ -36,8 +37,8 @@ export type Note = {
 
 export type VideoTranscriptBit = {
   text: string;
-  offset: number;
-  duration: number;
+  offset?: number;
+  duration?: number;
   lang?: string;
 };
 export type VideoTranscript = null | VideoTranscriptBit[];
@@ -118,6 +119,8 @@ type VideoContextType = {
   setIsAnimating: React.Dispatch<React.SetStateAction<boolean>>;
   disableAnimation: boolean;
   setDisableAnimation: React.Dispatch<React.SetStateAction<boolean>>;
+  generateSummary: (transcript: VideoTranscript) => void;
+  generateKeyConcepts: (transcript: VideoTranscript) => void;
 };
 
 const VideoContext = createContext<VideoContextType | undefined>(undefined);
@@ -231,6 +234,40 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  const generateSummary = async (transcript: VideoTranscript) => {
+    try {
+      const res = await makeRequest.post("/api/youtube/gemini-summary", {
+        transcript,
+        video: currentVideo,
+      });
+      if (res.status === 200) {
+        setCurrentSummary(res.data.content);
+      }
+    } catch (error) {
+      setCurrentSummary(null);
+      console.error("Failed to fetch videos:", error);
+    } finally {
+      setLoadingCurrentSummary(false);
+    }
+  };
+
+  const generateKeyConcepts = async (transcript: VideoTranscript) => {
+    try {
+      const res = await makeRequest.post("/api/youtube/gemini-key-concepts", {
+        transcript,
+        video: currentVideo,
+      });
+      if (res.status === 200) {
+        setCurrentKeyConcepts(res.data.content);
+      }
+    } catch (error) {
+      setCurrentKeyConcepts(null);
+      console.error("Failed to fetch key concepts:", error);
+    } finally {
+      setLoadingCurrentKeyConcepts(false);
+    }
+  };
+
   return (
     <VideoContext.Provider
       value={{
@@ -283,6 +320,8 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({
         setIsAnimating,
         disableAnimation,
         setDisableAnimation,
+        generateSummary,
+        generateKeyConcepts,
       }}
     >
       {children}

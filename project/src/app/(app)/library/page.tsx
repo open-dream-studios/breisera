@@ -12,7 +12,7 @@ import { FRONTEND_URL } from "@/util/config";
 
 const LibraryPage = () => {
   const { currentUser } = useContext(AuthContext);
-  const { recentVideosData, newVideoLoaded } = useContextQueries();
+  const { recentVideosData, updateRecentVideo } = useContextQueries();
   const { setCurrentVideo, currentVideo } = useVideo();
 
   const [showAllCurrentlyWatching, setShowAllCurrentlyWatching] =
@@ -21,7 +21,7 @@ const LibraryPage = () => {
 
   const handleVideoClick = (video: YouTubePlayerVideo) => {
     setCurrentVideo(video);
-    newVideoLoaded(video);
+    updateRecentVideo(video);
   };
 
   if (!currentUser) return <></>;

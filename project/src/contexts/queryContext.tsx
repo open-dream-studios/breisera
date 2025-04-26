@@ -10,12 +10,13 @@ import {
 import { YouTubePlayerVideo } from "@/contexts/videoContext";
 import { makeRequest } from "@/util/axios";
 import { AuthContext } from "./authContext";
+import { secondsToISO8601 } from "@/util/functions/Data";
 
 export type QueryContextType = {
-  newVideoLoaded: (newVideo: YouTubePlayerVideo) => void;
   recentVideosData: any[];
   isLoadingRecentVideosData: boolean;
   refetchRecentVideosData: () => Promise<QueryObserverResult<any[], Error>>;
+  updateRecentVideo: (newVideo: YouTubePlayerVideo) => void;
 };
 
 const QueryContext = createContext<QueryContextType | undefined>(undefined);
@@ -38,8 +39,8 @@ export const QueryProvider: React.FC<{ children: React.ReactNode }> = ({
     queryKey: ["recent-videos"],
     queryFn: async () => {
       const res = await makeRequest.post("/api/users/get-recent-videos", {});
-      console.log("get-recent-videos");
-      return JSON.parse(res.data.recent_videos);
+      // console.log("get-recent-videos");
+      return res.data.recentVideos
     },
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 10,
@@ -48,17 +49,18 @@ export const QueryProvider: React.FC<{ children: React.ReactNode }> = ({
   });
 
   const updateRecentVideos = useMutation({
-    mutationFn: async (updatedRecentVideos: string) => {
-      await makeRequest.post("/api/users/update-recent-videos", {
-        updated_recent_videos: updatedRecentVideos,
+    mutationFn: async (video: YouTubePlayerVideo) => {
+       await makeRequest.post("/api/users/update-recent-videos", {
+        video_id: video.id,
+        video_data: JSON.stringify(video),
+        last_timestamp: video.last_timestamp ? secondsToISO8601(video.last_timestamp) : secondsToISO8601(0)
       });
     },
-    onMutate: async (newDataString) => {
+    onMutate: async (video: YouTubePlayerVideo) => {
       const queryKey = ["recent-videos"];
       await queryClient.cancelQueries({ queryKey });
       const previousData = queryClient.getQueryData(queryKey);
-      const newData = JSON.parse(newDataString);
-      queryClient.setQueryData(queryKey, newData);
+      queryClient.setQueryData(queryKey, video);
       return { previousData, queryKey };
     },
     onError: (_err, _newData, context) => {
@@ -73,16 +75,8 @@ export const QueryProvider: React.FC<{ children: React.ReactNode }> = ({
     },
   });
 
-  const newVideoLoaded = (newVideo: YouTubePlayerVideo) => {
-    const updated = !recentVideosData
-      ? JSON.stringify([newVideo].slice(0, 10))
-      : JSON.stringify(
-          [
-            newVideo,
-            ...recentVideosData.filter((v: any) => v.id !== newVideo.id),
-          ].slice(0, 10)
-        );
-    updateRecentVideos.mutate(updated);
+  const updateRecentVideo = (newVideo: YouTubePlayerVideo) => {
+    updateRecentVideos.mutate(newVideo);
   };
 
   return (
@@ -91,7 +85,7 @@ export const QueryProvider: React.FC<{ children: React.ReactNode }> = ({
         recentVideosData,
         isLoadingRecentVideosData,
         refetchRecentVideosData,
-        newVideoLoaded,
+        updateRecentVideo,
       }}
     >
       {children}
