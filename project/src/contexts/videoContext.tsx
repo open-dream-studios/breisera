@@ -82,6 +82,14 @@ type VideoContextType = {
   setLoadingCurrentVideoTranscript: React.Dispatch<
     React.SetStateAction<boolean>
   >;
+  currentWhisperTranscript: VideoTranscript;
+  setCurrentWhisperTranscript: React.Dispatch<
+    React.SetStateAction<VideoTranscript>
+  >;
+  loadingCurrentWhisperTranscript: boolean;
+  setLoadingCurrentWhisperTranscript: React.Dispatch<
+    React.SetStateAction<boolean>
+  >;
   currentKeyConcepts: KeyConcepts;
   setCurrentKeyConcepts: React.Dispatch<React.SetStateAction<KeyConcepts>>;
   loadingCurrentKeyConcepts: boolean;
@@ -180,6 +188,12 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({
     useState<VideoTranscript>(null);
   const [loadingCurrentVideoTranscript, setLoadingCurrentVideoTranscript] =
     useState<boolean>(true);
+
+  const [currentWhisperTranscript, setCurrentWhisperTranscript] =
+    useState<VideoTranscript>(null);
+  const [loadingCurrentWhisperTranscript, setLoadingCurrentWhisperTranscript] =
+    useState<boolean>(true);
+
   const [currentKeyConcepts, setCurrentKeyConcepts] =
     useState<KeyConcepts>(null);
   const [loadingCurrentKeyConcepts, setLoadingCurrentKeyConcepts] =
@@ -237,6 +251,10 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({
         setCurrentVideoTranscript,
         loadingCurrentVideoTranscript,
         setLoadingCurrentVideoTranscript,
+        currentWhisperTranscript,
+        setCurrentWhisperTranscript,
+        loadingCurrentWhisperTranscript,
+        setLoadingCurrentWhisperTranscript,
         currentKeyConcepts,
         setCurrentKeyConcepts,
         loadingCurrentKeyConcepts,

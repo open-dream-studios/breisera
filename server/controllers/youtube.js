@@ -354,8 +354,8 @@ export const generateYoutubeTranscript = async (req, res) => {
   const token = req.cookies.accessToken;
   if (!token) return res.status(401).json("Not authenticated!");
 
-  const { videoId } = req.body;
-  if (!videoId) return res.status(400).json("Missing video ID");
+  const { videoId, video } = req.body;
+  if (!videoId || !video) return res.status(400).json("Missing video ID");
 
   const tempFileName = `audio-${uuidv4()}.mp3`;
   const tempFilePath = path.join("/tmp", tempFileName);
@@ -376,14 +376,17 @@ export const generateYoutubeTranscript = async (req, res) => {
     });
 
     // 2. Send audio to Whisper
+    const video_prompt = `Video title: "${video.snippet.title}". Channel: "${video.snippet.channelTitle}". Description: "${video.snippet.description}}".`.slice(0, 400);
+    console.log(video_prompt)
     const transcription = await openai.audio.transcriptions.create({
       file: fs.createReadStream(tempFilePath),
       model: "whisper-1",
       response_format: "verbose_json",
       timestamp_granularities: ["segment"],
+      prompt: video_prompt
     });
 
-    fs.unlinkSync(tempFilePath); // clean up
+    fs.unlinkSync(tempFilePath); 
 
     const segments = transcription.segments || [];
 
@@ -395,14 +398,7 @@ export const generateYoutubeTranscript = async (req, res) => {
       lang: "en",
     }));
 
-    // 4. Chunk the results in groups of 100
-    res.json(formatted);
-    // const chunked = [];
-    // for (let i = 0; i < formatted.length; i += 100) {
-    //   chunked.push(formatted.slice(i, i + 100));
-    // }
-
-    // res.json(chunked);
+    res.status(200).json(formatted);
   } catch (error) {
     console.error("Whisper error:", error.message);
     res.status(500).json({ error: "Whisper transcription failed" });

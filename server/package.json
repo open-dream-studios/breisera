@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "@azure/storage-blob": "^12.14.0",
-    "@distube/ytdl-core": "^4.16.8",
+    "@distube/ytdl-core": "^4.16.9",
     "@dqbd/tiktoken": "^1.0.20",
     "@supabase/supabase-js": "^2.49.4",
     "aws-sdk": "^2.1574.0",
@@ -17,6 +17,7 @@
     "google-auth-library": "^9.15.1",
     "he": "^1.2.0",
     "http": "^0.0.1-security",
+    "install": "^0.13.0",
     "jsonwebtoken": "^9.0.0",
     "moment": "^2.29.4",
     "multer": "^1.4.5-lts.1",
@@ -26,11 +27,13 @@
     "node-fetch": "^3.3.2",
     "nodemailer": "^6.10.0",
     "nodemon": "^2.0.22",
+    "npm": "^10.9.2",
     "openai": "^4.95.0",
     "sbd": "^1.0.19",
     "serverless-http": "^3.2.0",
     "socket.io": "^4.8.1",
     "stripe": "^17.7.0",
+    "undici": "^7.8.0",
     "ws": "^8.18.1",
     "youtube-transcript": "^1.2.1"
   },

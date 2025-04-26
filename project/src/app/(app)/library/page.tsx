@@ -37,7 +37,6 @@ const LibraryPage = () => {
           recentVideosData
             .slice(0, showAllCurrentlyWatching ? recentVideosData.length : 6)
             .map((video, index) => {
-              console.log(video);
               return (
                 <div
                   key={index}

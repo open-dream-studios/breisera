@@ -23,6 +23,8 @@ const Player = () => {
     currentVideoTranscript,
     setCurrentVideoTranscript,
     setLoadingCurrentVideoTranscript,
+    setCurrentWhisperTranscript,
+    setLoadingCurrentWhisperTranscript,
     setCurrentKeyConcepts,
     setLoadingCurrentKeyConcepts,
     setLoadingCurrentSummary,
@@ -59,9 +61,11 @@ const Player = () => {
     };
 
     setCurrentVideoTranscript(null);
+    setCurrentWhisperTranscript(null);
     setCurrentKeyConcepts(null);
     setCurrentSummary(null);
     setLoadingCurrentVideoTranscript(true);
+    setLoadingCurrentWhisperTranscript(false);
     setLoadingCurrentKeyConcepts(true);
     setLoadingCurrentSummary(true);
     fetchTranscript();
