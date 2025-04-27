@@ -71,7 +71,7 @@ const Player = () => {
     setLoadingCurrentKeyConcepts(true);
     setLoadingCurrentSummary(true);
     fetchTranscript();
-  }, [currentVideo]);
+  }, [currentVideo?.id]);
 
   useEffect(() => {
     if (currentUser && currentVideoTranscript) {

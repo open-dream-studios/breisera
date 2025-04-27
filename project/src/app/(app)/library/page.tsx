@@ -12,11 +12,8 @@ import { iso8601ToSeconds } from "@/util/functions/Data";
 
 const LibraryPage = () => {
   const { currentUser } = useContext(AuthContext);
-  const {
-    recentVideosData,
-    videoCollectionsData,
-    updateVideoCollection,
-  } = useContextQueries();
+  const { recentVideosData, videoCollectionsData, updateVideoCollection } =
+    useContextQueries();
   const { setCurrentVideo, currentVideo, playerState, setPlayerState } =
     useVideo();
 
@@ -170,7 +167,17 @@ const LibraryPage = () => {
                 collection.collection_id === "saved-videos-collection"
             )
           ].videos
-            .slice(0, showAllSavedVideos ? videoCollectionsData.length : 6)
+            .slice(
+              0,
+              showAllSavedVideos
+                ? videoCollectionsData[
+                    videoCollectionsData.findIndex(
+                      (collection) =>
+                        collection.collection_id === "saved-videos-collection"
+                    )
+                  ].videos.length
+                : 6
+            )
             .map((video: YouTubePlayerVideo, index: number) => {
               return (
                 <div
@@ -254,7 +261,14 @@ const LibraryPage = () => {
           >
             {showAllSavedVideos
               ? "SHOW LESS"
-              : `SHOW ALL (${videoCollectionsData.length})`}
+              : `SHOW ALL (${
+                  videoCollectionsData[
+                    videoCollectionsData.findIndex(
+                      (collection) =>
+                        collection.collection_id === "saved-videos-collection"
+                    )
+                  ].videos.length
+                })`}
           </div>
         </div>
       ) : (
