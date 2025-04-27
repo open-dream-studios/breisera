@@ -203,10 +203,12 @@ const YoutubePlayerData = () => {
             {theaterMode ? (
               <div
                 style={{
-                  border: `0.5px solid ${appTheme[currentUser.theme].text_3}`,
-                  borderBottom: `0.5px solid ${
-                    appTheme[currentUser.theme].text_3
-                  }`,
+                  border: `${
+                    currentUser.theme === "dark" ? "0.5px" : "1px"
+                  } solid ${appTheme[currentUser.theme].text_3}`,
+                  borderBottom: `${
+                    currentUser.theme === "dark" ? "0.5px" : "1px"
+                  } solid ${appTheme[currentUser.theme].text_3}`,
                 }}
                 className="w-[33px] h-[18px] rounded-[2px] mt-[0.5px] relative"
               >
@@ -214,22 +216,28 @@ const YoutubePlayerData = () => {
                   style={{
                     backgroundColor: appTheme[currentUser.theme].text_3,
                   }}
-                  className="opacity-90 w-[0.5px] h-[12px] absolute right-[6px]"
+                  className={`opacity-90 ${
+                    currentUser.theme === "dark" ? "w-[0.5px] h-[12px] " : "w-[1px] h-[11px]"
+                  } absolute right-[6px]`}
                 />
                 <div
                   style={{
                     backgroundColor: appTheme[currentUser.theme].text_3,
                   }}
-                  className="opacity-90 w-[26px] h-[0.5px] absolute left-0 bottom-[5px]"
+                  className={`opacity-90 ${
+                    currentUser.theme === "dark" ? "h-[0.5px] w-[26px]" : "h-[1px] w-[25px]"
+                  } absolute left-0 bottom-[5px]`}
                 />
               </div>
             ) : (
               <div
                 style={{
-                  border: `0.5px solid ${appTheme[currentUser.theme].text_3}`,
-                  borderBottom: `1.5px solid ${
-                    appTheme[currentUser.theme].text_3
-                  }`,
+                  border: `${
+                    currentUser.theme === "dark" ? "0.5px" : "1px"
+                  } solid ${appTheme[currentUser.theme].text_3}`,
+                  borderBottom: `${
+                    currentUser.theme === "dark" ? "1.5px" : "2px"
+                  } solid ${appTheme[currentUser.theme].text_3}`,
                 }}
                 className="w-[33px] h-[18px] rounded-[2px] mt-[0.5px]"
               />

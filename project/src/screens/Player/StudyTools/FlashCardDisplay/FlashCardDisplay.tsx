@@ -43,7 +43,6 @@ const FlashCardsList = ({
   return (
     <div
       style={{
-        backgroundColor: appTheme[currentUser.theme].background_2,
         color: appTheme[currentUser.theme].text_1,
       }}
       className={`${
@@ -89,7 +88,7 @@ const FlashCardsList = ({
             return (
               <div className="" key={index}>
                 <div
-                  className="w-[100%] h-[1px] my-[10px] rounded-[2px] opacity-75"
+                  className="w-[100%] h-[1px] my-[10px] rounded-[2px] opacity-50"
                   style={{
                     backgroundColor: appTheme[currentUser.theme].text_3,
                   }}
@@ -242,7 +241,9 @@ const FlashCardDisplay = () => {
   return (
     <div className="w-[100%] h-[100%] flex flex-col gap-[8px]">
       <div
-        style={{ backgroundColor: appTheme[currentUser.theme].background_2 }}
+        style={{
+          border: `1px solid ${appTheme[currentUser.theme].background_2}`,
+        }}
         className={`sm:flex flex-col hidden w-[100%] ${
           flashcardSetsOpen
             ? "h-[200px] max-h-[200px] overflow-scroll"

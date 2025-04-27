@@ -210,7 +210,9 @@ const LeftBar = () => {
                   <div
                     className="dim hover:brightness-75 cursor-pointer w-[100%] flex justify-between items-center rounded-[8px] pr-[20px] pl-[12px] py-[7px] text-[14px] leading-[14px] font-[400]"
                     onClick={() => {
-                      closeLeftBar();
+                      if (windowWidth < 1024) {
+                        closeLeftBar();
+                      }
                       setPlayerState("screen");
                       playVideo();
                     }}
