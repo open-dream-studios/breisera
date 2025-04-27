@@ -1,11 +1,10 @@
 "use client";
 import { AuthContext } from "@/contexts/authContext";
+import { useContextQueries } from "@/contexts/queryContext";
 import { Note, useVideo } from "@/contexts/videoContext";
 import { appTheme } from "@/util/appTheme";
 import { makeRequest } from "@/util/axios";
-import { BACKEND_URL } from "@/util/config";
 import { generateUniqueId } from "@/util/functions/Data";
-import axios from "axios";
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { FaPlus } from "react-icons/fa6";
 import { FaChevronDown } from "react-icons/fa6";
@@ -25,7 +24,8 @@ const NotesList = ({
   smallScreen,
 }: NotesListProps) => {
   const { currentUser } = useContext(AuthContext);
-  const { currentNote, setCurrentNote, notesData } = useVideo();
+  const { currentNote, setCurrentNote } = useVideo();
+  const { notesData } = useContextQueries();
 
   const stripHtml = (html: string) => {
     const div = document.createElement("div");
@@ -70,7 +70,9 @@ const NotesList = ({
           }`}
         />
       </div>
-      {notesOpen && notesData.length === 0 && <div className="mt-[5px]">You have no saved notes</div>}
+      {notesOpen && notesData.length === 0 && (
+        <div className="mt-[5px]">You have no saved notes</div>
+      )}
       {notesOpen && (
         <div
           className="flex flex-col mb-[20px]"
@@ -120,13 +122,8 @@ const NotesList = ({
 
 const NotesDisplay = () => {
   const { currentUser } = useContext(AuthContext);
-  const {
-    currentNote,
-    setCurrentNote,
-    currentVideo,
-    notesData,
-    refetchNotesData,
-  } = useVideo();
+  const { currentNote, setCurrentNote, currentVideo } = useVideo();
+  const { notesData, refetchNotesData } = useContextQueries();
   const [notesOpen, setNotesOpen] = useState(false);
 
   const currentNoteRef = useRef<Note>(currentNote);
@@ -165,7 +162,7 @@ const NotesDisplay = () => {
   };
 
   const writeNote = async () => {
-    if (!currentUser) return;
+    if (!currentUser || !currentVideo) return;
     const note = currentNoteRef.current;
     const noteId = note.note_id ? note.note_id : generateUniqueId();
     setCurrentNote({ ...note, note_id: noteId });
@@ -175,7 +172,9 @@ const NotesDisplay = () => {
         note_id: noteId,
         title: note.title,
         content: note.content,
+        collection_id: null,
         video_id: currentVideo ? currentVideo.id : null,
+        video_data: JSON.stringify(currentVideo),
       });
       refetchNotesData();
     } catch (error) {

@@ -304,7 +304,6 @@ export const geminiKeyConceptsQuery = async (req, res) => {
 export const geminiFlashcardsQuery = async (req, res) => {
   const { number, topic, transcript, video } = req.body
   const geminiModel = "gemini-1.5-flash";
-  console.log(video)
 
   const formattedTranscript = transcript
     .map((item) => `${formatTimeStamp(item.offset) + " " + item.text}`)

@@ -5,7 +5,7 @@ import {
   getVideoTime,
   setVideoTime,
 } from "@/screens/Player/YouTubePlayer/YouTubePlayer";
-import React from "react"
+import React from "react";
 
 export const formatSubs = (subs: string | number): string => {
   const num = typeof subs === "string" ? parseInt(subs, 10) : subs;
@@ -48,7 +48,8 @@ export const timeStampInjection = (
       return (
         <button
           key={index}
-          onClick={() => {
+          onClick={(e: any) => {
+            e.stopPropagation();
             const currentTime = getVideoTime();
             const seconds = convertToSeconds(time);
             if (currentTime !== seconds && seconds) {

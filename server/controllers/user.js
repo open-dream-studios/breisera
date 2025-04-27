@@ -235,8 +235,9 @@ export const updateCurrentUser = (req, res) => {
 export const writeNote = async (req, res) => {
   const token = req.cookies.accessToken;
   if (!token) return res.status(401).json("Not authenticated!");
-  const { user_id, note_id, title, content, video_id } = req.body;
-
+  let { user_id, note_id, collection_id, video_id, video_data, title, content } = req.body;
+  collection_id = collection_id ? collection_id : generateId(15);
+  
   try {
     // Make sure the user doesn't have more than 100 notes already
     const userNotes = await new Promise((resolve, reject) => {
@@ -276,8 +277,8 @@ export const writeNote = async (req, res) => {
       }
       const success = await new Promise((resolve, reject) => {
         db.query(
-          "INSERT INTO notes (`note_id`,`user_id`,`title`,`content`,`video_id`) VALUE (?)",
-          [[note_id, user_id, title, content, video_id]],
+          "INSERT INTO notes (`note_id`,`user_id`,`collection_id`,`video_id`,`video_data`,`title`,`content`) VALUE (?)",
+          [[note_id, user_id, collection_id, video_id, video_data, title, content]],
           (err, data) => {
             if (err) {
               console.error(
@@ -299,8 +300,8 @@ export const writeNote = async (req, res) => {
       // Update new note
       const success = await new Promise((resolve, reject) => {
         db.query(
-          "UPDATE notes SET title = ?, content = ?, video_id = ? WHERE user_id = ? AND note_id = ?",
-          [title, content, video_id, user_id, note_id],
+          "UPDATE notes SET title = ?, content = ?, collection_id = ? WHERE user_id = ? AND note_id = ?",
+          [title, content, collection_id, user_id, note_id],
           (err, data) => {
             if (err) {
               console.error("DB Mutation Error: Could not update note", err);
@@ -381,7 +382,16 @@ export const deleteNote = async (req, res) => {
 export const writeFlashCards = async (req, res) => {
   const token = req.cookies.accessToken;
   if (!token) return res.status(401).json("Not authenticated!");
-  const { user_id, flashcard_id, title, content, video_id } = req.body;
+  let {
+    user_id,
+    flashcard_id,
+    collection_id,
+    video_id,
+    video_data,
+    title,
+    content,
+  } = req.body;
+  collection_id = collection_id ? collection_id : generateId(15);
 
   try {
     // Make sure the user doesn't have more than 100 flash card sets already
@@ -421,7 +431,6 @@ export const writeFlashCards = async (req, res) => {
       );
     });
     let flashcards = existingFlashCards || null;
-
     if (!flashcards) {
       // Create a new flashcard set
       if (userFlashCards && userFlashCards >= 100) {
@@ -431,8 +440,18 @@ export const writeFlashCards = async (req, res) => {
       }
       const success = await new Promise((resolve, reject) => {
         db.query(
-          "INSERT INTO flashcards (`flashcard_id`,`user_id`,`title`,`content`,`video_id`) VALUE (?)",
-          [[flashcard_id, user_id, newTitle, content, video_id]],
+          "INSERT INTO flashcards (`user_id`,`flashcard_id`,`collection_id`,`video_id`,`video_data`,`title`,`content`) VALUE (?)",
+          [
+            [
+              user_id,
+              flashcard_id,
+              collection_id,
+              video_id,
+              video_data,
+              newTitle,
+              content,
+            ],
+          ],
           (err, data) => {
             if (err) {
               console.error(
@@ -456,8 +475,8 @@ export const writeFlashCards = async (req, res) => {
       // Update flashcard set
       const success = await new Promise((resolve, reject) => {
         db.query(
-          "UPDATE flashcards SET content = ?, video_id = ? WHERE user_id = ? AND flashcard_id = ?",
-          [content, video_id, user_id, flashcard_id],
+          "UPDATE flashcards SET content = ?, collection_id = ? WHERE user_id = ? AND flashcard_id = ?",
+          [content, collection_id, user_id, flashcard_id],
           (err, data) => {
             if (err) {
               console.error(

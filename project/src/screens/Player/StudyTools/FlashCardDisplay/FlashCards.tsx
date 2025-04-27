@@ -6,10 +6,22 @@ import { AuthContext } from "@/contexts/authContext";
 import { appTheme } from "@/util/appTheme";
 import { useVideo } from "@/contexts/videoContext";
 import { Skeleton } from "@/components/ui/skeleton";
+import { timeStampInjection } from "@/util/functions/YouTubeData";
 
 const FlashCards = () => {
   const { currentUser } = useContext(AuthContext);
-  const { currentFlashCards, loadingCurrentFlashCards, currentIndex, setCurrentIndex, isAnimating, setIsAnimating, flipped, setFlipped, disableAnimation, setDisableAnimation } = useVideo();
+  const {
+    currentFlashCards,
+    loadingCurrentFlashCards,
+    currentIndex,
+    setCurrentIndex,
+    isAnimating,
+    setIsAnimating,
+    flipped,
+    setFlipped,
+    disableAnimation,
+    setDisableAnimation,
+  } = useVideo();
 
   const card = currentFlashCards.content[currentIndex];
 
@@ -44,11 +56,18 @@ const FlashCards = () => {
   const goBack = () => {
     if (flipped) instantReset(); // avoid animation if showing answer
     setCurrentIndex(
-      (prev) => (prev - 1 + currentFlashCards.content.length) % currentFlashCards.content.length
+      (prev) =>
+        (prev - 1 + currentFlashCards.content.length) %
+        currentFlashCards.content.length
     );
   };
 
-  if (!currentUser || currentFlashCards.content.length === 0 || !currentFlashCards.flashcard_id) return;
+  if (
+    !currentUser ||
+    currentFlashCards.content.length === 0 ||
+    !currentFlashCards.flashcard_id
+  )
+    return;
 
   return (
     <div className="h-[100%] pt-[20px] px-[20px]">
@@ -84,25 +103,29 @@ const FlashCards = () => {
             style={{ transformStyle: "preserve-3d", cursor: "pointer" }}
           >
             <motion.div
-              className="absolute break-words overflow-hidden text-center w-full h-full rounded-2xl shadow-xl flex items-center justify-center text-2xl font-semibold p-6 cursor-pointer"
+              className="absolute overflow-hidden w-[100%] h-[100%] flex items-center pb-[5px] px-[20px] justify-center text-center rounded-[18px] shadow-xl text-[15px] leading-[23px] font-semibold cursor-pointer"
               style={{
                 backfaceVisibility: "hidden",
                 rotateY: 0,
                 backgroundColor: appTheme[currentUser.theme].background_2,
               }}
             >
-              {card.question}
+              <div className="">
+                {timeStampInjection(currentUser.theme, card.question)}
+              </div>
             </motion.div>
 
             <motion.div
-              className="absolute overflow-hidden text-center w-full h-full rounded-2xl shadow-xl flex items-center justify-center text-[20px] font-semibold p-6 cursor-pointer"
+              className="absolute overflow-hidden w-[100%] h-[100%] flex items-center pb-[5px] px-[20px] justify-center text-center rounded-[18px] shadow-xl text-[15px] leading-[23px] font-semibold cursor-pointer"
               style={{
                 backfaceVisibility: "hidden",
                 rotateY: 180,
-                backgroundColor: appTheme[currentUser.theme].background_2_2,
+                backgroundColor: appTheme[currentUser.theme].background_2,
               }}
             >
-              {card.answer}
+              <div className="">
+                {timeStampInjection(currentUser.theme, card.answer)}
+              </div>
             </motion.div>
           </motion.div>
 

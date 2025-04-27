@@ -95,16 +95,10 @@ type VideoContextType = {
   setLoadingCurrentSummary: React.Dispatch<React.SetStateAction<boolean>>;
   currentStudyTool: StudyToolTypes;
   setCurrentStudyTool: React.Dispatch<React.SetStateAction<StudyToolTypes>>;
-  notesData: any[];
-  isLoadingNotesData: boolean;
-  refetchNotesData: () => Promise<QueryObserverResult<any[], Error>>;
   currentFlashCards: FlashCards;
   setCurrentFlashCards: React.Dispatch<React.SetStateAction<FlashCards>>;
   loadingCurrentFlashCards: boolean;
   setLoadingCurrentFlashCards: React.Dispatch<React.SetStateAction<boolean>>;
-  flashCardData: any[];
-  isLoadingFlashCardData: boolean;
-  refetchFlashCardData: () => Promise<QueryObserverResult<any[], Error>>;
   currentIndex: number;
   setCurrentIndex: React.Dispatch<React.SetStateAction<number>>;
   flipped: boolean;
@@ -124,43 +118,6 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const { currentUser } = useContext(AuthContext);
-
-  const {
-    data: notesData,
-    isLoading: isLoadingNotesData,
-    refetch: refetchNotesData,
-  } = useQuery<any>({
-    queryKey: ["notes", currentUser?.user_id],
-    queryFn: async () => {
-      const res = await makeRequest.post("/api/users/get-notes", {
-        user_id: currentUser?.user_id,
-      });
-      return res.data.notes;
-    },
-    enabled: !!currentUser?.user_id,
-    staleTime: 1000 * 60 * 5,
-    gcTime: 1000 * 60 * 10,
-    // refetchOnMount: true,
-  });
-
-  const {
-    data: flashCardData,
-    isLoading: isLoadingFlashCardData,
-    refetch: refetchFlashCardData,
-  } = useQuery<any>({
-    queryKey: ["flashcards", currentUser?.user_id],
-    queryFn: async () => {
-      const res = await makeRequest.post("/api/users/get-flashcards", {
-        user_id: currentUser?.user_id,
-      });
-      return res.data.flashcards;
-    },
-    enabled: !!currentUser?.user_id,
-    staleTime: 1000 * 60 * 5,
-    gcTime: 1000 * 60 * 10,
-    // refetchOnMount: true,
-  });
-
   const [currentVideo, setCurrentVideo] = useState<YouTubePlayerVideo | null>(
     null
   );
@@ -301,16 +258,10 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({
         setLoadingCurrentSummary,
         currentStudyTool,
         setCurrentStudyTool,
-        notesData,
-        isLoadingNotesData,
-        refetchNotesData,
         currentFlashCards,
         setCurrentFlashCards,
         loadingCurrentFlashCards,
         setLoadingCurrentFlashCards,
-        flashCardData,
-        isLoadingFlashCardData,
-        refetchFlashCardData,
         currentIndex,
         setCurrentIndex,
         flipped,

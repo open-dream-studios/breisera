@@ -14,6 +14,12 @@ import { secondsToISO8601 } from "@/util/functions/Data";
 import { showToast } from "@/components/CustomToast";
 
 export type QueryContextType = {
+  notesData: any[];
+  isLoadingNotesData: boolean;
+  refetchNotesData: () => Promise<QueryObserverResult<any[], Error>>;
+  flashCardData: any[];
+  isLoadingFlashCardData: boolean;
+  refetchFlashCardData: () => Promise<QueryObserverResult<any[], Error>>;
   recentVideosData: any[];
   isLoadingRecentVideosData: boolean;
   refetchRecentVideosData: () => Promise<QueryObserverResult<any[], Error>>;
@@ -38,6 +44,42 @@ export const QueryProvider: React.FC<{ children: React.ReactNode }> = ({
     () => !!currentUser?.user_id,
     [currentUser?.user_id]
   );
+
+  const {
+    data: notesData,
+    isLoading: isLoadingNotesData,
+    refetch: refetchNotesData,
+  } = useQuery<any>({
+    queryKey: ["notes", currentUser?.user_id],
+    queryFn: async () => {
+      const res = await makeRequest.post("/api/users/get-notes", {
+        user_id: currentUser?.user_id,
+      });
+      return res.data.notes;
+    },
+    enabled: !!currentUser?.user_id,
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 10,
+    // refetchOnMount: true,
+  });
+
+  const {
+    data: flashCardData,
+    isLoading: isLoadingFlashCardData,
+    refetch: refetchFlashCardData,
+  } = useQuery<any>({
+    queryKey: ["flashcards", currentUser?.user_id],
+    queryFn: async () => {
+      const res = await makeRequest.post("/api/users/get-flashcards", {
+        user_id: currentUser?.user_id,
+      });
+      return res.data.flashcards;
+    },
+    enabled: !!currentUser?.user_id,
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 10,
+    // refetchOnMount: true,
+  });
 
   const {
     data: recentVideosData,
@@ -173,6 +215,12 @@ export const QueryProvider: React.FC<{ children: React.ReactNode }> = ({
   return (
     <QueryContext.Provider
       value={{
+        notesData,
+        isLoadingNotesData,
+        refetchNotesData,
+        flashCardData,
+        isLoadingFlashCardData,
+        refetchFlashCardData,
         recentVideosData,
         isLoadingRecentVideosData,
         refetchRecentVideosData,

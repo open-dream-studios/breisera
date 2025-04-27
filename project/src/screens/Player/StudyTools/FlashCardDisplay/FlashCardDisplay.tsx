@@ -11,6 +11,8 @@ import { BACKEND_URL } from "@/util/config";
 import { extractJsonArray } from "@/util/functions/YouTubeData";
 import { generateUniqueId } from "@/util/functions/Data";
 import { GoTrash } from "react-icons/go";
+import { useContextQueries } from "@/contexts/queryContext";
+import { showToast } from "@/components/CustomToast";
 
 type FlashCardsListProps = {
   flashCardsOpen: boolean;
@@ -29,12 +31,12 @@ const FlashCardsList = ({
   const {
     currentFlashCards,
     setCurrentFlashCards,
-    flashCardData,
     setCurrentIndex,
     setIsAnimating,
     setFlipped,
     setDisableAnimation,
   } = useVideo();
+  const { flashCardData } = useContextQueries();
 
   if (!currentUser || !flashCardData) return <></>;
 
@@ -138,14 +140,13 @@ const FlashCardDisplay = () => {
     currentVideoTranscript,
     loadingCurrentFlashCards,
     setLoadingCurrentFlashCards,
-    flashCardData,
-    isLoadingFlashCardData,
-    refetchFlashCardData,
     setCurrentIndex,
     setIsAnimating,
     setFlipped,
     setDisableAnimation,
   } = useVideo();
+
+  const { refetchFlashCardData } = useContextQueries();
 
   const [flashcardSetsOpen, setFlashcardSetsOpen] = useState<boolean>(false);
 
@@ -163,7 +164,7 @@ const FlashCardDisplay = () => {
           number: 10,
           topic: topic,
           transcript: currentVideoTranscript,
-          video: currentVideo
+          video: currentVideo,
         }
       );
       if (res.status === 200) {
@@ -181,7 +182,7 @@ const FlashCardDisplay = () => {
   };
 
   const writeFlashCards = async () => {
-    if (!currentUser) return;
+    if (!currentUser || !currentVideo) return;
     const flashcardId = currentFlashCards.flashcard_id
       ? currentFlashCards.flashcard_id
       : generateUniqueId();
@@ -193,7 +194,12 @@ const FlashCardDisplay = () => {
         title: currentFlashCards.title,
         content: JSON.stringify(currentFlashCards.content),
         video_id: currentVideo ? currentVideo.id : null,
+        collection_id: null,
+        video_data: JSON.stringify(currentVideo),
       });
+      if (res.status === 200) {
+        showToast("Saved flash cards", "success");
+      }
       refetchFlashCardData();
     } catch (error) {
       console.error("Failed to update flashcard:", error);
@@ -285,17 +291,19 @@ const FlashCardDisplay = () => {
               </div>
             )}
 
-            <div
-              onClick={writeFlashCards}
-              className="ml-[10px] dim hover:brightness-75 cursor-pointer font-[600] text-[16px] py-[5px] px-[13px] rounded-[5px] flex flex-row items-center justify-center gap-[5px]"
-              style={{
-                backgroundColor: appTheme[currentUser.theme].text_1,
-                color: appTheme[currentUser.theme].background_1,
-              }}
-            >
-              <BsLightningChargeFill className="w-[16px] h-[16px] mt-[-2px]" />
-              Save
-            </div>
+            {currentFlashCards && currentFlashCards.flashcard_id && (
+              <div
+                onClick={writeFlashCards}
+                className="ml-[10px] dim hover:brightness-75 cursor-pointer font-[600] text-[16px] py-[5px] px-[13px] rounded-[5px] flex flex-row items-center justify-center gap-[5px]"
+                style={{
+                  backgroundColor: appTheme[currentUser.theme].text_1,
+                  color: appTheme[currentUser.theme].background_1,
+                }}
+              >
+                <BsLightningChargeFill className="w-[16px] h-[16px] mt-[-2px]" />
+                Save
+              </div>
+            )}
           </div>
           <FlashCards />
         </div>
