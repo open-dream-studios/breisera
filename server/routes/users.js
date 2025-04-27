@@ -16,7 +16,10 @@ import {
   getRecentVideos,
   updateRecentVideo,
   getVideoCollections,
-  updateVideoCollections
+  updateVideoCollections,
+  deleteVideoCollections,
+  getVideoCollectionNames,
+  updateVideoCollectionNames,
 } from "../controllers/user.js";
 
 const router = express.Router();
@@ -36,9 +39,14 @@ router.post("/write-flashcards", writeFlashCards);
 router.post("/get-flashcards", getFlashCards);
 router.post("/delete-flashcards", deleteFlashCards);
 
-router.post("/get-recent-videos", getRecentVideos)
-router.post("/update-recent-videos", updateRecentVideo)
-router.post("/get-video-collections", getVideoCollections)
-router.post("/update-video-collections", updateVideoCollections)
+router.post("/get-recent-videos", getRecentVideos);
+router.post("/update-recent-videos", updateRecentVideo);
+
+router.post("/get-video-collections", getVideoCollections);
+router.post("/update-video-collections", updateVideoCollections);
+router.post("/delete-video-collections", deleteVideoCollections);
+
+router.post("/get-video-collection", getVideoCollectionNames);
+router.post("/update-video-collection", updateVideoCollectionNames);
 
 export default router;

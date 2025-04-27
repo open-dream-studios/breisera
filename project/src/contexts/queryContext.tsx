@@ -12,6 +12,7 @@ import { makeRequest } from "@/util/axios";
 import { AuthContext } from "./authContext";
 import { secondsToISO8601 } from "@/util/functions/Data";
 import { showToast } from "@/components/CustomToast";
+import { isNull } from "node:util";
 
 export type QueryContextType = {
   notesData: any[];
@@ -27,8 +28,15 @@ export type QueryContextType = {
   videoCollectionsData: any[];
   isLoadingVideoCollectionsData: boolean;
   refetchVideoCollectionsData: () => Promise<QueryObserverResult<any[], Error>>;
-  updateVideoCollection: (
+  updateVideoCollections: (
     video: YouTubePlayerVideo,
+    collection_id: string | null,
+    collection_name: string
+  ) => void;
+  videoCollectionData: any[];
+  isLoadingVideoCollectionData: boolean;
+  refetchVideoCollectionData: () => Promise<QueryObserverResult<any[], Error>>;
+  updateVideoCollection: (
     collection_id: string | null,
     collection_name: string
   ) => void;
@@ -142,8 +150,8 @@ export const QueryProvider: React.FC<{ children: React.ReactNode }> = ({
     },
   });
 
-  const updateRecentVideo = (video: YouTubePlayerVideo) => {
-    updateRecentVideos.mutate(video);
+  const updateRecentVideo = async (video: YouTubePlayerVideo) => {
+    await updateRecentVideos.mutateAsync(video);
   };
 
   const {
@@ -166,7 +174,7 @@ export const QueryProvider: React.FC<{ children: React.ReactNode }> = ({
     enabled: isLoggedIn,
   });
 
-  const updateVideoCollections = useMutation({
+  const updateVideoCollectionsMutation = useMutation({
     mutationFn: async ({
       video,
       collection_id,
@@ -174,7 +182,7 @@ export const QueryProvider: React.FC<{ children: React.ReactNode }> = ({
     }: {
       video: YouTubePlayerVideo;
       collection_id: string | null;
-      collection_name: string
+      collection_name: string;
     }) => {
       await makeRequest.post("/api/users/update-video-collections", {
         video_id: video.id,
@@ -193,8 +201,7 @@ export const QueryProvider: React.FC<{ children: React.ReactNode }> = ({
       const queryKey = ["video-collections"];
       await queryClient.cancelQueries({ queryKey });
       const previousData = queryClient.getQueryData(queryKey);
-      queryClient.setQueryData(queryKey, video);
-      showToast("Video saved to library", "success");
+      showToast("Video saved to collection", "success");
       return { previousData, queryKey };
     },
     onError: (_err, _newData, context) => {
@@ -209,12 +216,86 @@ export const QueryProvider: React.FC<{ children: React.ReactNode }> = ({
     },
   });
 
-  const updateVideoCollection = (
+  const updateVideoCollections = async (
     video: YouTubePlayerVideo,
     collection_id: string | null,
     collection_name: string
   ) => {
-    updateVideoCollections.mutate({ video, collection_id, collection_name });
+    await updateVideoCollectionsMutation.mutateAsync({
+      video,
+      collection_id,
+      collection_name,
+    });
+  };
+
+  const {
+    data: videoCollectionData,
+    isLoading: isLoadingVideoCollectionData,
+    refetch: refetchVideoCollectionData,
+  } = useQuery<any>({
+    queryKey: ["video-collection"],
+    queryFn: async () => {
+      const res = await makeRequest.post("/api/users/get-video-collection", {});
+      // console.log(res.data.collections);
+      return res.data.collections;
+    },
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 10,
+    refetchOnMount: true,
+    enabled: isLoggedIn,
+  });
+
+  const updateVideoCollectionMutation = useMutation({
+    mutationFn: async ({
+      collection_id,
+      collection_name,
+    }: {
+      collection_id: string | null;
+      collection_name: string;
+    }) => {
+      await makeRequest.post("/api/users/update-video-collection", {
+        collection_id,
+        collection_name,
+      });
+    },
+    onMutate: async ({
+      collection_id,
+      collection_name,
+    }: {
+      collection_id: string | null;
+      collection_name: string;
+    }) => {
+      const queryKey = ["video-collection"];
+      await queryClient.cancelQueries({ queryKey });
+      const previousData = queryClient.getQueryData(queryKey);
+      // TO DO: Fix optimistic update
+      // queryClient.setQueryData<any[]>(queryKey, (old) => [
+      //   ...(old || []),
+      //   { id: collection_id || null, name: "New" },
+      // ]);
+      showToast("New collection added", "success");
+      return { previousData, queryKey };
+    },
+    onError: (_err, _newData, context) => {
+      if (context?.queryKey && context?.previousData) {
+        queryClient.setQueryData(context.queryKey, context.previousData);
+      }
+    },
+    onSettled: (_data, _err, _variables, context) => {
+      if (context?.queryKey) {
+        queryClient.invalidateQueries({ queryKey: context.queryKey });
+      }
+    },
+  });
+
+  const updateVideoCollection = async (
+    collection_id: string | null,
+    collection_name: string
+  ) => {
+    await updateVideoCollectionMutation.mutateAsync({
+      collection_id,
+      collection_name,
+    });
   };
 
   return (
@@ -233,6 +314,10 @@ export const QueryProvider: React.FC<{ children: React.ReactNode }> = ({
         videoCollectionsData,
         isLoadingVideoCollectionsData,
         refetchVideoCollectionsData,
+        updateVideoCollections,
+        videoCollectionData,
+        isLoadingVideoCollectionData,
+        refetchVideoCollectionData,
         updateVideoCollection,
       }}
     >

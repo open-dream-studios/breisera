@@ -16,23 +16,52 @@ import { LuLibrary } from "react-icons/lu";
 import { FaLink } from "react-icons/fa6";
 import { FaPlus } from "react-icons/fa6";
 import { RxCheck } from "react-icons/rx";
+import { makeRequest } from "@/util/axios";
+import { useQueryClient } from "@tanstack/react-query";
+import { IoCloseOutline } from "react-icons/io5";
 
 interface ClickOutsideBoxProps {
   setPopupVisible: (visible: boolean) => void;
-  handleSaveVideo: (
-    collection_id: string | null,
-    collection_name: string
-  ) => void;
 }
 
-const CollectionsPopup = ({
-  setPopupVisible,
-  handleSaveVideo,
-}: ClickOutsideBoxProps) => {
+const smoothScrollTo = (element: HTMLElement, targetPosition: number) => {
+  const startPosition = element.scrollTop;
+  const distance = targetPosition - startPosition;
+  const startTime = performance.now();
+  const duration = 1200;
+
+  function animateScroll(currentTime: number) {
+    const elapsedTime = currentTime - startTime;
+    const progress = Math.min(elapsedTime / duration, 1);
+    const ease = easeInOutQuad(progress);
+
+    element.scrollTop = startPosition + distance * ease;
+
+    if (progress < 1) {
+      requestAnimationFrame(animateScroll);
+    }
+  }
+
+  function easeInOutQuad(t: number) {
+    return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+  }
+
+  requestAnimationFrame(animateScroll);
+};
+
+const CollectionsPopup = ({ setPopupVisible }: ClickOutsideBoxProps) => {
   const { currentUser } = useContext(AuthContext);
   const { currentVideo } = useVideo();
-  const { videoCollectionsData } = useContextQueries();
+  const queryClient = useQueryClient();
+  const {
+    videoCollectionsData,
+    updateVideoCollections,
+    refetchVideoCollectionsData,
+    videoCollectionData,
+    updateVideoCollection,
+  } = useContextQueries();
   const popupRef = useRef<HTMLDivElement>(null);
+  const saveToCollectionsPopupRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClick(event: any) {
@@ -46,9 +75,46 @@ const CollectionsPopup = ({
     };
   }, []);
 
+  const handleSaveVideo = (
+    collection_id: string | null,
+    collection_name: string
+  ) => {
+    if (currentVideo) {
+      updateVideoCollections(currentVideo, collection_id, collection_name);
+    }
+  };
+
   const handleCollectionClick = (collection: any) => {
-    handleSaveVideo(null, "4th");
-    // handleSaveVideo(collection.collection_id, collection.collection_name);
+    handleSaveVideo(collection.collection_id, collection.collection_name);
+  };
+
+  const handleAddCollection = async () => {
+    await updateVideoCollection(null, "New");
+    queryClient.invalidateQueries({
+      queryKey: ["video-collections"],
+      refetchType: "active",
+    });
+    if (saveToCollectionsPopupRef.current) {
+      smoothScrollTo(
+        saveToCollectionsPopupRef.current,
+        saveToCollectionsPopupRef.current.scrollHeight
+      );
+    }
+  };
+
+  const handleRemoveSavedVideo = async (collection: any) => {
+    if (!currentVideo) return;
+    const res = await makeRequest.post("/api/users/delete-video-collections", {
+      collection_id: collection.collection_id,
+      video_id: currentVideo.id,
+    });
+    queryClient.invalidateQueries({
+      queryKey: ["video-collections"],
+      refetchType: "active",
+    });
+    if (res.status === 200) {
+      showToast("Video removed from collection", "success");
+    }
   };
 
   if (!currentUser || !currentVideo) return <></>;
@@ -60,72 +126,126 @@ const CollectionsPopup = ({
         backgroundColor: appTheme[currentUser.theme].background_1,
         border: `1px solid ${appTheme[currentUser.theme].background_2}`,
       }}
-      className="pt-[18px] p-[10px] grid grid-cols-3 max-h-[400px] min-h-[200px] w-[300px] absolute right-[38px] bottom-[calc(100%+10px)] rounded-2xl shadow-xl overflow-y-auto"
+      className="p-[10px] pt-[18px] max-h-[360px] min-h-[200px] w-[300px] absolute right-[38px] bottom-[calc(100%+10px)] rounded-2xl shadow-x flex flex-col"
     >
-      {videoCollectionsData &&
-        videoCollectionsData.length > 0 &&
-        videoCollectionsData.map((collection: any, index: number) => {
-          console.log(videoCollectionsData);
-          if (
-            videoCollectionsData[index].videos.findIndex(
-              (item: any) => item.id === currentVideo.id
-            ) === -1
-          ) {
-            return (
-              <div
-                key={index}
-                className="hover:brightness-75 dim cursor-pointer flex flex-col gap-[6px] overflow-hidden items-center justify-center aspect-square"
-                onClick={() => {
-                  handleCollectionClick(collection);
-                }}
-              >
-                <div
-                  style={{
-                    backgroundColor: appTheme[currentUser.theme].background_2,
-                  }}
-                  className="aspect-[1/1] rounded-[5px] w-[65%] flex justify-center items-center"
-                >
-                  <FaPlus
-                    className="w-[25px] h-[25px]"
-                    style={{ color: appTheme[currentUser.theme].text_4 }}
-                  />
-                </div>
-                <div className="max-w-[85%] text-[14px] leading-[14px] font-[300] truncate overflow-hidden">
-                  {collection.collection_name}
-                </div>
-              </div>
-            );
-          } else {
-            return (
-              <div
-                key={index}
-                className="brightness-[76%] flex flex-col gap-[6px] overflow-hidden items-center justify-center aspect-square"
-              >
-                <div
-                  style={{
-                    backgroundColor: appTheme[currentUser.theme].background_2,
-                  }}
-                  className="aspect-[1/1] rounded-[5px] w-[65%] flex justify-center items-center"
-                >
-                  <RxCheck
-                    className="w-[35px] h-[35px]"
-                    style={{ color: appTheme[currentUser.theme].text_4 }}
-                  />
-                </div>
-                <div className="opacity-50 max-w-[85%] text-[14px] leading-[14px] font-[300] truncate overflow-hidden">
-                  {collection.collection_name}
-                </div>
-              </div>
-            );
-          }
-        })}
+      <div ref={saveToCollectionsPopupRef} className="flex-1 overflow-y-auto">
+        <div className="grid grid-cols-3 gap-[10px]">
+          {videoCollectionData &&
+            videoCollectionData.length > 0 &&
+            videoCollectionData.map((collection: any, index: number) => {
+              const collectionIndex = videoCollectionsData.findIndex(
+                (item) => item.collection_id === collection.collection_id
+              );
+
+              if (
+                collectionIndex !== -1 &&
+                videoCollectionsData[collectionIndex].videos.findIndex(
+                  (item: any) => item.id === currentVideo.id
+                ) !== -1
+              ) {
+                return (
+                  <div
+                    key={index}
+                    className="brightness-[76%] flex flex-col gap-[6px] overflow-hidden items-center justify-center aspect-square"
+                  >
+                    <div
+                      style={{
+                        backgroundColor:
+                          appTheme[currentUser.theme].background_2,
+                      }}
+                      className="relative cursor-pointer group aspect-[1/1] rounded-[5px] overflow-hidden w-[65%] flex justify-center items-center"
+                      onClick={() => handleRemoveSavedVideo(collection)}
+                    >
+                      <RxCheck
+                        className="z-[502] w-[35px] h-[35px] group-hover:hidden"
+                        style={{ color: appTheme[currentUser.theme].text_4 }}
+                      />
+                      <IoCloseOutline
+                        className="z-[502] ml-[1px] w-[38px] h-[38px] hidden group-hover:block"
+                        style={{ color: appTheme[currentUser.theme].text_4 }}
+                      />
+                      {videoCollectionsData[collectionIndex].videos &&
+                        videoCollectionsData[collectionIndex].videos.length >
+                          0 && (
+                          <img
+                            className="opacity-25 z-[501] w-[100%] h-[140%] absolute object-cover"
+                            src={
+                              videoCollectionsData[collectionIndex].videos[0]
+                                .snippet.thumbnails.high.url
+                            }
+                            alt="collection thumbnails"
+                          />
+                        )}
+                    </div>
+
+                    <div className="opacity-50 max-w-[85%] text-[14px] leading-[14px] font-[300] truncate overflow-hidden">
+                      {collection.collection_name}
+                    </div>
+                  </div>
+                );
+              } else {
+                return (
+                  <div
+                    key={index}
+                    className="hover:brightness-75 dim cursor-pointer flex flex-col gap-[6px] overflow-hidden items-center justify-center aspect-square"
+                    onClick={() => {
+                      handleCollectionClick(collection);
+                    }}
+                  >
+                    <div
+                      style={{
+                        backgroundColor:
+                          appTheme[currentUser.theme].background_2,
+                      }}
+                      className="relative aspect-[1/1] rounded-[5px] w-[65%] flex justify-center items-center overflow-hidden"
+                    >
+                      <FaPlus
+                        className="w-[25px] h-[25px]"
+                        style={{ color: appTheme[currentUser.theme].text_4 }}
+                      />
+                      {collectionIndex !== -1 &&
+                        videoCollectionsData[collectionIndex].videos &&
+                        videoCollectionsData[collectionIndex].videos.length >
+                          0 && (
+                          <img
+                            className="opacity-25 z-[501] w-[100%] h-[140%] absolute object-cover"
+                            src={
+                              videoCollectionsData[collectionIndex].videos[0]
+                                .snippet.thumbnails.high.url
+                            }
+                            alt="collection thumbnails"
+                          />
+                        )}
+                    </div>
+                    <div className="max-w-[85%] text-[14px] leading-[14px] font-[300] truncate overflow-hidden">
+                      {collection.collection_name}
+                    </div>
+                  </div>
+                );
+              }
+            })}
+        </div>
+      </div>
+
+      <div className="flex justify-center mt-[10px]">
+        <div
+          style={{
+            backgroundColor: appTheme[currentUser.theme].background_2,
+            color: appTheme[currentUser.theme].text_1,
+          }}
+          className="flex items-center justify-center cursor-pointer hover:brightness-75 dim w-[100px] h-[30px] rounded-[20px] text-[15px] leading-[15px] font-[400]"
+          onClick={handleAddCollection}
+        >
+          Add
+        </div>
+      </div>
     </div>
   );
 };
 
 const YoutubePlayerData = () => {
   const { currentUser } = useContext(AuthContext);
-  const { updateVideoCollection, videoCollectionsData } = useContextQueries();
+  const { updateVideoCollections } = useContextQueries();
   const { currentVideo, theaterMode, setTheaterMode } = useVideo();
   const modal2 = useModal2Store((state: any) => state.modal2);
   const setModal2 = useModal2Store((state: any) => state.setModal2);
@@ -190,19 +310,6 @@ const YoutubePlayerData = () => {
     });
   };
 
-  const handleSaveVideo = (
-    collection_id: string | null,
-    collection_name: string
-  ) => {
-    if (currentVideo) {
-      updateVideoCollection(
-        currentVideo,
-        collection_id,
-        collection_name
-      );
-    }
-  };
-
   if (currentVideo === null || !currentUser) return;
 
   return (
@@ -212,12 +319,7 @@ const YoutubePlayerData = () => {
       </div>
 
       <div className="w-[100%] flex flex-row justify-between items-start mt-[10px] relative">
-        {popupVisible && (
-          <CollectionsPopup
-            setPopupVisible={setPopupVisible}
-            handleSaveVideo={handleSaveVideo}
-          />
-        )}
+        {popupVisible && <CollectionsPopup setPopupVisible={setPopupVisible} />}
         <div
           onClick={() => {
             openWindow(

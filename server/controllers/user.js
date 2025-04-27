@@ -787,3 +787,108 @@ export const updateVideoCollections = async (req, res) => {
     return res.status(500).json({ success: false });
   }
 };
+
+export const getVideoCollectionNames = async (req, res) => {
+  try {
+    const token = req.cookies.accessToken;
+    if (!token) return res.status(401).json({ error: "Not authenticated" });
+
+    const user_id = decodeToken(token);
+
+    const collections = await new Promise((resolve, reject) => {
+      db.query(
+        `
+      SELECT collection_id, collection_name
+      FROM collections
+      WHERE user_id = ?
+      ORDER BY updated_at ASC
+    `,
+        [user_id],
+        (err, data) => {
+          if (err) {
+            console.error("DB Query Error (collection names):", err);
+            return reject(err);
+          }
+          const result = data.map((row) => ({
+            collection_id: row.collection_id,
+            collection_name: row.collection_name,
+          }));
+          resolve(result);
+        }
+      );
+    });
+
+    return res.status(200).json({
+      success: true,
+      collections: collections,
+    });
+  } catch (error) {
+    console.error("Error fetching video collections:", error);
+    return res.status(500).json({ success: false, collections: [] });
+  }
+};
+
+export const updateVideoCollectionNames = async (req, res) => {
+  try {
+    const token = req.cookies.accessToken;
+    if (!token) return res.status(401).json({ error: "Not authenticated" });
+    const user_id = decodeToken(token);
+
+    let { collection_name, collection_id } = req.body;
+    collection_id = collection_id ? collection_id : generateId(15);
+
+    await new Promise((resolve, reject) => {
+      db.query(
+        `
+      INSERT INTO collections (user_id, collection_id, collection_name)
+      VALUES (?, ?, ?)
+      ON DUPLICATE KEY UPDATE collection_name = VALUES(collection_name)
+    `,
+        [user_id, collection_id, collection_name],
+        (err, result) => {
+          if (err) {
+            console.error("DB Query Error:", err);
+            return reject(err);
+          }
+          resolve(result);
+        }
+      );
+    });
+
+    return res.status(200).json({
+      success: true,
+    });
+  } catch (error) {
+    console.error("Error adding collection:", error);
+    return res.status(500).json({ success: false });
+  }
+};
+
+export const deleteVideoCollections = async (req, res) => {
+  try {
+    const token = req.cookies.accessToken;
+    if (!token) return res.status(401).json({ error: "Not authenticated" });
+    const user_id = decodeToken(token);
+    const { video_id, collection_id } = req.body;
+    if (!video_id || !collection_id) {
+      return res.status(400).json({ error: "IDs are required" });
+    }
+
+    const [result] = await db
+      .promise()
+      .query(
+        "DELETE FROM video_collections WHERE user_id = ? AND collection_id = ? AND video_id = ?",
+        [user_id, collection_id, video_id]
+      );
+    if (result.affectedRows === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Row was not found",
+      });
+    }
+    return res.status(200).json({ success: true });
+  } catch (error) {
+    console.error("Error deleting row:", error);
+    return res.status(500).json({ success: false, error: "Server error" });
+  }
+};
