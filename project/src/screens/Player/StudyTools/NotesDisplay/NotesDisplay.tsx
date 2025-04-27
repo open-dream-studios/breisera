@@ -2,10 +2,17 @@
 import { AuthContext } from "@/contexts/authContext";
 import { useContextQueries } from "@/contexts/queryContext";
 import { Note, useVideo } from "@/contexts/videoContext";
+import { useNoteRefStore } from "@/store/useStudyToolsStore";
 import { appTheme } from "@/util/appTheme";
 import { makeRequest } from "@/util/axios";
 import { generateUniqueId } from "@/util/functions/Data";
-import React, { useContext, useEffect, useRef, useState } from "react";
+import React, {
+  RefObject,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { FaPlus } from "react-icons/fa6";
 import { FaChevronDown } from "react-icons/fa6";
 import { GoTrash } from "react-icons/go";
@@ -38,7 +45,6 @@ const NotesList = ({
   return (
     <div
       style={{
-        backgroundColor: appTheme[currentUser.theme].background_2,
         color: appTheme[currentUser.theme].text_3,
       }}
       className={`${
@@ -46,7 +52,7 @@ const NotesList = ({
           ? !notesOpen
             ? "hidden"
             : "flex sm:hidden"
-          : "flex mt-[5px]"
+          : "flex mt-[3px]"
       } z-[502] relative w-[calc(100%+10px)] pr-[10px] h-[100%] flex-col overflow-scroll`}
     >
       <div
@@ -82,7 +88,7 @@ const NotesList = ({
             return (
               <div key={index}>
                 <div
-                  className="opacity-75 w-[100%] h-[1px] mb-[10px] mt-[2px] rounded-[2px]"
+                  className="opacity-50 w-[100%] h-[1px] mb-[10px] mt-[2px] rounded-[2px]"
                   style={{
                     backgroundColor: appTheme[currentUser.theme].text_3,
                   }}
@@ -123,8 +129,14 @@ const NotesList = ({
 const NotesDisplay = () => {
   const { currentUser } = useContext(AuthContext);
   const { currentNote, setCurrentNote, currentVideo } = useVideo();
-  const { notesData, refetchNotesData } = useContextQueries();
+  const { refetchNotesData } = useContextQueries();
   const [notesOpen, setNotesOpen] = useState(false);
+
+  const notesRef = useRef<HTMLDivElement>(null);
+  const setNoteRef = useNoteRefStore((state) => state.setNoteRef);
+  useEffect(() => {
+    setNoteRef(notesRef as RefObject<HTMLDivElement>);
+  }, [setNoteRef, notesRef]);
 
   const currentNoteRef = useRef<Note>(currentNote);
   useEffect(() => {
@@ -137,26 +149,24 @@ const NotesDisplay = () => {
     setCurrentNote({ ...currentNote, note_id: null, title: "", content: "" });
     setNotesOpen(false);
     setTimeout(() => {
-      if (editorRef.current) {
-        editorRef.current.focus();
+      if (notesRef.current) {
+        notesRef.current.focus();
       }
     }, 100);
   };
 
-  const editorRef = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
     if (
-      editorRef.current &&
-      currentNote.content !== editorRef.current.innerHTML
+      notesRef.current &&
+      currentNote.content !== notesRef.current.innerHTML
     ) {
-      editorRef.current.innerHTML = currentNote.content;
+      notesRef.current.innerHTML = currentNote.content;
     }
   }, [currentNote]);
 
   const handleInputChange = () => {
-    if (editorRef.current) {
-      setCurrentNote({ ...currentNote, content: editorRef.current.innerHTML });
+    if (notesRef.current) {
+      setCurrentNote({ ...currentNote, content: notesRef.current.innerHTML });
     }
     resetTimer();
   };
@@ -238,7 +248,9 @@ const NotesDisplay = () => {
   return (
     <div className="w-[100%] h-[100%] flex flex-col gap-[11px]">
       <div
-        style={{ backgroundColor: appTheme[currentUser.theme].background_2 }}
+        style={{
+          border: `1px solid ${appTheme[currentUser.theme].background_2}`,
+        }}
         className={`sm:flex flex-col hidden w-[100%] ${
           notesOpen
             ? "h-[200px] max-h-[200px] overflow-scroll"
@@ -256,7 +268,7 @@ const NotesDisplay = () => {
 
       <div
         style={{
-          backgroundColor: appTheme[currentUser.theme].background_2,
+          border: `1px solid ${appTheme[currentUser.theme].background_2}`,
           color: appTheme[currentUser.theme].text_1,
         }}
         className="w-[100%] h-[100%] pt-[15px] px-[17px] rounded-[5px] relative"
@@ -274,7 +286,7 @@ const NotesDisplay = () => {
         <div
           onClick={handleNewNoteClick}
           style={{
-            backgroundColor: appTheme[currentUser.theme].background_1,
+            backgroundColor: appTheme[currentUser.theme].background_2,
             color: appTheme[currentUser.theme].text_1,
           }}
           className="absolute z-[503] shadow-lg right-[10px] top-[10px] h-[30px] w-[30px] dim cursor-pointer hover:brightness-75 rounded-full flex items-center justify-center"
@@ -294,7 +306,7 @@ const NotesDisplay = () => {
         )}
 
         <div
-          ref={editorRef}
+          ref={notesRef}
           contentEditable
           suppressContentEditableWarning
           onInput={handleInputChange}

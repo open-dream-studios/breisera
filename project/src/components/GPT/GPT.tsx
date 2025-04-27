@@ -1,5 +1,5 @@
 "use client";
-import { useContext, useEffect, useRef, useState } from "react";
+import { RefObject, useContext, useEffect, useRef, useState } from "react";
 import "./GPT.css";
 import GPTlogo from "/assets/ai.png";
 import user from "/assets/user.png";
@@ -13,6 +13,7 @@ import { HiOutlinePencilAlt } from "react-icons/hi";
 import { makeRequest } from "@/util/axios";
 import { timeStampInjection } from "@/util/functions/YouTubeData";
 import { openWindow } from "@/util/functions/AppFunctions";
+import { useGPTRefStore } from "@/store/useStudyToolsStore";
 
 // height: -webkit-fill-available
 
@@ -33,6 +34,11 @@ const GPT = () => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const gptMessageDisplay = useRef<HTMLDivElement>(null);
   const [modelDisplayed, setModelDisplayed] = useState<boolean>(false);
+
+  const setGPTRef = useGPTRefStore((state) => state.setGPTRef);
+  useEffect(() => {
+    setGPTRef(textareaRef as RefObject<HTMLTextAreaElement>);
+  }, [setGPTRef, textareaRef]);
 
   function startLoadingAnimation() {
     if (!isLoading) {
@@ -79,7 +85,7 @@ const GPT = () => {
         ...prevMessages,
         { text: newUserMessage, isBot: false },
       ]);
-      
+
       function truncateText(text: string, text_limit: number): string {
         const words = text.split(/\s+/);
         if (words.length <= text_limit) return text;
@@ -90,12 +96,10 @@ const GPT = () => {
       }
 
       const MAX_MESSAGES = 10;
-      const limitedMessages = oldMessages
-        .slice(-MAX_MESSAGES) 
-        .map((msg) => ({
-          ...msg,
-          text: truncateText(msg.text, 100),
-        }));
+      const limitedMessages = oldMessages.slice(-MAX_MESSAGES).map((msg) => ({
+        ...msg,
+        text: truncateText(msg.text, 100),
+      }));
 
       const botMessage = await getMessage([
         ...limitedMessages,
@@ -130,7 +134,7 @@ const GPT = () => {
         {
           messages: messages,
           transcript: currentVideoTranscript,
-          video: currentVideo
+          video: currentVideo,
         }
       );
       if (res.status === 200) {

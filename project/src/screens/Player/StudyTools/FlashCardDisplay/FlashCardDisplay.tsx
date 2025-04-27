@@ -50,7 +50,7 @@ const FlashCardsList = ({
           ? !flashCardsOpen
             ? "hidden"
             : "flex sm:hidden"
-          : "flex mt-[5px]"
+          : "flex mt-[3px]"
       } z-[502] relative w-[calc(100%+10px)] pr-[10px] h-[100%] flex-col overflow-scroll`}
     >
       <div

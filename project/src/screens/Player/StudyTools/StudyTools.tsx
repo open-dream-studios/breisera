@@ -7,6 +7,7 @@ import GPT from "@/components/GPT/GPT";
 import FlashCardDisplay from "./FlashCardDisplay/FlashCardDisplay";
 import NotesDisplay from "./NotesDisplay/NotesDisplay";
 import { useVideo } from "@/contexts/videoContext";
+import { useGPTRefStore, useNoteRefStore } from "@/store/useStudyToolsStore";
 
 export type StudyToolTypes = "Chat" | "Notes" | "Flash Cards";
 
@@ -14,9 +15,25 @@ const StudyTools = () => {
   const { currentUser } = useContext(AuthContext);
   const { currentStudyTool, setCurrentStudyTool, theaterMode } = useVideo();
   const studyTools: StudyToolTypes[] = ["Chat", "Notes", "Flash Cards"];
+  const noteRef = useNoteRefStore((state) => state.noteRef);
+  const GPTRef = useGPTRefStore((state) => state.GPTRef);
 
   const handleStudyToolClick = (tool: StudyToolTypes) => {
     setCurrentStudyTool(tool);
+    if (tool === "Notes") {
+      if (noteRef && noteRef.current) {
+        setTimeout(() => {
+          noteRef.current.focus();
+        }, 100);
+      }
+    }
+    if (tool === "Chat") {
+      if (GPTRef && GPTRef.current) {
+        setTimeout(() => {
+          GPTRef.current.focus();
+        }, 100);
+      }
+    }
   };
 
   if (!currentUser) return <></>;
