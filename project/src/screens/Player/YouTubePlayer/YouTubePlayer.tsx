@@ -113,11 +113,11 @@ const YouTubePlayer = () => {
           onReady={onPlayerReady}
           onStateChange={(event) => {
             const playerState = event.data;
+            updateRecent();
             if (playerState === 1) {
               setIsPlaying(true);
             } else if (playerState === 2) {
               setIsPlaying(false);
-              updateRecent();
             }
           }}
         />
