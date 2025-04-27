@@ -19,12 +19,14 @@ import { iso8601ToSeconds } from "@/util/functions/Data";
 import { playVideo } from "@/screens/Player/YouTubePlayer/YouTubePlayer";
 
 const LeftBar = () => {
-  const { currentVideo, playerState, setCurrentVideo, setPlayerState } =
-    useVideo();
   const {
-    recentVideosData,
-    updateRecentVideo,
-  } = useContextQueries();
+    handleVideoClick,
+    currentVideo,
+    playerState,
+    setCurrentVideo,
+    setPlayerState,
+  } = useVideo();
+  const { recentVideosData } = useContextQueries();
   const { currentUser, handleLogout } = useContext(AuthContext);
   const modal2 = useModal2Store((state: any) => state.modal2);
   const setModal2 = useModal2Store((state: any) => state.setModal2);
@@ -127,11 +129,9 @@ const LeftBar = () => {
     });
   };
 
-  const handleVideoClick = (video: YouTubePlayerVideo) => {
+  const handleLeftBarVideoClick = (video: YouTubePlayerVideo) => {
     closeLeftBar();
-    setCurrentVideo(video);
-    updateRecentVideo(video);
-    setPlayerState("screen")
+    handleVideoClick(video);
   };
 
   if (!currentUser) return;
@@ -184,7 +184,7 @@ const LeftBar = () => {
                     onClick={() => {
                       closeLeftBar();
                       setPlayerState("screen");
-                      playVideo()
+                      playVideo();
                     }}
                     style={{
                       backgroundColor: appTheme[currentUser.theme].background_2,
@@ -265,7 +265,9 @@ const LeftBar = () => {
                       <Link
                         key={index}
                         onClick={(e) => {
-                          handleVideoClick(video_data as YouTubePlayerVideo);
+                          handleLeftBarVideoClick(
+                            video_data as YouTubePlayerVideo
+                          );
                         }}
                         href={`${FRONTEND_URL}/www.youtube.com/watch?v=${video_data.id}`}
                         className="min-h-[25px] w-[100%] truncate my-[1.8px] dim hover:brightness-75"

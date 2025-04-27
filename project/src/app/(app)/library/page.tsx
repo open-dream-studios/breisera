@@ -14,7 +14,6 @@ const LibraryPage = () => {
   const { currentUser } = useContext(AuthContext);
   const {
     recentVideosData,
-    updateRecentVideo,
     videoCollectionsData,
     updateVideoCollection,
   } = useContextQueries();
@@ -27,7 +26,6 @@ const LibraryPage = () => {
 
   const handleVideoClick = (video: YouTubePlayerVideo) => {
     setCurrentVideo(video);
-    updateRecentVideo(video);
   };
 
   useEffect(() => {

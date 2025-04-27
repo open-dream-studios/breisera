@@ -1,13 +1,7 @@
 "use client";
 import React, { createContext, useState, useContext, useEffect } from "react";
-// import { vid } from "../../video_db";
 import { StudyToolTypes } from "@/screens/Player/StudyTools/StudyTools";
-import {
-  QueryObserverResult,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { QueryObserverResult, useQuery } from "@tanstack/react-query";
 import { AuthContext } from "./authContext";
 import { makeRequest } from "@/util/axios";
 
@@ -121,6 +115,7 @@ type VideoContextType = {
   setDisableAnimation: React.Dispatch<React.SetStateAction<boolean>>;
   generateSummary: (transcript: VideoTranscript) => void;
   generateKeyConcepts: (transcript: VideoTranscript) => void;
+  handleVideoClick: (video: YouTubePlayerVideo) => void;
 };
 
 const VideoContext = createContext<VideoContextType | undefined>(undefined);
@@ -129,7 +124,6 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const { currentUser } = useContext(AuthContext);
-  const queryClient = useQueryClient();
 
   const {
     data: notesData,
@@ -268,6 +262,11 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
+  const handleVideoClick = (video: YouTubePlayerVideo) => {
+    setCurrentVideo(video);
+    setPlayerState("screen");
+  };
+
   return (
     <VideoContext.Provider
       value={{
@@ -322,6 +321,7 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({
         setDisableAnimation,
         generateSummary,
         generateKeyConcepts,
+        handleVideoClick,
       }}
     >
       {children}

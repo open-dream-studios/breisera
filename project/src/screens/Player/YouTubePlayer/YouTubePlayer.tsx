@@ -1,5 +1,5 @@
 "use client";
-import { useVideo } from "@/contexts/videoContext";
+import { useVideo, YouTubePlayerVideo } from "@/contexts/videoContext";
 import YouTube, { YouTubePlayer as YTPlayerType } from "react-youtube";
 import { useEffect, useRef, useState } from "react";
 import { useContextQueries } from "@/contexts/queryContext";
@@ -34,11 +34,30 @@ export const playVideo = () => {
 
 const YouTubePlayer = () => {
   const { currentVideo } = useVideo();
-  const { updateRecentVideo } = useContextQueries();
+  const { updateRecentVideo, recentVideosData } = useContextQueries();
   const playerWrapperRef = useRef<HTMLDivElement>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [startTime, setStartTime] = useState<number>(0);
+
+  const onPlayerReady = (event: any) => {
+    playerRef = event.target;
+    if (recentVideosData && currentVideo) {
+      const foundIndex = recentVideosData.findIndex(
+        (video: YouTubePlayerVideo) => video.video_data.id === currentVideo.id
+      );
+      if (foundIndex !== -1) {
+        if (recentVideosData[foundIndex].last_timestamp) {
+          setStartTime(recentVideosData[foundIndex].last_timestamp);
+        } else {
+          setStartTime(0);
+        }
+      } else {
+        setStartTime(0);
+      }
+    }
+    updateRecent();
+  };
 
   const updateRecent = () => {
     if (playerRef && currentVideo) {
@@ -91,9 +110,7 @@ const YouTubePlayer = () => {
               start: startTime,
             },
           }}
-          onReady={(event) => {
-            playerRef = event.target;
-          }}
+          onReady={onPlayerReady}
           onStateChange={(event) => {
             const playerState = event.data;
             if (playerState === 1) {
