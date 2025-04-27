@@ -111,7 +111,9 @@ type VideoContextType = {
   generateKeyConcepts: (transcript: VideoTranscript) => void;
   handleVideoClick: (video: YouTubePlayerVideo) => void;
   theaterMode: boolean;
-  setTheaterMode:  React.Dispatch<React.SetStateAction<boolean>>;
+  setTheaterMode: React.Dispatch<React.SetStateAction<boolean>>;
+  addToLibraryVisible: boolean;
+  setAddToLibraryVisible: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 const VideoContext = createContext<VideoContextType | undefined>(undefined);
@@ -174,6 +176,8 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({
   const [disableAnimation, setDisableAnimation] = useState<boolean>(false);
 
   const [theaterMode, setTheaterMode] = useState<boolean>(false);
+  const [addToLibraryVisible, setAddToLibraryVisible] =
+    useState<boolean>(false);
 
   useEffect(() => {
     setMessages([]);
@@ -278,7 +282,9 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({
         generateKeyConcepts,
         handleVideoClick,
         theaterMode,
-        setTheaterMode
+        setTheaterMode,
+        addToLibraryVisible,
+        setAddToLibraryVisible,
       }}
     >
       {children}

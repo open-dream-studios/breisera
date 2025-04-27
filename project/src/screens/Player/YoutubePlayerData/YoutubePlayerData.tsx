@@ -20,10 +20,6 @@ import { makeRequest } from "@/util/axios";
 import { useQueryClient } from "@tanstack/react-query";
 import { IoCloseOutline } from "react-icons/io5";
 
-interface ClickOutsideBoxProps {
-  setPopupVisible: (visible: boolean) => void;
-}
-
 const smoothScrollTo = (element: HTMLElement, targetPosition: number) => {
   const startPosition = element.scrollTop;
   const distance = targetPosition - startPosition;
@@ -49,14 +45,17 @@ const smoothScrollTo = (element: HTMLElement, targetPosition: number) => {
   requestAnimationFrame(animateScroll);
 };
 
-const CollectionsPopup = ({ setPopupVisible }: ClickOutsideBoxProps) => {
+type ChildProps = {
+  libraryButtonRef: React.RefObject<HTMLButtonElement | null>;
+};
+
+function CollectionsPopup({ libraryButtonRef }: ChildProps) {
   const { currentUser } = useContext(AuthContext);
-  const { currentVideo } = useVideo();
+  const { currentVideo, setAddToLibraryVisible } = useVideo();
   const queryClient = useQueryClient();
   const {
     videoCollectionsData,
     updateVideoCollections,
-    refetchVideoCollectionsData,
     videoCollectionData,
     updateVideoCollection,
   } = useContextQueries();
@@ -65,8 +64,14 @@ const CollectionsPopup = ({ setPopupVisible }: ClickOutsideBoxProps) => {
 
   useEffect(() => {
     function handleClick(event: any) {
-      if (popupRef.current && !popupRef.current.contains(event.target)) {
-        setPopupVisible(false);
+      if (
+        popupRef.current &&
+        !popupRef.current.contains(event.target) &&
+        libraryButtonRef.current &&
+        !libraryButtonRef.current.contains(event.target)
+      ) {
+        console.log("neither");
+        setAddToLibraryVisible(false);
       }
     }
     document.addEventListener("mousedown", handleClick);
@@ -126,13 +131,14 @@ const CollectionsPopup = ({ setPopupVisible }: ClickOutsideBoxProps) => {
         backgroundColor: appTheme[currentUser.theme].background_1,
         border: `1px solid ${appTheme[currentUser.theme].background_2}`,
       }}
-      className="p-[10px] pt-[18px] max-h-[360px] min-h-[200px] w-[300px] absolute right-[38px] bottom-[calc(100%+10px)] rounded-2xl shadow-x flex flex-col"
+      className="z-[503] p-[10px] pt-[18px] max-h-[360px] min-h-[200px] w-[300px] absolute right-[38px] bottom-[calc(100%+10px)] rounded-2xl shadow-x flex flex-col"
     >
       <div ref={saveToCollectionsPopupRef} className="flex-1 overflow-y-auto">
         <div className="grid grid-cols-3 gap-[10px]">
           {videoCollectionData &&
             videoCollectionData.length > 0 &&
             videoCollectionData.map((collection: any, index: number) => {
+              // if (!videoCollectionData) return
               const collectionIndex = videoCollectionsData.findIndex(
                 (item) => item.collection_id === collection.collection_id
               );
@@ -241,12 +247,17 @@ const CollectionsPopup = ({ setPopupVisible }: ClickOutsideBoxProps) => {
       </div>
     </div>
   );
-};
+}
 
 const YoutubePlayerData = () => {
   const { currentUser } = useContext(AuthContext);
-  const { updateVideoCollections } = useContextQueries();
-  const { currentVideo, theaterMode, setTheaterMode } = useVideo();
+  const {
+    currentVideo,
+    theaterMode,
+    setTheaterMode,
+    addToLibraryVisible,
+    setAddToLibraryVisible,
+  } = useVideo();
   const modal2 = useModal2Store((state: any) => state.modal2);
   const setModal2 = useModal2Store((state: any) => state.setModal2);
 
@@ -254,7 +265,7 @@ const YoutubePlayerData = () => {
   const [start, setStart] = useState<string>("00:00");
   const [end, setEnd] = useState<string>("00:40");
 
-  const [popupVisible, setPopupVisible] = useState<boolean>(false);
+  const libraryButtonRef = useRef<HTMLButtonElement>(null);
 
   const handleDownload = async () => {
     if (!currentVideo) return;
@@ -319,7 +330,9 @@ const YoutubePlayerData = () => {
       </div>
 
       <div className="w-[100%] flex flex-row justify-between items-start mt-[10px] relative">
-        {popupVisible && <CollectionsPopup setPopupVisible={setPopupVisible} />}
+        {addToLibraryVisible && (
+          <CollectionsPopup libraryButtonRef={libraryButtonRef} />
+        )}
         <div
           onClick={() => {
             openWindow(
@@ -353,9 +366,10 @@ const YoutubePlayerData = () => {
         <div className="flex flex-col gap-[8px] items-end">
           <div className="flex flex-row gap-[8px]">
             <button
+              ref={libraryButtonRef}
               disabled={loading}
               onClick={() => {
-                setPopupVisible(true);
+                setAddToLibraryVisible(true);
               }}
               className="flex flex-col h-[34px] pb-[1px] w-[65px] rounded-[11px] cursor-pointer hover:brightness-75 dim text-[15px] leading-[15px] items-center justify-center"
               style={{

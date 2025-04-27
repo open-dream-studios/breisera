@@ -32,7 +32,7 @@ export const playVideo = () => {
 };
 
 const YouTubePlayer = () => {
-  const { currentVideo } = useVideo();
+  const { currentVideo, addToLibraryVisible } = useVideo();
   const { updateRecentVideo, recentVideosData } = useContextQueries();
   const playerWrapperRef = useRef<HTMLDivElement>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -94,8 +94,11 @@ const YouTubePlayer = () => {
   if (!currentVideo) return null;
 
   return (
-    <div className="relative aspect-[16/9] bg-black flex items-center justify-center max-h-[600px]">
-      <div ref={playerWrapperRef} className="relative w-full h-full">
+    <div className="z-[500] relative aspect-[16/9] bg-black flex items-center justify-center max-h-[600px]">
+      {addToLibraryVisible && (
+        <div className="z-[502] absolute top-0 left-0 w-full h-full"></div>
+      )}
+      <div ref={playerWrapperRef} className="z-[501] relative w-full h-full">
         <YouTube
           videoId={currentVideo.id}
           className="w-full h-full"
