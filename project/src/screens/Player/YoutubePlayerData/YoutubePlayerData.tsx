@@ -13,11 +13,12 @@ import React, { useContext, useState } from "react";
 import { RxCopy } from "react-icons/rx";
 import { TfiDownload } from "react-icons/tfi";
 import { LuLibrary } from "react-icons/lu";
+import { FaLink } from "react-icons/fa6";
 
 const YoutubePlayerData = () => {
   const { currentUser } = useContext(AuthContext);
   const { updateVideoCollection } = useContextQueries();
-  const { currentVideo } = useVideo();
+  const { currentVideo, theaterMode, setTheaterMode } = useVideo();
   const modal2 = useModal2Store((state: any) => state.modal2);
   const setModal2 = useModal2Store((state: any) => state.setModal2);
 
@@ -88,7 +89,7 @@ const YoutubePlayerData = () => {
   if (currentVideo === null || !currentUser) return;
 
   return (
-    <div className="w-[100%] px-[16px] pt-[12px] pb-[18px]">
+    <div className="w-[100%] px-[16px] pt-[12px] pb-[18px] md:pb-[2px]">
       <div className={`font-[600] ${appTextSizes.textHead1}`}>
         {currentVideo.snippet.title}
       </div>
@@ -123,62 +124,117 @@ const YoutubePlayerData = () => {
             </p>
           </div>
         </div>
-        <div className="flex flex-row gap-[8px]">
-          <button
-            disabled={loading}
-            onClick={handleSaveVideo}
-            className="flex flex-col h-[34px] pb-[1px] w-[65px] rounded-[11px] cursor-pointer hover:brightness-75 dim text-[15px] leading-[15px] items-center justify-center"
-            style={{
-              backgroundColor:
-                currentUser.theme === "dark"
-                  ? "transparent"
-                  : appTheme[currentUser.theme].background_2,
-              border:
-                currentUser.theme === "dark"
-                  ? `1px solid ${appTheme[currentUser.theme].background_2}`
-                  : "none",
-              color: appTheme[currentUser.theme].text_2,
-            }}
-          >
-            <LuLibrary className="w-[19px] h-[19px]" />
-          </button>
+        <div className="flex flex-col gap-[8px] items-end">
+          <div className="flex flex-row gap-[8px]">
+            <button
+              disabled={loading}
+              onClick={handleSaveVideo}
+              className="flex flex-col h-[34px] pb-[1px] w-[65px] rounded-[11px] cursor-pointer hover:brightness-75 dim text-[15px] leading-[15px] items-center justify-center"
+              style={{
+                backgroundColor:
+                  currentUser.theme === "dark"
+                    ? "transparent"
+                    : appTheme[currentUser.theme].background_2,
+                border:
+                  currentUser.theme === "dark"
+                    ? `1px solid ${appTheme[currentUser.theme].background_2}`
+                    : "none",
+                color: appTheme[currentUser.theme].text_2,
+              }}
+            >
+              <LuLibrary className="w-[19px] h-[19px]" />
+            </button>
 
-          <button
-            disabled={loading}
-            onClick={handleDownloadClick}
-            className="flex flex-col h-[34px] pb-[1px] w-[65px] rounded-[11px] cursor-pointer hover:brightness-75 dim text-[15px] leading-[15px] items-center justify-center"
-            style={{
-              backgroundColor:
-                currentUser.theme === "dark"
-                  ? "transparent"
-                  : appTheme[currentUser.theme].background_2,
-              border:
-                currentUser.theme === "dark"
-                  ? `1px solid ${appTheme[currentUser.theme].background_2}`
-                  : "none",
-              color: appTheme[currentUser.theme].text_2,
-            }}
-          >
-            <TfiDownload className="w-[19px] h-[19px]" />
-          </button>
+            <button
+              disabled={loading}
+              onClick={handleDownloadClick}
+              className="flex flex-col h-[34px] pb-[1px] w-[65px] rounded-[11px] cursor-pointer hover:brightness-75 dim text-[15px] leading-[15px] items-center justify-center"
+              style={{
+                backgroundColor:
+                  currentUser.theme === "dark"
+                    ? "transparent"
+                    : appTheme[currentUser.theme].background_2,
+                border:
+                  currentUser.theme === "dark"
+                    ? `1px solid ${appTheme[currentUser.theme].background_2}`
+                    : "none",
+                color: appTheme[currentUser.theme].text_2,
+              }}
+            >
+              <TfiDownload className="w-[19px] h-[19px]" />
+            </button>
 
-          <div
-            onClick={copyToClipboard}
-            className="flex h-[34px] pb-[1px] w-[65px] rounded-[11px] cursor-pointer hover:brightness-75 dim text-[15px] leading-[15px] items-center justify-center"
-            style={{
-              backgroundColor:
-                currentUser.theme === "dark"
-                  ? "transparent"
-                  : appTheme[currentUser.theme].background_2,
-              border:
-                currentUser.theme === "dark"
-                  ? `1px solid ${appTheme[currentUser.theme].background_2}`
-                  : "none",
-              color: appTheme[currentUser.theme].text_2,
-            }}
-          >
-            <RxCopy className="w-[18px] h-[18px] " />
+            <div
+              onClick={copyToClipboard}
+              className="flex h-[34px] pb-[1px] w-[65px] rounded-[11px] cursor-pointer hover:brightness-75 dim text-[15px] leading-[15px] items-center justify-center"
+              style={{
+                backgroundColor:
+                  currentUser.theme === "dark"
+                    ? "transparent"
+                    : appTheme[currentUser.theme].background_2,
+                border:
+                  currentUser.theme === "dark"
+                    ? `1px solid ${appTheme[currentUser.theme].background_2}`
+                    : "none",
+                color: appTheme[currentUser.theme].text_2,
+              }}
+            >
+              <FaLink className="w-[18px] h-[18px] opacity-[91%] mt-[0.5px]" />
+            </div>
           </div>
+          <button
+            disabled={loading}
+            onClick={() => {
+              setTheaterMode((prev) => !prev);
+            }}
+            className="hidden md:flex flex-col h-[34px] pb-[1px] w-[65px] rounded-[11px] cursor-pointer hover:brightness-75 dim text-[15px] leading-[15px] items-center justify-center"
+            style={{
+              backgroundColor:
+                currentUser.theme === "dark"
+                  ? "transparent"
+                  : appTheme[currentUser.theme].background_2,
+              border:
+                currentUser.theme === "dark"
+                  ? `1px solid ${appTheme[currentUser.theme].background_2}`
+                  : "none",
+              color: appTheme[currentUser.theme].text_2,
+            }}
+          >
+            {theaterMode ? (
+              <div
+                style={{
+                  border: `0.5px solid ${appTheme[currentUser.theme].text_3}`,
+                  borderBottom: `0.5px solid ${
+                    appTheme[currentUser.theme].text_3
+                  }`,
+                }}
+                className="w-[33px] h-[18px] rounded-[2px] mt-[0.5px] relative"
+              >
+                <div
+                  style={{
+                    backgroundColor: appTheme[currentUser.theme].text_3,
+                  }}
+                  className="opacity-90 w-[0.5px] h-[12px] absolute right-[6px]"
+                />
+                <div
+                  style={{
+                    backgroundColor: appTheme[currentUser.theme].text_3,
+                  }}
+                  className="opacity-90 w-[26px] h-[0.5px] absolute left-0 bottom-[5px]"
+                />
+              </div>
+            ) : (
+              <div
+                style={{
+                  border: `0.5px solid ${appTheme[currentUser.theme].text_3}`,
+                  borderBottom: `1.5px solid ${
+                    appTheme[currentUser.theme].text_3
+                  }`,
+                }}
+                className="w-[33px] h-[18px] rounded-[2px] mt-[0.5px]"
+              />
+            )}
+          </button>
         </div>
       </div>
     </div>

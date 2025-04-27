@@ -110,6 +110,8 @@ type VideoContextType = {
   generateSummary: (transcript: VideoTranscript) => void;
   generateKeyConcepts: (transcript: VideoTranscript) => void;
   handleVideoClick: (video: YouTubePlayerVideo) => void;
+  theaterMode: boolean;
+  setTheaterMode:  React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 const VideoContext = createContext<VideoContextType | undefined>(undefined);
@@ -170,6 +172,8 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({
   const [flipped, setFlipped] = useState<boolean>(false);
   const [isAnimating, setIsAnimating] = useState<boolean>(false);
   const [disableAnimation, setDisableAnimation] = useState<boolean>(false);
+
+  const [theaterMode, setTheaterMode] = useState<boolean>(false);
 
   useEffect(() => {
     setMessages([]);
@@ -273,6 +277,8 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({
         generateSummary,
         generateKeyConcepts,
         handleVideoClick,
+        theaterMode,
+        setTheaterMode
       }}
     >
       {children}

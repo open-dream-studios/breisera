@@ -12,7 +12,7 @@ export type StudyToolTypes = "Chat" | "Notes" | "Flash Cards";
 
 const StudyTools = () => {
   const { currentUser } = useContext(AuthContext);
-  const { currentStudyTool, setCurrentStudyTool} = useVideo()
+  const { currentStudyTool, setCurrentStudyTool, theaterMode } = useVideo();
   const studyTools: StudyToolTypes[] = ["Chat", "Notes", "Flash Cards"];
 
   const handleStudyToolClick = (tool: StudyToolTypes) => {
@@ -22,7 +22,11 @@ const StudyTools = () => {
   if (!currentUser) return <></>;
 
   return (
-    <div className="w-[100%] h-[100%] px-[10px] pt-[8px] pb-[12px] flex flex-col gap-[10px]">
+    <div
+      className={`w-[100%] ${
+        theaterMode ? "h-[500px]" : "h-100%]"
+      } px-[10px] pt-[8px] pb-[12px] flex flex-col gap-[10px]`}
+    >
       <div
         className="select-none px-[4px] h-[37px] rounded-[6px] flex flex-row items-center justify-center"
         style={{ background: appTheme[currentUser.theme].background_2 }}
@@ -60,9 +64,7 @@ const StudyTools = () => {
           );
         })}
       </div>
-      <div
-        className="flex-1 rounded-[5px] overflow-hidden"
-      >
+      <div className="flex-1 rounded-[5px] overflow-hidden">
         <div
           className={`w-[100%] h-[100%] ${
             currentStudyTool !== "Chat" && "hidden"
@@ -81,7 +83,7 @@ const StudyTools = () => {
           className={`w-[100%] h-[100%] ${
             currentStudyTool !== "Flash Cards" && "hidden"
           }`}
-        > 
+        >
           <FlashCardDisplay />
         </div>
       </div>

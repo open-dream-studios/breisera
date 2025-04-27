@@ -94,7 +94,7 @@ const YouTubePlayer = () => {
   if (!currentVideo) return null;
 
   return (
-    <div className="relative aspect-[16/9] bg-black flex items-center justify-center">
+    <div className="relative aspect-[16/9] bg-black flex items-center justify-center max-h-[600px]">
       <div ref={playerWrapperRef} className="relative w-full h-full">
         <YouTube
           videoId={currentVideo.id}

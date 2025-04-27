@@ -15,8 +15,9 @@ import { FRONTEND_URL } from "@/util/config";
 import { LuCircleFadingPlus } from "react-icons/lu";
 import { MdLibraryBooks } from "react-icons/md";
 import { useContextQueries } from "@/contexts/queryContext";
-import { iso8601ToSeconds } from "@/util/functions/Data";
 import { playVideo } from "@/screens/Player/YouTubePlayer/YouTubePlayer";
+import { LuPanelLeftClose } from "react-icons/lu";
+import { BiWindows } from "react-icons/bi";
 
 const LeftBar = () => {
   const {
@@ -203,20 +204,29 @@ const LeftBar = () => {
               </div>
             )}
 
-            <Link
-              href="/"
-              className="mt-[5px] dim hover:brightness-75 cursor-pointer w-[100%] flex gap-[7px] items-center rounded-[10px] px-[12px] py-[5px]"
-              style={{
-                backgroundColor: appTheme[currentUser.theme].background_2,
-                color: appTheme[currentUser.theme].text_1,
-              }}
-              onClick={() => {
-                closeLeftBar();
-              }}
-            >
-              <LuCircleFadingPlus className="w-[17px] h-[17px]" />
-              <p>New</p>
-            </Link>
+            <div className="w-[100%] justify-between flex flex-row items-center">
+              <Link
+                href="/"
+                className="mt-[5px] dim hover:brightness-75 cursor-pointer w-[100%] flex gap-[7px] items-center rounded-[10px] px-[12px] py-[5px]"
+                style={{
+                  backgroundColor: appTheme[currentUser.theme].background_2,
+                  color: appTheme[currentUser.theme].text_1,
+                }}
+                onClick={() => {
+                  closeLeftBar();
+                }}
+              >
+                <BiWindows className="w-[17px] h-[17px]" />
+                <p>Explore</p>
+              </Link>
+              <LuPanelLeftClose
+                style={{ color: appTheme[currentUser.theme].text_4 }}
+                className="dim cursor-pointer brightness-75 hover:brightness-50 w-[24px] h-[24px] mr-[-8px] ml-[10px] mt-[3px]"
+                onClick={() => {
+                  closeLeftBar();
+                }}
+              />
+            </div>
 
             <div
               style={{
@@ -251,7 +261,7 @@ const LeftBar = () => {
             >
               <p className="mt-[20px]">Recent Videos</p>
               <div
-                className="mt-[20px] h-[1px] w-[100%] rounded-[1px]"
+                className="mt-[15px] h-[1px] w-[100%] rounded-[1px]"
                 style={{
                   backgroundColor: appTheme[currentUser.theme].background_2,
                 }}

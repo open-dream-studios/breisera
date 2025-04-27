@@ -32,6 +32,7 @@ const Player = () => {
     setCurrentSummary,
     generateSummary,
     generateKeyConcepts,
+    theaterMode,
   } = useVideo();
   const [dividerPercent, setDividerPercent] = useState(66);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -81,7 +82,11 @@ const Player = () => {
   }, [currentVideoTranscript]);
 
   useEffect(() => {
-    if (currentUser && currentWhisperTranscript && currentWhisperTranscript.length > 0) {
+    if (
+      currentUser &&
+      currentWhisperTranscript &&
+      currentWhisperTranscript.length > 0
+    ) {
       generateSummary(currentWhisperTranscript);
       generateKeyConcepts(currentWhisperTranscript);
     }
@@ -121,7 +126,7 @@ const Player = () => {
       ref={containerRef}
       className={`${
         playerState !== "sm" && "overflow-scroll"
-      } relative flex flex-col sm:flex-row w-[100%] h-[100%] min-h-[700px]`}
+      } relative flex flex-col md:flex-row w-[100%] h-[100%] min-h-[700px]`}
       style={{ backgroundColor: appTheme[currentUser.theme].background_1 }}
     >
       {playerState === "sm" && (
@@ -166,7 +171,9 @@ const Player = () => {
       <div
         style={{
           width:
-            playerState === "sm" || (windowWidth !== null && windowWidth < 640)
+            playerState === "sm" ||
+            (windowWidth !== null && windowWidth < 768) ||
+            theaterMode
               ? "100%"
               : `${dividerPercent}%`,
         }}
@@ -178,7 +185,9 @@ const Player = () => {
           <YouTubePlayer />
           <YoutubePlayerData />
           <div
-            className="sm:hidden w-[calc(100%-24px)] ml-[12px] px-[4px] h-[37px] min-h-[37px] rounded-[6px] flex flex-row items-center justify-center"
+            className={`${
+              !theaterMode && "md:hidden"
+            } mt-[7px] w-[calc(100%-24px)] ml-[12px] px-[4px] h-[37px] min-h-[37px] rounded-[6px] flex flex-row items-center justify-center`}
             style={{ background: appTheme[currentUser.theme].background_2 }}
           >
             {["Summary", "Study Tools"].map((tool: string, index: number) => {
@@ -208,12 +217,30 @@ const Player = () => {
             })}
           </div>
 
-          <div className={`${!showPrimaryTools && "hidden sm:flex"}`}>
+          <div
+            className={`${
+              theaterMode
+                ? showPrimaryTools
+                  ? "flex"
+                  : "hidden"
+                : !showPrimaryTools
+                ? "hidden md:flex"
+                : ""
+            }`}
+          >
             <PrimaryTools />
           </div>
 
           <div
-            className={`${showPrimaryTools ? "hidden" : "sm:hidden"} h-[100%]`}
+            className={`${
+              theaterMode
+                ? showPrimaryTools
+                  ? "hidden"
+                  : "flex"
+                : showPrimaryTools
+                ? "hidden"
+                : "md:hidden"
+            } h-[100%]`}
           >
             <StudyTools />
           </div>
@@ -223,7 +250,7 @@ const Player = () => {
       <div
         onMouseDown={handleMouseDown}
         className={`absolute h-[100%] cursor-col-resize ${
-          playerState === "sm" ? "hidden" : "hidden sm:block"
+          playerState === "sm" || theaterMode ? "hidden" : "hidden md:block"
         } w-[6px] ml-[-2px]`}
         style={{
           left: `${dividerPercent}%`,
@@ -243,7 +270,9 @@ const Player = () => {
             "--max-width": `calc(100% - ${dividerPercent}%)`,
           } as React.CSSProperties
         }
-        className={`hidden sm:flex flex-grow max-w-[100%] sm:max-w-[var(--max-width)] ${
+        className={`${
+          theaterMode ? "hidden" : "hidden flex-grow md:flex"
+        } max-w-[100%] md:max-w-[var(--max-width)] ${
           playerState === "sm" && "w-0"
         }`}
       >
