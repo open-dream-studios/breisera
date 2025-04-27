@@ -10,9 +10,21 @@ import { AuthContext } from "@/contexts/authContext";
 
 const HomePage = () => {
   const { updateRecentVideo } = useContextQueries();
-  const { setCurrentVideo, exploreVideos, setExploreVideos } = useVideo();
+  const {
+    setCurrentVideo,
+    exploreVideos,
+    setExploreVideos,
+    playerState,
+    setPlayerState,
+  } = useVideo();
   const { currentUser } = useContext(AuthContext);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (playerState === "screen") {
+      setPlayerState("sm");
+    }
+  }, []);
 
   useEffect(() => {
     const fetchVideos = async () => {

@@ -41,7 +41,6 @@ const Player = () => {
     const fetchTranscript = async () => {
       if (currentUser && currentVideo) {
         try {
-          console.log("calling get transript");
           const res = await makeRequest.post("/api/youtube/get-transcript", {
             videoId: currentVideo.id,
           });

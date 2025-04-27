@@ -582,7 +582,7 @@ export const updateRecentVideo = async (req, res) => {
     const user_id = decodeToken(token);
     const { video_id, video_data, last_timestamp } = req.body;
 
-    if (!video_id || !video_data || !last_timestamp) {
+    if (!video_id || !video_data || last_timestamp === null) {
       return res.status(400).json({ error: "Missing video data" });
     }
 
@@ -673,7 +673,7 @@ export const updateVideoCollections = async (req, res) => {
 
     const user_id = decodeToken(token);
     let { video_id, video_data, collection_id } = req.body;
-    collection_id = collection_id ? collection_id : generateId(15)
+    collection_id = collection_id ? collection_id : generateId(15);
 
     if (!video_id || !video_data || !collection_id) {
       return res.status(400).json({ error: "Missing video data" });

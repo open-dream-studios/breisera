@@ -47,8 +47,7 @@ export const QueryProvider: React.FC<{ children: React.ReactNode }> = ({
     queryKey: ["recent-videos"],
     queryFn: async () => {
       const res = await makeRequest.post("/api/users/get-recent-videos", {});
-      // console.log("get-recent-videos");
-      console.log(res.data.recentVideos);
+      // console.log(res.data.recentVideos);
       return res.data.recentVideos;
     },
     staleTime: 1000 * 60 * 5,
@@ -59,15 +58,13 @@ export const QueryProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const updateRecentVideos = useMutation({
     mutationFn: async (video: YouTubePlayerVideo) => {
-      const last_timestamp =
-        video.last_timestamp !== undefined
-          ? Math.round(video.last_timestamp * 100) / 100
-          : 0;
-
       await makeRequest.post("/api/users/update-recent-videos", {
         video_id: video.id,
         video_data: JSON.stringify(video),
-        last_timestamp,
+        last_timestamp:
+          video.last_timestamp !== undefined
+            ? Math.round(video.last_timestamp * 100) / 100
+            : 0,
       });
     },
     onMutate: async (video: YouTubePlayerVideo) => {
@@ -102,8 +99,8 @@ export const QueryProvider: React.FC<{ children: React.ReactNode }> = ({
     },
   });
 
-  const updateRecentVideo = (newVideo: YouTubePlayerVideo) => {
-    updateRecentVideos.mutate(newVideo);
+  const updateRecentVideo = (video: YouTubePlayerVideo) => {
+    updateRecentVideos.mutate(video);
   };
 
   const {
@@ -117,8 +114,7 @@ export const QueryProvider: React.FC<{ children: React.ReactNode }> = ({
         "/api/users/get-video-collections",
         {}
       );
-      console.log("get-video-collections");
-      console.log(res.data.collections);
+      // console.log(res.data.collections);
       return res.data.collections;
     },
     staleTime: 1000 * 60 * 5,

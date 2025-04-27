@@ -1,5 +1,5 @@
 "use client";
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import { appTheme } from "../../../util/appTheme";
 import { AuthContext } from "../../../contexts/authContext";
 import React, { useState } from "react";
@@ -18,17 +18,23 @@ const LibraryPage = () => {
     videoCollectionsData,
     updateVideoCollection,
   } = useContextQueries();
-  const { setCurrentVideo, currentVideo } = useVideo();
+  const { setCurrentVideo, currentVideo, playerState, setPlayerState } =
+    useVideo();
 
   const [showAllCurrentlyWatching, setShowAllCurrentlyWatching] =
     useState<boolean>(false);
   const [showAllSavedVideos, setShowAllSavedVideos] = useState<boolean>(false);
 
   const handleVideoClick = (video: YouTubePlayerVideo) => {
-    console.log(video)
     setCurrentVideo(video);
     updateRecentVideo(video);
   };
+
+  useEffect(() => {
+    if (playerState === "screen") {
+      setPlayerState("sm");
+    }
+  }, []);
 
   if (!currentUser) return <></>;
 
@@ -54,11 +60,7 @@ const LibraryPage = () => {
                 >
                   <Link
                     onClick={() => handleVideoClick(recentVideo.video_data)}
-                    href={
-                      recentVideosData[index].last_timestamp > 4
-                        ? `${FRONTEND_URL}/www.youtube.com/watch?v=${recentVideo.video_data.id}&start=${recentVideosData[index].last_timestamp}`
-                        : `${FRONTEND_URL}/www.youtube.com/watch?v=${recentVideo.video_data.id}`
-                    }
+                    href={`${FRONTEND_URL}/www.youtube.com/watch?v=${recentVideo.video_data.id}`}
                     className="dim hover:brightness-75 cursor-pointer relative w-[100%] aspect-[16/9] overflow-hidden"
                   >
                     <img

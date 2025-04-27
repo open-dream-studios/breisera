@@ -3,7 +3,7 @@ import { useVideo } from "@/contexts/videoContext";
 import YouTube, { YouTubePlayer as YTPlayerType } from "react-youtube";
 import { useEffect, useRef, useState } from "react";
 import { useContextQueries } from "@/contexts/queryContext";
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams, usePathname, useSearchParams } from "next/navigation";
 
 let playerRef: YTPlayerType | null = null;
 
@@ -38,9 +38,7 @@ const YouTubePlayer = () => {
   const playerWrapperRef = useRef<HTMLDivElement>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-
-  const searchParams = useSearchParams();
-  const startTime = Number(searchParams.get("start")) || 0;
+  const [startTime, setStartTime] = useState<number>(0);
 
   const updateRecent = () => {
     if (playerRef && currentVideo) {

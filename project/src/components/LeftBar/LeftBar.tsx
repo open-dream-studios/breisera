@@ -131,6 +131,7 @@ const LeftBar = () => {
     closeLeftBar();
     setCurrentVideo(video);
     updateRecentVideo(video);
+    setPlayerState("screen")
   };
 
   if (!currentUser) return;
@@ -211,9 +212,6 @@ const LeftBar = () => {
               }}
               onClick={() => {
                 closeLeftBar();
-                if (playerState === "screen") {
-                  setPlayerState("sm");
-                }
               }}
             >
               <LuCircleFadingPlus className="w-[17px] h-[17px]" />
@@ -235,9 +233,6 @@ const LeftBar = () => {
               href="/library"
               onClick={() => {
                 closeLeftBar();
-                if (playerState === "screen") {
-                  setPlayerState("sm");
-                }
               }}
             >
               <MdLibraryBooks className="w-[17px] h-[17px]" />
@@ -272,7 +267,7 @@ const LeftBar = () => {
                         onClick={(e) => {
                           handleVideoClick(video_data as YouTubePlayerVideo);
                         }}
-                        href={`${FRONTEND_URL}/www.youtube.com/watch?v=${video_data.id}&start=${recent_video.last_timestamp}`}
+                        href={`${FRONTEND_URL}/www.youtube.com/watch?v=${video_data.id}`}
                         className="min-h-[25px] w-[100%] truncate my-[1.8px] dim hover:brightness-75"
                         style={{
                           color: appTheme[currentUser.theme].text_4,
