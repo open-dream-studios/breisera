@@ -4,8 +4,6 @@ import { FRONTEND_URL } from "@/util/config";
 import Link from "next/link";
 import { useVideo, YouTubePlayerVideo } from "@/contexts/videoContext";
 import { makeRequest } from "@/util/axios";
-import { useContextQueries } from "@/contexts/queryContext";
-import { appTheme } from "@/util/appTheme";
 import { AuthContext } from "@/contexts/authContext";
 import CustomVideoFrame from "@/components/CustomVideoFrame/CustomVideoFrame";
 

@@ -63,7 +63,7 @@ const FlashCardsList = ({
           !smallScreen &&
           flashCardsOpen &&
           "cursor-pointer dim hover:brightness-75"
-        } font-[600] text-[20px] leading-[20px] mb-[8px] flex flex-row justify-between`}
+        } font-[600] text-[20px] leading-[20px] mb-[4px] flex flex-row justify-between`}
         style={{
           color: appTheme[currentUser.theme].text_1,
         }}
@@ -71,7 +71,7 @@ const FlashCardsList = ({
         {smallScreen ? "Saved Flash Cards" : "Flash Cards"}
         <FaChevronDown
           style={{ color: appTheme[currentUser.theme].text_2 }}
-          className={`w-[22px] h-[22px] transition-all duration-0.3 ease-in-out ${
+          className={`mt-[-1px] w-[22px] h-[22px] transition-all duration-0.3 ease-in-out ${
             flashCardsOpen && "rotate-180"
           }`}
         />
@@ -243,11 +243,12 @@ const FlashCardDisplay = () => {
       <div
         style={{
           border: `1px solid ${appTheme[currentUser.theme].background_2}`,
+          backgroundColor: appTheme[currentUser.theme].component_bg_1
         }}
         className={`sm:flex flex-col hidden w-[100%] ${
           flashcardSetsOpen
             ? "h-[200px] max-h-[200px] overflow-scroll"
-            : "h-[50px] cursor-pointer dim hover:brightness-75"
+            : "h-[46px] min-h-[46px] cursor-pointer dim hover:brightness-75"
         } rounded-[5px] px-[15px] pt-[8px] relative`}
         onClick={handleOpenFlashCards}
       >

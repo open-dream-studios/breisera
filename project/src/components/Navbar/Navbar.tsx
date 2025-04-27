@@ -21,7 +21,7 @@ import { usePageLayoutRefStore } from "@/store/usePageLayoutStore";
 import { usePathname } from "next/navigation";
 
 const Navbar = () => {
-  const pathname = usePathname()
+  const pathname = usePathname();
   const { currentUser, currentUserSubscription } = useContext(AuthContext);
   const { playerState, setPlayerState } = useVideo();
   const modal1 = useModal1Store((state: any) => state.modal1);
@@ -120,7 +120,9 @@ const Navbar = () => {
             href="/"
             onClick={() => {
               if (pathname === "/") {
-                setPlayerState("sm");
+                if (playerState === "screen") {
+                  setPlayerState("sm");
+                }
               }
             }}
             className="flex flex-row gap-[5px] items-center cursor-pointer dim hover:brightness-75 pr-[6px]"

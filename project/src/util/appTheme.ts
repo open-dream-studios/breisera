@@ -10,7 +10,7 @@ export const appTheme = {
     background_1_2: "#FFFFFF",
     background_2_2: "#E9E9E9",
 
-    component_bg_1: "#f3f4f6",
+    component_bg_1: "#f5f5f5",
     bot_message: "#DDDDDD",
     user_message: "#DDDDDD",
     bot_time_stamp: "#CCCCCC",

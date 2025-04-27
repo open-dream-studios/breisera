@@ -19,7 +19,7 @@ import { playVideo } from "@/screens/Player/YouTubePlayer/YouTubePlayer";
 import { LuPanelLeftClose } from "react-icons/lu";
 import { BiWindows } from "react-icons/bi";
 import { usePageLayoutRefStore } from "@/store/usePageLayoutStore";
-import { useParams, usePathname } from "next/navigation";
+import { usePathname } from "next/navigation";
 
 const LeftBar = () => {
   const {
@@ -248,7 +248,9 @@ const LeftBar = () => {
                     closeLeftBar();
                   }
                   if (pathname === "/") {
-                    setPlayerState("sm");
+                    if (playerState === "screen") {
+                      setPlayerState("sm");
+                    }
                   }
                 }}
               >
@@ -257,7 +259,7 @@ const LeftBar = () => {
               </Link>
               <LuPanelLeftClose
                 style={{ color: appTheme[currentUser.theme].text_4 }}
-                className="hidden lg:block dim cursor-pointer brightness-75 hover:brightness-50 w-[24px] h-[24px] mr-[-8px] ml-[10px] mt-[3px]"
+                className="hidden lg:block dim cursor-pointer brightness-75 hover:brightness-50 w-[24px] h-[24px] mr-[-8px] ml-[10px] mt-[5px]"
                 onClick={() => {
                   closeLeftBar();
                 }}
@@ -282,7 +284,9 @@ const LeftBar = () => {
                   closeLeftBar();
                 }
                 if (pathname === "/library") {
-                  setPlayerState("sm");
+                  if (playerState === "screen") {
+                    setPlayerState("sm");
+                  }
                 }
               }}
             >

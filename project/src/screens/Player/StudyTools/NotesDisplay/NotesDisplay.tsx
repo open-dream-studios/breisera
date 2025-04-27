@@ -71,7 +71,7 @@ const NotesList = ({
         {smallScreen ? "Saved Notes" : "Notes"}
         <FaChevronDown
           style={{ color: appTheme[currentUser.theme].text_2 }}
-          className={`w-[22px] h-[22px] transition-all duration-0.3 ease-in-out ${
+          className={`mt-[-1px] w-[22px] h-[22px] transition-all duration-0.3 ease-in-out ${
             notesOpen && "rotate-180"
           }`}
         />
@@ -246,15 +246,16 @@ const NotesDisplay = () => {
   if (!currentUser) return;
 
   return (
-    <div className="w-[100%] h-[100%] flex flex-col gap-[11px]">
+    <div className="w-[100%] h-[100%] flex flex-col gap-[8px]">
       <div
         style={{
+          backgroundColor: appTheme[currentUser.theme].component_bg_1,
           border: `1px solid ${appTheme[currentUser.theme].background_2}`,
         }}
         className={`sm:flex flex-col hidden w-[100%] ${
           notesOpen
             ? "h-[200px] max-h-[200px] overflow-scroll"
-            : "h-[50px] cursor-pointer dim hover:brightness-75"
+            : "h-[46px] min-h-[46px] cursor-pointer dim hover:brightness-75"
         } rounded-[5px] px-[15px] pt-[8px] relative`}
         onClick={handleOpenNotes}
       >
@@ -268,6 +269,7 @@ const NotesDisplay = () => {
 
       <div
         style={{
+          backgroundColor: appTheme[currentUser.theme].component_bg_1,
           border: `1px solid ${appTheme[currentUser.theme].background_2}`,
           color: appTheme[currentUser.theme].text_1,
         }}
@@ -286,7 +288,7 @@ const NotesDisplay = () => {
         <div
           onClick={handleNewNoteClick}
           style={{
-            backgroundColor: appTheme[currentUser.theme].background_2,
+            backgroundColor: currentUser.theme === "dark" ? appTheme[currentUser.theme].background_2 : appTheme[currentUser.theme].background_1,
             color: appTheme[currentUser.theme].text_1,
           }}
           className="absolute z-[503] shadow-lg right-[10px] top-[10px] h-[30px] w-[30px] dim cursor-pointer hover:brightness-75 rounded-full flex items-center justify-center"
