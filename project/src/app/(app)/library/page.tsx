@@ -9,10 +9,11 @@ import Link from "next/link";
 import { useVideo, YouTubePlayerVideo } from "@/contexts/videoContext";
 import { FRONTEND_URL } from "@/util/config";
 import { iso8601ToSeconds } from "@/util/functions/Data";
+import CustomVideoFrame from "@/components/CustomVideoFrame/CustomVideoFrame";
 
 const LibraryPage = () => {
   const { currentUser } = useContext(AuthContext);
-  const { recentVideosData, videoCollectionsData } =
+  const { recentVideosData, videoCollectionsData, videoCollectionData } =
     useContextQueries();
   const { setCurrentVideo, currentVideo, playerState, setPlayerState } =
     useVideo();
@@ -147,7 +148,7 @@ const LibraryPage = () => {
         <div className="h-[50px]"></div>
       )}
 
-      <p className="mb-[12px] font-[600]">Saved Videos</p>
+      {/* <p className="mb-[12px] font-[600]">Saved Videos</p>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-[30px]">
         {videoCollectionsData &&
           videoCollectionsData.length > 0 &&
@@ -240,8 +241,83 @@ const LibraryPage = () => {
                 </div>
               );
             })}
+      </div> */}
+
+      <div>
+        {videoCollectionData &&
+          videoCollectionData.length > 0 &&
+          videoCollectionData.map((item: any, index: number) => {
+            return (
+              <div key={index} className="w-[100%]">
+                <p className="mb-[12px] font-[600]">
+                  {videoCollectionData[index].collection_name}
+                </p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-[30px]">
+                  {videoCollectionsData &&
+                    videoCollectionsData.length > 0 &&
+                    videoCollectionsData.findIndex(
+                      (video) => video.collection_id === item.collection_id
+                    ) !== -1 &&
+                    videoCollectionsData[
+                      videoCollectionsData.findIndex(
+                        (video) => video.collection_id === item.collection_id
+                      )
+                    ].videos
+                      .slice(
+                        0,
+                        showAllCurrentlyWatching ? recentVideosData.length : 6
+                      )
+                      .map((recentVideo: any, index: number) => {
+                        return (
+                          <div key={index}>
+                            <CustomVideoFrame
+                              recentVideo={recentVideo}
+                              index={index}
+                            />
+                          </div>
+                        );
+                      })}
+                </div>
+                {videoCollectionsData &&
+                videoCollectionsData.length > 0 &&
+                videoCollectionsData.findIndex(
+                  (video) => video.collection_id === item.collection_id
+                ) !== -1 &&
+                videoCollectionsData[
+                  videoCollectionsData.findIndex(
+                    (video) => video.collection_id === item.collection_id
+                  )
+                ].videos &&
+                videoCollectionsData[
+                  videoCollectionsData.findIndex(
+                    (video) => video.collection_id === item.collection_id
+                  )
+                ].videos.length > 1 ? (
+                  <div className="w-[100%] flex justify-center my-[28px]">
+                    <div
+                      style={{
+                        backgroundColor:
+                          appTheme[currentUser.theme].background_2_2,
+                      }}
+                      className="dim hover:brightness-75 cursor-pointer px-[87px] py-[10px] rounded-[5px] font-[500] text-[12px]"
+                      onClick={() => {
+                        // setShowAllCurrentlyWatching((prev: boolean) => !prev)
+                      }}
+                    >
+                      {/* {showAllCurrentlyWatching
+                        ? "SHOW LESS"
+                        : `SHOW ALL (${videoCollectionsData.length})`} */}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="h-[50px]"></div>
+                )}
+              </div>
+            );
+          })}
       </div>
-      {videoCollectionsData &&
+
+      {/* {videoCollectionsData &&
       videoCollectionsData.length > 0 &&
       videoCollectionsData.findIndex(
         (collection) => collection.collection_id === "saved-videos-collection"
@@ -273,7 +349,7 @@ const LibraryPage = () => {
         </div>
       ) : (
         <div className="h-[50px]"></div>
-      )}
+      )} */}
     </div>
   );
 };

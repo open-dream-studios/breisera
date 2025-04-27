@@ -7,6 +7,7 @@ import { makeRequest } from "@/util/axios";
 import { useContextQueries } from "@/contexts/queryContext";
 import { appTheme } from "@/util/appTheme";
 import { AuthContext } from "@/contexts/authContext";
+import CustomVideoFrame from "@/components/CustomVideoFrame/CustomVideoFrame";
 
 const HomePage = () => {
   const {
@@ -59,14 +60,7 @@ const HomePage = () => {
   if (!currentUser) return;
 
   return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(4, 1fr)",
-        gap: "16px",
-        padding: "16px",
-      }}
-    >
+    <div className="grid grid-cols-4 gap-[16px] p-[16px]">
       {exploreVideos.recommended_1.map((video) => (
         <Link
           key={video.id}
@@ -74,38 +68,9 @@ const HomePage = () => {
             handleVideoClick(video as YouTubePlayerVideo);
           }}
           href={`${FRONTEND_URL}/www.youtube.com/watch?v=${video.id}`}
-          style={{
-            display: "block",
-            textDecoration: "none",
-            color: "inherit",
-            border: "1px solid #ddd",
-            borderRadius: "8px",
-            overflow: "hidden",
-            boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-          }}
           className="dim hover:brightness-75"
         >
-          <div>
-            <img
-              src={video.snippet.thumbnails.medium.url}
-              alt={video.snippet.title}
-              className="w-[100%] aspect-[16/9] flex object-cover"
-            />
-            <div className="p-[8px]">
-              <h4
-                style={{ color: appTheme[currentUser.theme].text_1 }}
-                className="text-[14px] mb-[5px]"
-              >
-                {video.snippet.title}
-              </h4>
-              <p
-                style={{ color: appTheme[currentUser.theme].text_3 }}
-                className="text-[12px] mb-[10px]"
-              >
-                {video.snippet.channelTitle}
-              </p>
-            </div>
-          </div>
+          <CustomVideoFrame index={1} recentVideo={video} />
         </Link>
       ))}
     </div>
