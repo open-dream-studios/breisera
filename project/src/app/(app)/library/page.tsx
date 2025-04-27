@@ -12,7 +12,7 @@ import { iso8601ToSeconds } from "@/util/functions/Data";
 
 const LibraryPage = () => {
   const { currentUser } = useContext(AuthContext);
-  const { recentVideosData, videoCollectionsData, updateVideoCollection } =
+  const { recentVideosData, videoCollectionsData } =
     useContextQueries();
   const { setCurrentVideo, currentVideo, playerState, setPlayerState } =
     useVideo();

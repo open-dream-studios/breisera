@@ -29,7 +29,8 @@ export type QueryContextType = {
   refetchVideoCollectionsData: () => Promise<QueryObserverResult<any[], Error>>;
   updateVideoCollection: (
     video: YouTubePlayerVideo,
-    collection_id: string | null
+    collection_id: string | null,
+    collection_name: string
   ) => void;
 };
 
@@ -169,14 +170,17 @@ export const QueryProvider: React.FC<{ children: React.ReactNode }> = ({
     mutationFn: async ({
       video,
       collection_id,
+      collection_name,
     }: {
       video: YouTubePlayerVideo;
       collection_id: string | null;
+      collection_name: string
     }) => {
       await makeRequest.post("/api/users/update-video-collections", {
         video_id: video.id,
         video_data: JSON.stringify(video),
         collection_id,
+        collection_name,
       });
     },
     onMutate: async ({
@@ -207,9 +211,10 @@ export const QueryProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const updateVideoCollection = (
     video: YouTubePlayerVideo,
-    collection_id: string | null
+    collection_id: string | null,
+    collection_name: string
   ) => {
-    updateVideoCollections.mutate({ video, collection_id });
+    updateVideoCollections.mutate({ video, collection_id, collection_name });
   };
 
   return (

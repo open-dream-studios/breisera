@@ -9,15 +9,123 @@ import { BACKEND_URL } from "@/util/config";
 import { openWindow } from "@/util/functions/AppFunctions";
 import { formatSubs } from "@/util/functions/YouTubeData";
 import Modal2Continue from "@/util/modals/Modal2Continue";
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { RxCopy } from "react-icons/rx";
 import { TfiDownload } from "react-icons/tfi";
 import { LuLibrary } from "react-icons/lu";
 import { FaLink } from "react-icons/fa6";
+import { FaPlus } from "react-icons/fa6";
+import { RxCheck } from "react-icons/rx";
+
+interface ClickOutsideBoxProps {
+  setPopupVisible: (visible: boolean) => void;
+  handleSaveVideo: (
+    collection_id: string | null,
+    collection_name: string
+  ) => void;
+}
+
+const CollectionsPopup = ({
+  setPopupVisible,
+  handleSaveVideo,
+}: ClickOutsideBoxProps) => {
+  const { currentUser } = useContext(AuthContext);
+  const { currentVideo } = useVideo();
+  const { videoCollectionsData } = useContextQueries();
+  const popupRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClick(event: any) {
+      if (popupRef.current && !popupRef.current.contains(event.target)) {
+        setPopupVisible(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => {
+      document.removeEventListener("mousedown", handleClick);
+    };
+  }, []);
+
+  const handleCollectionClick = (collection: any) => {
+    handleSaveVideo(null, "4th");
+    // handleSaveVideo(collection.collection_id, collection.collection_name);
+  };
+
+  if (!currentUser || !currentVideo) return <></>;
+
+  return (
+    <div
+      ref={popupRef}
+      style={{
+        backgroundColor: appTheme[currentUser.theme].background_1,
+        border: `1px solid ${appTheme[currentUser.theme].background_2}`,
+      }}
+      className="pt-[18px] p-[10px] grid grid-cols-3 max-h-[400px] min-h-[200px] w-[300px] absolute right-[38px] bottom-[calc(100%+10px)] rounded-2xl shadow-xl overflow-y-auto"
+    >
+      {videoCollectionsData &&
+        videoCollectionsData.length > 0 &&
+        videoCollectionsData.map((collection: any, index: number) => {
+          console.log(videoCollectionsData);
+          if (
+            videoCollectionsData[index].videos.findIndex(
+              (item: any) => item.id === currentVideo.id
+            ) === -1
+          ) {
+            return (
+              <div
+                key={index}
+                className="hover:brightness-75 dim cursor-pointer flex flex-col gap-[6px] overflow-hidden items-center justify-center aspect-square"
+                onClick={() => {
+                  handleCollectionClick(collection);
+                }}
+              >
+                <div
+                  style={{
+                    backgroundColor: appTheme[currentUser.theme].background_2,
+                  }}
+                  className="aspect-[1/1] rounded-[5px] w-[65%] flex justify-center items-center"
+                >
+                  <FaPlus
+                    className="w-[25px] h-[25px]"
+                    style={{ color: appTheme[currentUser.theme].text_4 }}
+                  />
+                </div>
+                <div className="max-w-[85%] text-[14px] leading-[14px] font-[300] truncate overflow-hidden">
+                  {collection.collection_name}
+                </div>
+              </div>
+            );
+          } else {
+            return (
+              <div
+                key={index}
+                className="brightness-[76%] flex flex-col gap-[6px] overflow-hidden items-center justify-center aspect-square"
+              >
+                <div
+                  style={{
+                    backgroundColor: appTheme[currentUser.theme].background_2,
+                  }}
+                  className="aspect-[1/1] rounded-[5px] w-[65%] flex justify-center items-center"
+                >
+                  <RxCheck
+                    className="w-[35px] h-[35px]"
+                    style={{ color: appTheme[currentUser.theme].text_4 }}
+                  />
+                </div>
+                <div className="opacity-50 max-w-[85%] text-[14px] leading-[14px] font-[300] truncate overflow-hidden">
+                  {collection.collection_name}
+                </div>
+              </div>
+            );
+          }
+        })}
+    </div>
+  );
+};
 
 const YoutubePlayerData = () => {
   const { currentUser } = useContext(AuthContext);
-  const { updateVideoCollection } = useContextQueries();
+  const { updateVideoCollection, videoCollectionsData } = useContextQueries();
   const { currentVideo, theaterMode, setTheaterMode } = useVideo();
   const modal2 = useModal2Store((state: any) => state.modal2);
   const setModal2 = useModal2Store((state: any) => state.setModal2);
@@ -25,6 +133,8 @@ const YoutubePlayerData = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [start, setStart] = useState<string>("00:00");
   const [end, setEnd] = useState<string>("00:40");
+
+  const [popupVisible, setPopupVisible] = useState<boolean>(false);
 
   const handleDownload = async () => {
     if (!currentVideo) return;
@@ -80,9 +190,16 @@ const YoutubePlayerData = () => {
     });
   };
 
-  const handleSaveVideo = () => {
+  const handleSaveVideo = (
+    collection_id: string | null,
+    collection_name: string
+  ) => {
     if (currentVideo) {
-      updateVideoCollection(currentVideo, "saved-videos-collection");
+      updateVideoCollection(
+        currentVideo,
+        collection_id,
+        collection_name
+      );
     }
   };
 
@@ -93,7 +210,14 @@ const YoutubePlayerData = () => {
       <div className={`font-[600] ${appTextSizes.textHead1}`}>
         {currentVideo.snippet.title}
       </div>
-      <div className="w-[100%] flex flex-row justify-between items-start mt-[10px]">
+
+      <div className="w-[100%] flex flex-row justify-between items-start mt-[10px] relative">
+        {popupVisible && (
+          <CollectionsPopup
+            setPopupVisible={setPopupVisible}
+            handleSaveVideo={handleSaveVideo}
+          />
+        )}
         <div
           onClick={() => {
             openWindow(
@@ -128,7 +252,9 @@ const YoutubePlayerData = () => {
           <div className="flex flex-row gap-[8px]">
             <button
               disabled={loading}
-              onClick={handleSaveVideo}
+              onClick={() => {
+                setPopupVisible(true);
+              }}
               className="flex flex-col h-[34px] pb-[1px] w-[65px] rounded-[11px] cursor-pointer hover:brightness-75 dim text-[15px] leading-[15px] items-center justify-center"
               style={{
                 backgroundColor:
@@ -217,7 +343,9 @@ const YoutubePlayerData = () => {
                     backgroundColor: appTheme[currentUser.theme].text_3,
                   }}
                   className={`opacity-90 ${
-                    currentUser.theme === "dark" ? "w-[0.5px] h-[12px] " : "w-[1px] h-[11px]"
+                    currentUser.theme === "dark"
+                      ? "w-[0.5px] h-[12px] "
+                      : "w-[1px] h-[11px]"
                   } absolute right-[6px]`}
                 />
                 <div
@@ -225,7 +353,9 @@ const YoutubePlayerData = () => {
                     backgroundColor: appTheme[currentUser.theme].text_3,
                   }}
                   className={`opacity-90 ${
-                    currentUser.theme === "dark" ? "h-[0.5px] w-[26px]" : "h-[1px] w-[25px]"
+                    currentUser.theme === "dark"
+                      ? "h-[0.5px] w-[26px]"
+                      : "h-[1px] w-[25px]"
                   } absolute left-0 bottom-[5px]`}
                 />
               </div>

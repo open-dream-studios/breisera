@@ -235,9 +235,17 @@ export const updateCurrentUser = (req, res) => {
 export const writeNote = async (req, res) => {
   const token = req.cookies.accessToken;
   if (!token) return res.status(401).json("Not authenticated!");
-  let { user_id, note_id, collection_id, video_id, video_data, title, content } = req.body;
+  let {
+    user_id,
+    note_id,
+    collection_id,
+    video_id,
+    video_data,
+    title,
+    content,
+  } = req.body;
   collection_id = collection_id ? collection_id : generateId(15);
-  
+
   try {
     // Make sure the user doesn't have more than 100 notes already
     const userNotes = await new Promise((resolve, reject) => {
@@ -278,7 +286,17 @@ export const writeNote = async (req, res) => {
       const success = await new Promise((resolve, reject) => {
         db.query(
           "INSERT INTO notes (`note_id`,`user_id`,`collection_id`,`video_id`,`video_data`,`title`,`content`) VALUE (?)",
-          [[note_id, user_id, collection_id, video_id, video_data, title, content]],
+          [
+            [
+              note_id,
+              user_id,
+              collection_id,
+              video_id,
+              video_data,
+              title,
+              content,
+            ],
+          ],
           (err, data) => {
             if (err) {
               console.error(
@@ -659,18 +677,47 @@ export const getVideoCollections = async (req, res) => {
       );
     });
 
+    if (videos.length === 0) {
+      return res.status(200).json({ success: true, collections: [] });
+    }
+
+    const collectionIds = [...new Set(videos.map((v) => v.collection_id))]; // Unique IDs
+    const collectionNames = await new Promise((resolve, reject) => {
+      db.query(
+        `
+          SELECT collection_id, collection_name
+          FROM collections
+          WHERE user_id = ? AND collection_id IN (?)
+        `,
+        [user_id, collectionIds],
+        (err, data) => {
+          if (err) {
+            console.error("DB Query Error (collection names):", err);
+            return reject(err);
+          }
+          const map = {};
+          for (const row of data) {
+            map[row.collection_id] = row.collection_name;
+          }
+          resolve(map);
+        }
+      );
+    });
+
     const collectionsMap = {};
     for (const video of videos) {
-      const { collection_id, ...videoInfo } = video;
+      const { collection_id, video_data } = video;
       if (!collectionsMap[collection_id]) {
         collectionsMap[collection_id] = [];
       }
-      collectionsMap[collection_id].push(videoInfo.video_data);
+      collectionsMap[collection_id].push(video_data);
     }
 
     const groupedCollections = Object.entries(collectionsMap).map(
       ([collection_id, videos]) => ({
         collection_id,
+        collection_name:
+          collectionNames[collection_id] || "Untitled Collection",
         videos,
       })
     );
@@ -691,12 +738,31 @@ export const updateVideoCollections = async (req, res) => {
     if (!token) return res.status(401).json({ error: "Not authenticated" });
 
     const user_id = decodeToken(token);
-    let { video_id, video_data, collection_id } = req.body;
+    let { video_id, video_data, collection_id, collection_name } = req.body;
+
     collection_id = collection_id ? collection_id : generateId(15);
 
-    if (!video_id || !video_data || !collection_id) {
+    if (!video_id || !video_data || !collection_id || !collection_name) {
       return res.status(400).json({ error: "Missing video data" });
     }
+
+    await new Promise((resolve, reject) => {
+      db.query(
+        `
+      INSERT INTO collections (user_id, collection_id, collection_name)
+      VALUES (?, ?, ?)
+      ON DUPLICATE KEY UPDATE collection_name = VALUES(collection_name)
+    `,
+        [user_id, collection_id, collection_name],
+        (err, result) => {
+          if (err) {
+            console.error("DB Query Error:", err);
+            return reject(err);
+          }
+          resolve(result);
+        }
+      );
+    });
 
     await new Promise((resolve, reject) => {
       db.query(
