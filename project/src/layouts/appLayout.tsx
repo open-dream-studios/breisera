@@ -124,7 +124,7 @@ const ProtectedLayout = ({ children }: { children: ReactNode }) => {
             playerState === "screen" && "w-[100%] h-[100%]"
           } ${
             playerState === "sm" &&
-            "fixed w-[400px] h-[225px] bottom-0 right-0 mr-[-1px]"
+            "fixed w-[462px] h-[260px] bottom-0 right-0 mr-[-1px]"
           } ${playerState === "hidden" && "hidden"}`}
         >
           <Player />

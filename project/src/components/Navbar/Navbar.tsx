@@ -1,17 +1,13 @@
 "use client";
 import { useContext } from "react";
-import { AuthContext, User } from "../../contexts/authContext";
+import { AuthContext } from "../../contexts/authContext";
 import { HiBars3 } from "react-icons/hi2";
-import { appTheme, ThemeType } from "../../util/appTheme";
+import { appTheme } from "../../util/appTheme";
 import {
   useLeftBarOpenStore,
   useLeftBarRefStore,
 } from "../../store/useLeftBarOpenStore";
 import { BsSuitDiamondFill } from "react-icons/bs";
-import { LuSun } from "react-icons/lu";
-import { IoMoonOutline } from "react-icons/io5";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { makeRequest } from "../../util/axios";
 import { useModal1Store } from "../../store/useModalStore";
 import appDetails from "../../util/appDetails.json";
 import Settings from "../Settings/Settings";
@@ -22,8 +18,10 @@ import {
 import Link from "next/link";
 import { useVideo } from "@/contexts/videoContext";
 import { usePageLayoutRefStore } from "@/store/usePageLayoutStore";
+import { usePathname } from "next/navigation";
 
 const Navbar = () => {
+  const pathname = usePathname()
   const { currentUser, currentUserSubscription } = useContext(AuthContext);
   const { playerState, setPlayerState } = useVideo();
   const modal1 = useModal1Store((state: any) => state.modal1);
@@ -121,7 +119,7 @@ const Navbar = () => {
           <Link
             href="/"
             onClick={() => {
-              if (playerState === "screen") {
+              if (pathname === "/") {
                 setPlayerState("sm");
               }
             }}

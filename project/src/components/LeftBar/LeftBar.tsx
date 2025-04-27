@@ -19,6 +19,7 @@ import { playVideo } from "@/screens/Player/YouTubePlayer/YouTubePlayer";
 import { LuPanelLeftClose } from "react-icons/lu";
 import { BiWindows } from "react-icons/bi";
 import { usePageLayoutRefStore } from "@/store/usePageLayoutStore";
+import { useParams, usePathname } from "next/navigation";
 
 const LeftBar = () => {
   const {
@@ -28,6 +29,7 @@ const LeftBar = () => {
     setCurrentVideo,
     setPlayerState,
   } = useVideo();
+  const pathname = usePathname();
   const { recentVideosData } = useContextQueries();
   const { currentUser, handleLogout } = useContext(AuthContext);
   const modal2 = useModal2Store((state: any) => state.modal2);
@@ -245,6 +247,9 @@ const LeftBar = () => {
                   if (windowWidth < 1024) {
                     closeLeftBar();
                   }
+                  if (pathname === "/") {
+                    setPlayerState("sm");
+                  }
                 }}
               >
                 <BiWindows className="w-[17px] h-[17px]" />
@@ -275,6 +280,9 @@ const LeftBar = () => {
               onClick={() => {
                 if (windowWidth < 1024) {
                   closeLeftBar();
+                }
+                if (pathname === "/library") {
+                  setPlayerState("sm");
                 }
               }}
             >
