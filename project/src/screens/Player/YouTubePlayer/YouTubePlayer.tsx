@@ -3,7 +3,6 @@ import { useVideo, YouTubePlayerVideo } from "@/contexts/videoContext";
 import YouTube, { YouTubePlayer as YTPlayerType } from "react-youtube";
 import { useEffect, useRef, useState } from "react";
 import { useContextQueries } from "@/contexts/queryContext";
-import { useParams, usePathname, useSearchParams } from "next/navigation";
 
 let playerRef: YTPlayerType | null = null;
 
