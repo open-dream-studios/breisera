@@ -1,5 +1,12 @@
 "use client";
-import { ReactNode, useContext, useEffect, useRef, useState } from "react";
+import {
+  ReactNode,
+  RefObject,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import {
   QueryClient,
   QueryClientProvider,
@@ -25,6 +32,7 @@ import {
 } from "@/store/useLeftBarOpenStore";
 import { QueryProvider } from "@/contexts/queryContext";
 import CustomToast from "@/components/CustomToast";
+import { usePageLayoutRefStore } from "@/store/usePageLayoutStore";
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   const [queryClient] = useState(() => new QueryClient());
@@ -135,10 +143,22 @@ const ProtectedLayout = ({ children }: { children: ReactNode }) => {
 
 const PageLayout = ({ children }: { children: ReactNode }) => {
   const { currentUser } = useContext(AuthContext);
+  const leftBarOpen = useLeftBarOpenStore((state: any) => state.leftBarOpen);
+
+  const pageLayoutRef = useRef<HTMLDivElement>(null);
+  const setPageLayoutRef = usePageLayoutRefStore(
+    (state) => state.setPageLayoutRef
+  );
+
+  useEffect(() => {
+    setPageLayoutRef(pageLayoutRef as RefObject<HTMLDivElement>);
+  }, [setPageLayoutRef, pageLayoutRef]);
+
   if (!currentUser) return;
 
   return (
     <div
+      ref={pageLayoutRef}
       style={
         {
           "--nav-height": `${appDetails.nav_height}px`,
@@ -147,7 +167,11 @@ const PageLayout = ({ children }: { children: ReactNode }) => {
           color: appTheme[currentUser.theme].text_1,
         } as React.CSSProperties
       }
-      className={`absolute left-0 lg:left-[calc(var(--left-bar-width))] top-[var(--nav-height)] w-[100vw] lg:w-[calc(100vw-(var(--left-bar-width)))] flex h-[calc(100vh-var(--nav-height))] overflow-scroll`}
+      className={`absolute left-0 ${
+        leftBarOpen && "lg:left-[calc(var(--left-bar-width))]"
+      } top-[var(--nav-height)] w-[100vw] ${
+        leftBarOpen && "lg:w-[calc(100vw-(var(--left-bar-width)))]"
+      } flex h-[calc(100vh-var(--nav-height))] overflow-scroll`}
     >
       <div className="relative w-[100%] h-[100%]">{children}</div>
     </div>

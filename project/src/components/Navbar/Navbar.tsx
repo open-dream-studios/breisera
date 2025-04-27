@@ -21,6 +21,7 @@ import {
 } from "../../util/functions/Data";
 import Link from "next/link";
 import { useVideo } from "@/contexts/videoContext";
+import { usePageLayoutRefStore } from "@/store/usePageLayoutStore";
 
 const Navbar = () => {
   const { currentUser, currentUserSubscription } = useContext(AuthContext);
@@ -32,6 +33,7 @@ const Navbar = () => {
     (state: any) => state.setLeftBarOpen
   );
   const leftBarRef = useLeftBarRefStore((state) => state.leftBarRef);
+  const pageLayoutRef = usePageLayoutRefStore((state) => state.pageLayoutRef);
 
   const toggleLeftBar = () => {
     if (leftBarRef && leftBarRef.current) {
@@ -41,6 +43,16 @@ const Navbar = () => {
     setTimeout(() => {
       if (leftBarRef && leftBarRef.current) {
         leftBarRef.current.style.transition = "none";
+      }
+    }, 300);
+
+    if (pageLayoutRef && pageLayoutRef.current) {
+      pageLayoutRef.current.style.transition =
+        "width 0.3s ease-in-out, left 0.3s ease-in-out";
+    }
+    setTimeout(() => {
+      if (pageLayoutRef && pageLayoutRef.current) {
+        pageLayoutRef.current.style.transition = "none";
       }
     }, 300);
   };
@@ -100,7 +112,9 @@ const Navbar = () => {
             onClick={() => {
               toggleLeftBar();
             }}
-            className="w-[30px] dim cursor-pointer lg:hidden hover:brightness-75"
+            className={`w-[30px] dim cursor-pointer ${
+              leftBarOpen && "lg:hidden"
+            } hover:brightness-75`}
             color={appTheme[currentUser.theme].text_1}
             fontSize={29}
           />
@@ -113,19 +127,18 @@ const Navbar = () => {
             }}
             className="flex flex-row gap-[5px] items-center cursor-pointer dim hover:brightness-75 pr-[6px]"
           >
-            {currentUser.theme === "dark" ? (
-              <img
-                src="/assets/logo-white.png"
-                alt="logo"
-                className="hidden lg:block select-none ml-[3px] w-[22px] h-[22px] object-cover"
-              />
-            ) : (
-              <img
-                src="/assets/logo-black.png"
-                alt="logo"
-                className="hidden lg:block select-none ml-[3px] w-[22px] h-[22px] object-cover"
-              />
-            )}
+            <img
+              src={
+                currentUser.theme === "dark"
+                  ? "/assets/logo-white.png"
+                  : "/assets/logo-black.png"
+              }
+              alt="logo"
+              className={`${
+                !leftBarOpen ? "hidden" : "hidden lg:block"
+              }  select-none ml-[3px] w-[22px] h-[22px] object-cover`}
+            />
+
             <p
               className="select-none text-[23px] font-[700] ml-[10px]"
               style={{
@@ -183,7 +196,6 @@ const Navbar = () => {
         </div>
 
         <div className="h-[100%] mr-[10px] pr-[2px] hidden min-[500px]:flex flex-row items-center gap-[18px]">
-
           {currentUserSubscription && (
             <div
               className="w-[150px]  h-[42px] flex flex-row justify-center items-center gap-[8px] dim cursor-pointer hover:brightness-75 rounded-[4px]"

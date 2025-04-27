@@ -18,6 +18,7 @@ import { useContextQueries } from "@/contexts/queryContext";
 import { playVideo } from "@/screens/Player/YouTubePlayer/YouTubePlayer";
 import { LuPanelLeftClose } from "react-icons/lu";
 import { BiWindows } from "react-icons/bi";
+import { usePageLayoutRefStore } from "@/store/usePageLayoutStore";
 
 const LeftBar = () => {
   const {
@@ -37,8 +38,11 @@ const LeftBar = () => {
   const setLeftBarOpen = useLeftBarOpenStore(
     (state: any) => state.setLeftBarOpen
   );
+
   const [showLeftBar, setShowLeftBar] = useState<boolean>(false);
   const showLeftBarRef = useRef<HTMLDivElement>(null);
+
+  const pageLayoutRef = usePageLayoutRefStore((state) => state.pageLayoutRef);
 
   useEffect(() => {
     setLeftBarRef(leftBarRef as RefObject<HTMLDivElement>);
@@ -85,14 +89,35 @@ const LeftBar = () => {
         leftBarRef.current.style.transition = "none";
       }
     }, 300);
+
+    if (pageLayoutRef && pageLayoutRef.current) {
+      pageLayoutRef.current.style.transition =
+        "width 0.3s ease-in-out, left 0.3s ease-in-out";
+    }
+    setTimeout(() => {
+      if (pageLayoutRef && pageLayoutRef.current) {
+        pageLayoutRef.current.style.transition = "none";
+      }
+    }, 300);
   };
+
+  const leftBarOpenRef = useRef(leftBarOpen);
+  useEffect(() => {
+    leftBarOpenRef.current = leftBarOpen;
+  }, [leftBarOpen]);
 
   const [windowWidth, setWindowWidth] = useState<number | null>(null);
   useEffect(() => {
     const handleResize = () => {
       setWindowWidth(window.innerWidth);
       if (window.innerWidth > 1024) {
-        setLeftBarOpen(false);
+        if (!leftBarOpenRef.current) {
+          setLeftBarOpen(true);
+        }
+      } else {
+        if (leftBarOpenRef.current) {
+          setLeftBarOpen(false);
+        }
       }
     };
     handleResize();
@@ -131,7 +156,9 @@ const LeftBar = () => {
   };
 
   const handleLeftBarVideoClick = (video: YouTubePlayerVideo) => {
-    closeLeftBar();
+    if (windowWidth < 1024) {
+      closeLeftBar();
+    }
     handleVideoClick(video);
   };
 
@@ -157,7 +184,7 @@ const LeftBar = () => {
               appTheme[currentUser.theme].background_2
             }`,
           }}
-          className={`z-[951] pointer-events-auto lg:right-0 ${
+          className={`z-[951] pointer-events-auto ${
             leftBarOpen ? "right-0" : "right-[100%]"
           } absolute top-0 h-[100%] w-[100%] flex justify-center
           `}
@@ -213,7 +240,9 @@ const LeftBar = () => {
                   color: appTheme[currentUser.theme].text_1,
                 }}
                 onClick={() => {
-                  closeLeftBar();
+                  if (windowWidth < 1024) {
+                    closeLeftBar();
+                  }
                 }}
               >
                 <BiWindows className="w-[17px] h-[17px]" />
@@ -221,7 +250,7 @@ const LeftBar = () => {
               </Link>
               <LuPanelLeftClose
                 style={{ color: appTheme[currentUser.theme].text_4 }}
-                className="dim cursor-pointer brightness-75 hover:brightness-50 w-[24px] h-[24px] mr-[-8px] ml-[10px] mt-[3px]"
+                className="hidden lg:block dim cursor-pointer brightness-75 hover:brightness-50 w-[24px] h-[24px] mr-[-8px] ml-[10px] mt-[3px]"
                 onClick={() => {
                   closeLeftBar();
                 }}
@@ -242,7 +271,9 @@ const LeftBar = () => {
               className="dim hover:brightness-75 cursor-pointer w-[100%] flex gap-[8px] items-center rounded-[10px] px-[12px] py-[5px]"
               href="/library"
               onClick={() => {
-                closeLeftBar();
+                if (windowWidth < 1024) {
+                  closeLeftBar();
+                }
               }}
             >
               <MdLibraryBooks className="w-[17px] h-[17px]" />
