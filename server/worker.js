@@ -52,7 +52,7 @@ const worker = new Worker(
       );
 
       ytDlpProcess.stderr.on("data", (data) => {
-        console.log(`❌ [yt-dlp stderr]: ${data.toString()}`);
+        console.log(`[yt-dlp stderr]: ${data.toString()}`);
       });
 
       const upload = new Upload({
