@@ -201,13 +201,15 @@ export const QueryProvider: React.FC<{ children: React.ReactNode }> = ({
       const queryKey = ["video-collections"];
       await queryClient.cancelQueries({ queryKey });
       const previousData = queryClient.getQueryData(queryKey);
-      showToast("Video saved to collection", "success");
       return { previousData, queryKey };
     },
     onError: (_err, _newData, context) => {
       if (context?.queryKey && context?.previousData) {
         queryClient.setQueryData(context.queryKey, context.previousData);
       }
+    },
+    onSuccess: () => {
+      showToast("Video saved to collection", "success");
     },
     onSettled: (_data, _err, _variables, context) => {
       if (context?.queryKey) {
@@ -273,8 +275,10 @@ export const QueryProvider: React.FC<{ children: React.ReactNode }> = ({
       //   ...(old || []),
       //   { id: collection_id || null, name: "New" },
       // ]);
-      showToast("New collection added", "success");
       return { previousData, queryKey };
+    },
+    onSuccess: () => {
+      showToast("New collection added", "success");
     },
     onError: (_err, _newData, context) => {
       if (context?.queryKey && context?.previousData) {
