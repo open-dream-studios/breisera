@@ -87,12 +87,10 @@ type VideoContextType = {
   >;
   currentKeyConcepts: KeyConcepts;
   setCurrentKeyConcepts: React.Dispatch<React.SetStateAction<KeyConcepts>>;
-  loadingCurrentKeyConcepts: boolean;
-  setLoadingCurrentKeyConcepts: React.Dispatch<React.SetStateAction<boolean>>;
   currentSummary: Summary;
   setCurrentSummary: React.Dispatch<React.SetStateAction<Summary>>;
-  loadingCurrentSummary: boolean;
-  setLoadingCurrentSummary: React.Dispatch<React.SetStateAction<boolean>>;
+  loadingCurrentSummaries: boolean;
+  setLoadingCurrentSummaries: React.Dispatch<React.SetStateAction<boolean>>;
   currentStudyTool: StudyToolTypes;
   setCurrentStudyTool: React.Dispatch<React.SetStateAction<StudyToolTypes>>;
   currentFlashCards: FlashCards;
@@ -107,8 +105,7 @@ type VideoContextType = {
   setIsAnimating: React.Dispatch<React.SetStateAction<boolean>>;
   disableAnimation: boolean;
   setDisableAnimation: React.Dispatch<React.SetStateAction<boolean>>;
-  generateSummary: (transcript: VideoTranscript) => void;
-  generateKeyConcepts: (transcript: VideoTranscript) => void;
+  generateSummaries: (transcript: VideoTranscript) => void;
   handleVideoClick: (video: YouTubePlayerVideo) => void;
   theaterMode: boolean;
   setTheaterMode: React.Dispatch<React.SetStateAction<boolean>>;
@@ -154,11 +151,9 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const [currentKeyConcepts, setCurrentKeyConcepts] =
     useState<KeyConcepts>(null);
-  const [loadingCurrentKeyConcepts, setLoadingCurrentKeyConcepts] =
-    useState<boolean>(true);
 
   const [currentSummary, setCurrentSummary] = useState<Summary>(null);
-  const [loadingCurrentSummary, setLoadingCurrentSummary] =
+  const [loadingCurrentSummaries, setLoadingCurrentSummaries] =
     useState<boolean>(true);
 
   const [currentFlashCards, setCurrentFlashCards] = useState<FlashCards>({
@@ -193,37 +188,21 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const generateSummary = async (transcript: VideoTranscript) => {
+  const generateSummaries = async (transcript: VideoTranscript) => {
     try {
-      const res = await makeRequest.post("/api/youtube/gemini-summary", {
+      const res = await makeRequest.post("/api/youtube/gemini-summaries", {
         transcript,
         video: currentVideo,
       });
       if (res.status === 200) {
-        setCurrentSummary(res.data.content);
+        setCurrentSummary(res.data.summary);
+        setCurrentKeyConcepts(res.data.keyConcepts);
       }
     } catch (error) {
       setCurrentSummary(null);
       console.error("Failed to fetch videos:", error);
     } finally {
-      setLoadingCurrentSummary(false);
-    }
-  };
-
-  const generateKeyConcepts = async (transcript: VideoTranscript) => {
-    try {
-      const res = await makeRequest.post("/api/youtube/gemini-key-concepts", {
-        transcript,
-        video: currentVideo,
-      });
-      if (res.status === 200) {
-        setCurrentKeyConcepts(res.data.content);
-      }
-    } catch (error) {
-      setCurrentKeyConcepts(null);
-      console.error("Failed to fetch key concepts:", error);
-    } finally {
-      setLoadingCurrentKeyConcepts(false);
+      setLoadingCurrentSummaries(false);
     }
   };
 
@@ -258,12 +237,10 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({
         setLoadingCurrentWhisperTranscript,
         currentKeyConcepts,
         setCurrentKeyConcepts,
-        loadingCurrentKeyConcepts,
-        setLoadingCurrentKeyConcepts,
         currentSummary,
         setCurrentSummary,
-        loadingCurrentSummary,
-        setLoadingCurrentSummary,
+        loadingCurrentSummaries,
+        setLoadingCurrentSummaries,
         currentStudyTool,
         setCurrentStudyTool,
         currentFlashCards,
@@ -278,8 +255,7 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({
         setIsAnimating,
         disableAnimation,
         setDisableAnimation,
-        generateSummary,
-        generateKeyConcepts,
+        generateSummaries,
         handleVideoClick,
         theaterMode,
         setTheaterMode,

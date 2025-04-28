@@ -3,12 +3,73 @@ import { formatTimeStamp } from "../functions/data.js";
 import fetch from "node-fetch";
 dotenv.config();
 
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_KEY
+);
+
+async function checkVideoStorage(videoId) {
+  const { data, error } = await supabase
+    .from("video_summaries")
+    .select("video_summary, video_key_concept")
+    .eq("video_id", videoId)
+    .single();
+
+  if (error && error.code !== "PGRST116") {
+    // PGRST116 = No rows found
+    console.error("Error fetching video summary:", error);
+    throw error;
+  }
+
+  return [data?.video_summary ?? null, data?.video_key_concept ?? null];
+}
+
+async function upsertVideoStorage(
+  videoId,
+  storedSummary,
+  generatedSummary,
+  storedKeyConcepts,
+  generatedKeyConcepts
+) {
+  if (storedSummary && storedKeyConcepts) {
+    return;
+  }
+
+  const updateData = { video_id: videoId };
+
+  if (!storedSummary) {
+    updateData.video_summary = generatedSummary;
+  }
+  if (!storedKeyConcepts) {
+    updateData.video_key_concept = generatedKeyConcepts;
+  }
+
+  updateData.process_version = 1.1
+
+  const { error } = await supabase
+    .from("video_summaries")
+    .upsert(updateData, { onConflict: "video_id" });
+
+  if (error) {
+    console.error("Error upserting video summary:", error);
+    throw error;
+  }
+}
+
 // TO DO: SEND VIDEO LENGTH
 export const geminiQuery = async (req, res) => {
-  const { messages, transcript, video } = req.body
-  const conversation = messages.slice(0, -1)
-  .map((msg) => `${msg.isBot ? "Bot" : "User"}: ${msg.text}`)
-  .join("\n");
+  const token = req.cookies.accessToken;
+  if (!token) return res.status(401).json("Not authenticated!");
+
+  const { messages, transcript, video } = req.body;
+  if (!video) return res.status(404).json("No video sent");
+
+  const conversation = messages
+    .slice(0, -1)
+    .map((msg) => `${msg.isBot ? "Bot" : "User"}: ${msg.text}`)
+    .join("\n");
   const question = messages[messages.length - 1].text;
   const geminiModel = "gemini-1.5-flash";
 
@@ -36,8 +97,12 @@ export const geminiQuery = async (req, res) => {
               The video description is: ${video.snippet.description}
 
               The date this video was published: ${video.snippet.publishedAt}
-              The YouTube channel that made this video: ${video.snippet.channelTitle}
-              The vidoe's default language: ${video.snippet.defaultAudioLanguage}
+              The YouTube channel that made this video: ${
+                video.snippet.channelTitle
+              }
+              The vidoe's default language: ${
+                video.snippet.defaultAudioLanguage
+              }
 
               TRANSCRIPT:
               ${formattedTranscript}`,
@@ -45,7 +110,7 @@ export const geminiQuery = async (req, res) => {
         {
           text: `Here is the chat history of the current conversation:\n
           ${conversation}
-          `
+          `,
         },
         {
           text: `
@@ -80,13 +145,20 @@ export const geminiQuery = async (req, res) => {
   }
 };
 
-// TO DO: SEND VIDEO LENGTH
-export const geminiSummaryQuery = async (req, res) => {
-    const { transcript, video } = req.body
+const generateSummary = async (transcript, video) => {
   const geminiModel = "gemini-1.5-flash";
-  
-  const minutes = 20
-  const summaryLength = minutes > 20? 400 : minutes > 10 ? 300 : minutes > 5 ? 200 : minutes > 2 ? 150 : 50
+
+  const minutes = 20;
+  const summaryLength =
+    minutes > 20
+      ? 400
+      : minutes > 10
+      ? 300
+      : minutes > 5
+      ? 200
+      : minutes > 2
+      ? 150
+      : 50;
 
   const formattedTranscript = transcript
     .map((item) => `${formatTimeStamp(item.offset) + " " + item.text}`)
@@ -142,8 +214,12 @@ export const geminiSummaryQuery = async (req, res) => {
               The video description is: ${video.snippet.description}
 
               The date this video was published: ${video.snippet.publishedAt}
-              The YouTube channel that made this video: ${video.snippet.channelTitle}
-              The vidoe's default language: ${video.snippet.defaultAudioLanguage}
+              The YouTube channel that made this video: ${
+                video.snippet.channelTitle
+              }
+              The vidoe's default language: ${
+                video.snippet.defaultAudioLanguage
+              }
 
               Here is the full transcript of the video, with timestamps at the beginning of each line given in the format HH:MM:SS.
 
@@ -178,22 +254,28 @@ export const geminiSummaryQuery = async (req, res) => {
     );
 
     const data = await geminiResponse.json();
-    const content =
-      data?.candidates?.[0]?.content?.parts?.[0]?.text || "No answer.";
-    res.status(200).json({ content });
+    const content = data?.candidates?.[0]?.content?.parts?.[0]?.text || null;
+    return content;
   } catch (err) {
     console.error(err.response?.data || err.message);
-    res.status(500).json({ error: "Gemini API request failed" });
+    return null;
   }
 };
 
-// TO DO: SEND VIDEO LENGTH
-export const geminiKeyConceptsQuery = async (req, res) => {
-    const { transcript, video } = req.body
+const generateKeyConcepts = async (transcript, video) => {
   const geminiModel = "gemini-1.5-flash";
-  
-  const minutes = 21
-  const summaryLength = minutes > 20? 250 : minutes > 10 ? 180 : minutes > 5 ? 150 : minutes > 2 ? 100 : 50
+
+  const minutes = 21;
+  const summaryLength =
+    minutes > 20
+      ? 250
+      : minutes > 10
+      ? 180
+      : minutes > 5
+      ? 150
+      : minutes > 2
+      ? 100
+      : 50;
 
   const formattedTranscript = transcript
     .map((item) => `${formatTimeStamp(item.offset) + " " + item.text}`)
@@ -255,8 +337,12 @@ export const geminiKeyConceptsQuery = async (req, res) => {
               The video description is: ${video.snippet.description}
 
               The date this video was published: ${video.snippet.publishedAt}
-              The YouTube channel that made this video: ${video.snippet.channelTitle}
-              The vidoe's default language: ${video.snippet.defaultAudioLanguage}
+              The YouTube channel that made this video: ${
+                video.snippet.channelTitle
+              }
+              The vidoe's default language: ${
+                video.snippet.defaultAudioLanguage
+              }
 
               Here is the full transcript of the video, with timestamps at the beginning of each line given in the format HH:MM:SS.
 
@@ -291,18 +377,63 @@ export const geminiKeyConceptsQuery = async (req, res) => {
     );
 
     const data = await geminiResponse.json();
-    const content =
-      data?.candidates?.[0]?.content?.parts?.[0]?.text || "No answer.";
-    res.status(200).json({ content });
+    const content = data?.candidates?.[0]?.content?.parts?.[0]?.text || null;
+    return content;
   } catch (err) {
     console.error(err.response?.data || err.message);
-    res.status(500).json({ error: "Gemini API request failed" });
+    return null;
   }
 };
 
 // TO DO: SEND VIDEO LENGTH
+export const geminiSummariesQuery = async (req, res) => {
+  const token = req.cookies.accessToken;
+  if (!token) return res.status(401).json("Not authenticated!");
+
+  const { transcript, video } = req.body;
+  if (!video) return res.status(404).json("No video sent");
+
+  const [storedSummary, storedKeyConcepts] = await checkVideoStorage(video.id);
+
+  let summaryPromise = null;
+  let keyConceptsPromise = null;
+
+  if (!storedSummary) {
+    summaryPromise = generateSummary(transcript, video);
+  }
+  if (!storedKeyConcepts) {
+    keyConceptsPromise = generateKeyConcepts(transcript, video);
+  }
+
+  const [generatedSummary, generatedKeyConcepts] = await Promise.all([
+    summaryPromise ?? Promise.resolve(storedSummary),
+    keyConceptsPromise ?? Promise.resolve(storedKeyConcepts),
+  ]);
+
+  await upsertVideoStorage(
+    video.id,
+    storedSummary,
+    generatedSummary,
+    storedKeyConcepts,
+    generatedKeyConcepts
+  );
+
+  return res.status(200).json({
+    success: true,
+    summary: generatedSummary,
+    keyConcepts: generatedKeyConcepts,
+  });
+};
+
+// TO DO: SEND VIDEO LENGTH
 export const geminiFlashcardsQuery = async (req, res) => {
-  const { number, topic, transcript, video } = req.body
+    const token = req.cookies.accessToken;
+  if (!token) return res.status(401).json("Not authenticated!");
+
+  const { number, topic, transcript, video } = req.body;
+  if (!number || !transcript || !video ) {
+    return res.status(500).json("Invalid data sent")
+  }
   const geminiModel = "gemini-1.5-flash";
 
   const formattedTranscript = transcript
@@ -340,8 +471,12 @@ export const geminiFlashcardsQuery = async (req, res) => {
               The video description is: ${video.snippet.description}
 
               The date this video was published: ${video.snippet.publishedAt}
-              The YouTube channel that made this video: ${video.snippet.channelTitle}
-              The vidoe's default language: ${video.snippet.defaultAudioLanguage}
+              The YouTube channel that made this video: ${
+                video.snippet.channelTitle
+              }
+              The vidoe's default language: ${
+                video.snippet.defaultAudioLanguage
+              }
 
               Here is the full transcript, with timestamps listed at the beginning of each line given in the format HH:MM:SS.
 

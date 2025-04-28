@@ -60,16 +60,12 @@ const HomePage = () => {
   return (
     <div className="grid grid-cols-4 gap-[16px] p-[16px]">
       {exploreVideos.recommended_1.map((video) => (
-        <Link
+        <div
           key={video.id}
-          onClick={(e) => {
-            handleVideoClick(video as YouTubePlayerVideo);
-          }}
-          href={`${FRONTEND_URL}/www.youtube.com/watch?v=${video.id}`}
           className="dim hover:brightness-75"
         >
           <CustomVideoFrame index={1} recentVideo={video} />
-        </Link>
+        </div>
       ))}
     </div>
   );

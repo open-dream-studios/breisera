@@ -27,11 +27,9 @@ const Player = () => {
     setCurrentWhisperTranscript,
     setLoadingCurrentWhisperTranscript,
     setCurrentKeyConcepts,
-    setLoadingCurrentKeyConcepts,
-    setLoadingCurrentSummary,
+    setLoadingCurrentSummaries,
     setCurrentSummary,
-    generateSummary,
-    generateKeyConcepts,
+    generateSummaries,
     theaterMode,
   } = useVideo();
   const [dividerPercent, setDividerPercent] = useState(66);
@@ -48,13 +46,11 @@ const Player = () => {
           if (res.status === 200 && res.data.success) {
             setCurrentVideoTranscript(res.data.content);
           } else {
-            setLoadingCurrentSummary(false);
-            setLoadingCurrentKeyConcepts(false);
+            setLoadingCurrentSummaries(false);
             showToast("Transcript not available", "error");
           }
         } catch (error) {
-          setLoadingCurrentSummary(false);
-          setLoadingCurrentKeyConcepts(false);
+          setLoadingCurrentSummaries(false);
           console.error("Video transcript not available:", error);
           toast.error("Video transcript not available");
         } finally {
@@ -69,15 +65,13 @@ const Player = () => {
     setCurrentSummary(null);
     setLoadingCurrentVideoTranscript(true);
     setLoadingCurrentWhisperTranscript(false);
-    setLoadingCurrentKeyConcepts(true);
-    setLoadingCurrentSummary(true);
+    setLoadingCurrentSummaries(true);
     fetchTranscript();
   }, [currentVideo?.id]);
 
   useEffect(() => {
     if (currentUser && currentVideoTranscript) {
-      generateSummary(currentVideoTranscript);
-      generateKeyConcepts(currentVideoTranscript);
+      generateSummaries(currentVideoTranscript);
     }
   }, [currentVideoTranscript]);
 
@@ -87,8 +81,7 @@ const Player = () => {
       currentWhisperTranscript &&
       currentWhisperTranscript.length > 0
     ) {
-      generateSummary(currentWhisperTranscript);
-      generateKeyConcepts(currentWhisperTranscript);
+      generateSummaries(currentWhisperTranscript);
     }
   }, [currentWhisperTranscript]);
 

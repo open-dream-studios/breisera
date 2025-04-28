@@ -4,12 +4,11 @@ import {
   getYoutubeTranscript,
   generateYoutubeTranscript,
   youtubeGPT,
-  getVideoById
+  getVideoById,
 } from "../controllers/youtube.js";
 import {
   geminiQuery,
-  geminiSummaryQuery,
-  geminiKeyConceptsQuery,
+  geminiSummariesQuery,
   geminiFlashcardsQuery,
 } from "../controllers/gemini.js";
 import { rateLimiter } from "../connection/middlewares.js";
@@ -21,10 +20,8 @@ router.post("/search", rateLimiter, youtubeSearch);
 router.post("/get-transcript", rateLimiter, getYoutubeTranscript);
 router.post("/generate-transcript", rateLimiter, generateYoutubeTranscript);
 router.post("/gemini-query", rateLimiter, geminiQuery);
-router.post("/gemini-summary", rateLimiter, geminiSummaryQuery);
-router.post("/gemini-key-concepts", rateLimiter, geminiKeyConceptsQuery);
+router.post("/gemini-summaries", rateLimiter, geminiSummariesQuery);
 router.post("/gemini-flashcards", rateLimiter, geminiFlashcardsQuery);
-
 
 router.post("/gpt", rateLimiter, youtubeGPT);
 

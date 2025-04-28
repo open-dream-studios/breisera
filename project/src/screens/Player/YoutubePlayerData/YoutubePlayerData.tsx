@@ -474,13 +474,14 @@ const YoutubePlayerData = () => {
     }
 
     socket.once("video-ready", async (data) => {
-      console.log(data.download_url)
-      const link = document.createElement("a");
-      link.href = data.download_url;
-      link.download = data.video_name;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      // console.log(data.download_url)
+      window.open(data.download_url, "_self")
+      // const link = document.createElement("a");
+      // link.href = data.download_url;
+      // link.download = data.video_name;
+      // document.body.appendChild(link);
+      // link.click();
+      // document.body.removeChild(link);
 
       showToast("Download Ready!", "success");
 
@@ -548,7 +549,7 @@ const YoutubePlayerData = () => {
   };
 
   if (currentVideo === null || !currentUser) return;
-
+  
   return (
     <div className="w-[100%] px-[16px] pt-[12px] pb-[18px] md:pb-[2px]">
       <div className={`font-[600] ${appTextSizes.textHead1}`}>

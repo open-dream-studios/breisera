@@ -7,12 +7,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 const SummaryDisplay = () => {
   const { currentUser } = useContext(AuthContext);
-  const { currentSummary, loadingCurrentSummary } = useVideo();
+  const { currentSummary, loadingCurrentSummaries } = useVideo();
   if (!currentUser) return <></>;
   return (
     <div className="flex flex-col pb-[60px]">
       <p className="text-[23px] mb-[18px] font-[600]">Summary</p>
-      {loadingCurrentSummary && !currentSummary ? (
+      {loadingCurrentSummaries && !currentSummary ? (
         <>
           {[1, 2, 3, 4, 5].map((item: number, index: number) => {
             return (
