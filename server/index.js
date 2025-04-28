@@ -10,7 +10,7 @@ import OpenAI from "openai";
 import authRoutes from "./routes/auth.js";
 import userRoutes from "./routes/users.js";
 import paymentRoutes from "./routes/payment.js";
-import youtubeSearchRoutes from "./routes/youtube.js"
+import youtubeSearchRoutes from "./routes/youtube.js";
 import {
   handle1XCheckoutTransaction,
   handleSubscriptionCheckoutTransaction,
@@ -18,11 +18,12 @@ import {
 } from "./payments/transactions.js";
 import { db } from "./connection/connect.js";
 import { initializeWebSocket, getIO } from "./connection/websocket.js";
-import { spawn } from "child_process";
-import path from "path";
+import { getSignedUrl, deleteFromBucket } from "./functions/aws.js";
+import { Queue } from "bullmq";
+import IORedis from "ioredis";
 dotenv.config();
 
-const isProduction = true
+const isProduction = true;
 // const isProduction = process.env.NODE_ENV === "production";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
@@ -40,6 +41,8 @@ const server = isProduction
     );
 const io = initializeWebSocket(server);
 const __dirname = new URL(".", import.meta.url).pathname;
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename);
 
 // STRIPE Webhooks
 // TEST COMMAND
@@ -256,38 +259,60 @@ app.use(
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/payment", paymentRoutes);
-app.use("/api/youtube", youtubeSearchRoutes)
+app.use("/api/youtube", youtubeSearchRoutes);
 
 // Download Videos
-app.use("/temp", express.static(path.join(__dirname, "temp")));
-app.use("/create-video", (req, res) => {
-  const video_name = "video.mp4"
-  const { link, start, end } = req.body;
-  if (!link || !start || !end) {
+const connection = new IORedis(process.env.REDIS_URL);
+const videoQueue = new Queue("video-processing", { connection });
+
+app.post("/create-video", async (req, res) => {
+  const { link, start, end, video_name } = req.body;
+  if (!link || !start || !end || !video_name) {
     return res.status(400).json({ error: "Missing required parameters" });
   }
-  const pythonProcess = spawn("python3", ["python/video.py", link, start, end, video_name]);
-  pythonProcess.stdout.on("data", (data) => {
-    // console.log(`stdout: ${data.toString()}`);
-  });
-  pythonProcess.stderr.on("data", (data) => {
-    console.error(`stderr: ${data.toString()}`);
-  });
-  pythonProcess.on("close", (code) => {
-    // console.log(`Python script exited with code ${code}`);
-    res.status(200).json({ message: "Processing started" });
-  });
+  await videoQueue.add("process-video", { link, start, end, video_name });
+  res.status(202).json({ message: "Video processing started", video_name });
 });
 
-app.get("/download-video", (req, res) => {
-  const video_name = "video.mp4"
-  const filePath = path.join(__dirname, "temp", video_name);
-  res.download(filePath, video_name, (err) => {
-    if (err) {
-      console.error("Error downloading the file:", err);
-      res.status(500).send("Error downloading the file.");
-    }
-  });
+app.get("/check-video-status", async (req, res) => {
+  const { videoName } = req.query;
+  if (!videoName) {
+    return res.status(400).json({ error: "Missing videoName parameter" });
+  }
+  const status = await connection.get(`video-ready:${videoName}`);
+  return res.status(200).json({ ready: status === "true" });
+});
+
+app.get("/get-download-link", async (req, res) => {
+  const { videoName } = req.query;
+  if (!videoName) {
+    return res.status(400).json({ error: "Missing videoName parameter" });
+  }
+  try {
+    const url = await getSignedUrl(videoName);
+    return res.status(200).json({ url });
+  } catch (error) {
+    console.error("Error generating signed URL:", error);
+    return res.status(500).json({ error: "Error generating signed URL" });
+  }
+});
+
+app.get("/delete-download", async (req, res) => {
+  const { videoName } = req.query;
+  if (!videoName) {
+    return res.status(400).json({ error: "Missing videoName parameter" });
+  }
+
+  try {
+    await new Promise((resolve) => setTimeout(resolve, 60000));
+    await deleteFromBucket(videoName);
+    return res
+      .status(200)
+      .json({ success: true, message: "Video deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting video:", error);
+    return res.status(500).json({ error: "Error deleting video" });
+  }
 });
 
 // GPT Endpoint

@@ -19,6 +19,9 @@ import { RxCheck } from "react-icons/rx";
 import { makeRequest } from "@/util/axios";
 import { useQueryClient } from "@tanstack/react-query";
 import { IoCloseOutline } from "react-icons/io5";
+// import { io } from "socket.io-client";
+
+// const socket = io(BACKEND_URL);
 
 const smoothScrollTo = (element: HTMLElement, targetPosition: number) => {
   const startPosition = element.scrollTop;
@@ -267,31 +270,192 @@ const YoutubePlayerData = () => {
 
   const libraryButtonRef = useRef<HTMLButtonElement>(null);
 
+  // const handleDownload = async () => {
+  //   if (!currentVideo) return;
+  //   setLoading(true);
+  //   showToast("Downloading...", "success");
+  //   const video_name = `video-${Date.now()}.mp4`;
+  //   try {
+  //     const response = await fetch(`${BACKEND_URL}/create-video`, {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({
+  //         link: `https://www.youtube.com/watch?v=${currentVideo.id}`,
+  //         start: start,
+  //         end: end,
+  //         video_name: video_name,
+  //       }),
+  //     });
+  //     const responseData = await response.json();
+  //     if (response.status === 200) {
+  //       showToast("Downloaded!", "success");
+
+  //       const res = await fetch(
+  //         `${BACKEND_URL}/get-download-link?videoName=${encodeURIComponent(
+  //           video_name
+  //         )}`
+  //       );
+  //       const data = await res.json();
+  //       if (data.url) {
+  //         console.log(data.url);
+  //         openWindow(data.url);
+  //       } else {
+  //         console.error("Failed to get download URL");
+  //       }
+  //     }
+  //   } catch (error) {
+  //     console.error("Error downloading the video:", error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
   const handleDownload = async () => {
     if (!currentVideo) return;
     setLoading(true);
-    showToast("Downloading...", "success");
+    showToast("Processing video...", "success");
+
+    const video_name = `video-${Date.now()}.mp4`;
+
     try {
       const response = await fetch(`${BACKEND_URL}/create-video`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           link: `https://www.youtube.com/watch?v=${currentVideo.id}`,
-          start: start,
-          end: end,
+          start,
+          end,
+          video_name,
         }),
       });
+
       const responseData = await response.json();
-      if (response.status === 200) {
-        showToast("Downloaded!", "success");
-        window.open(`${BACKEND_URL}/download-video`, "_self");
+      if (response.status === 202) {
+        const { video_name } = responseData;
+
+        // Polling
+        let attempts = 0;
+        const maxAttempts = 30; // e.g., try for 30 seconds
+        const pollInterval = 1000; // 1 second
+
+        const poll = setInterval(async () => {
+          attempts++;
+
+          const checkRes = await fetch(
+            `${BACKEND_URL}/check-video-status?videoName=${encodeURIComponent(
+              video_name
+            )}`
+          );
+          const checkData = await checkRes.json();
+
+          if (checkData.ready) {
+            clearInterval(poll);
+
+            const res = await fetch(
+              `${BACKEND_URL}/get-download-link?videoName=${encodeURIComponent(
+                video_name
+              )}`
+            );
+            const data = await res.json();
+            if (data.url) {
+              // openWindow(data.url);
+              const link = document.createElement("a");
+              link.href = data.url;
+              link.download = video_name;
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+
+              showToast("Download Ready!", "success");
+
+              const deleteVideo = await fetch(
+                `${BACKEND_URL}/delete-download?videoName=${encodeURIComponent(
+                  video_name
+                )}`,
+                {
+                  method: "GET",
+                }
+              );
+
+              const deletionData = await deleteVideo.json();
+
+              if (deletionData.success) {
+                console.log("Video deleted successfully");
+              } else {
+                console.error("Failed to delete video");
+              }
+            } else {
+              showToast("Failed to get download URL", "error");
+            }
+          } else if (attempts >= maxAttempts) {
+            clearInterval(poll);
+            showToast("Video processing timed out", "error");
+          }
+        }, pollInterval);
       }
     } catch (error) {
       console.error("Error downloading the video:", error);
+      showToast("Error processing video", "error");
     } finally {
       setLoading(false);
     }
   };
+
+  // const handleDownload = async () => {
+  //   if (!currentVideo) return;
+  //   setLoading(true);
+  //   showToast("Processing video...", "success");
+
+  //   const video_name = `video-${Date.now()}.mp4`;
+
+  //   // Listen for the 'video-ready' event once
+  //   socket.once("video-ready", async (data) => {
+  //     console.log("Received video-ready event:", data);
+
+  //     const link = document.createElement("a");
+  //     link.href = data.download_url;
+  //     link.download = data.video_name;
+  //     document.body.appendChild(link);
+  //     link.click();
+  //     document.body.removeChild(link);
+
+  //     showToast("Download Ready!", "success");
+
+  //     // Optionally: Tell backend to delete file after download
+  //     await fetch(
+  //       `${BACKEND_URL}/delete-download?videoName=${encodeURIComponent(
+  //         data.video_name
+  //       )}`,
+  //       {
+  //         method: "GET",
+  //       }
+  //     );
+  //   });
+
+  //   try {
+  //     const response = await fetch(`${BACKEND_URL}/create-video`, {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({
+  //         link: `https://www.youtube.com/watch?v=${currentVideo.id}`,
+  //         start,
+  //         end,
+  //         video_name,
+  //         socketId: socket.id, // 💡 pass socket.id so backend knows which socket to send to
+  //       }),
+  //     });
+
+  //     const responseData = await response.json();
+  //     if (response.status === 202) {
+  //       console.log("Waiting for video to be ready...");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error downloading the video:", error);
+  //     showToast("Error processing video", "error");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   const copyToClipboard = () => {
     if (!currentVideo) return;
