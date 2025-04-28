@@ -19,6 +19,7 @@ export async function getSignedUrl(key) {
     Key: key,
     Expires: 60 * 5,
     ResponseContentDisposition: `attachment; filename="${key}"`,
+    ResponseContentType: "video/mp4",
   };
 
   const url = await s3.getSignedUrlPromise("getObject", params);
@@ -27,8 +28,8 @@ export async function getSignedUrl(key) {
 
 export async function deleteFromBucket(video_name) {
   const params = {
-    Bucket: process.env.S3_BUCKET_NAME, 
-    Key: video_name, 
+    Bucket: process.env.S3_BUCKET_NAME,
+    Key: video_name,
   };
 
   try {

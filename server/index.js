@@ -266,38 +266,24 @@ const connection = new IORedis(process.env.REDIS_URL);
 const videoQueue = new Queue("video-processing", { connection });
 
 app.post("/create-video", async (req, res) => {
-  const { link, start, end, video_name } = req.body;
-  if (!link || !start || !end || !video_name) {
+  const { link, start, end, video_name, socketId } = req.body;
+  if (!link || !start || !end || !video_name || !socketId) {
     return res.status(400).json({ error: "Missing required parameters" });
   }
-  await videoQueue.add("process-video", { link, start, end, video_name });
+
+  await videoQueue.add("process-video", {
+    link,
+    start,
+    end,
+    video_name,
+    socketId,
+  });
+
   res.status(202).json({ message: "Video processing started", video_name });
 });
 
-app.get("/check-video-status", async (req, res) => {
-  const { videoName } = req.query;
-  if (!videoName) {
-    return res.status(400).json({ error: "Missing videoName parameter" });
-  }
-  const status = await connection.get(`video-ready:${videoName}`);
-  return res.status(200).json({ ready: status === "true" });
-});
-
-app.get("/get-download-link", async (req, res) => {
-  const { videoName } = req.query;
-  if (!videoName) {
-    return res.status(400).json({ error: "Missing videoName parameter" });
-  }
-  try {
-    const url = await getSignedUrl(videoName);
-    return res.status(200).json({ url });
-  } catch (error) {
-    console.error("Error generating signed URL:", error);
-    return res.status(500).json({ error: "Error generating signed URL" });
-  }
-});
-
 app.get("/delete-download", async (req, res) => {
+  console.log("promised deletion")
   const { videoName } = req.query;
   if (!videoName) {
     return res.status(400).json({ error: "Missing videoName parameter" });
@@ -305,6 +291,7 @@ app.get("/delete-download", async (req, res) => {
 
   try {
     await new Promise((resolve) => setTimeout(resolve, 60000));
+    console.log("deleting")
     await deleteFromBucket(videoName);
     return res
       .status(200)
@@ -314,6 +301,33 @@ app.get("/delete-download", async (req, res) => {
     return res.status(500).json({ error: "Error deleting video" });
   }
 });
+
+const redis = new IORedis(process.env.REDIS_URL);
+
+setInterval(async () => {
+  try {
+    const keys = await redis.keys("video-ready:*");
+
+    for (const key of keys) {
+      const socketId = await redis.get(key);
+      const video_name = key.replace("video-ready:", "");
+
+      if (socketId) {
+        const io = getIO();
+        const url = await getSignedUrl(video_name);
+        io.to(socketId).emit("video-ready", {
+          video_name,
+          download_url: url,
+        });
+
+        // After emitting, delete the key so you don't send multiple times
+        await redis.del(key);
+      }
+    }
+  } catch (err) {
+    console.error("Failed to emit video-ready:", err);
+  }
+}, 2000);
 
 // GPT Endpoint
 app.post("/gpt-message", async (req, res) => {
