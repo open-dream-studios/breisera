@@ -320,9 +320,11 @@ const LeftBar = () => {
                       <Link
                         key={index}
                         onClick={(e) => {
-                          handleLeftBarVideoClick(
-                            video_data as YouTubePlayerVideo
-                          );
+                          if (index !== 0) {
+                            handleLeftBarVideoClick(
+                              video_data as YouTubePlayerVideo
+                            );
+                          }
                         }}
                         href={`${FRONTEND_URL}/www.youtube.com/watch?v=${video_data.id}`}
                         className="min-h-[25px] w-[100%] truncate my-[1.8px] dim hover:brightness-75"

@@ -28,6 +28,7 @@ export type QueryContextType = {
   isLoadingRecentVideosData: boolean;
   refetchRecentVideosData: () => Promise<QueryObserverResult<any[], Error>>;
   updateRecentVideo: (newVideo: YouTubePlayerVideo) => void;
+  updateRecentVideoTime: (newVideo: YouTubePlayerVideo) => void;
   videoCollectionsData: any[];
   isLoadingVideoCollectionsData: boolean;
   refetchVideoCollectionsData: () => Promise<QueryObserverResult<any[], Error>>;
@@ -64,9 +65,7 @@ export const QueryProvider: React.FC<{ children: React.ReactNode }> = ({
   } = useQuery<any>({
     queryKey: ["notes", currentUser?.user_id],
     queryFn: async () => {
-      const res = await makeRequest.post("/api/users/get-notes", {
-        user_id: currentUser?.user_id,
-      });
+      const res = await makeRequest.post("/api/users/get-notes", {});
       return res.data.notes;
     },
     enabled: !!currentUser?.user_id,
@@ -82,9 +81,7 @@ export const QueryProvider: React.FC<{ children: React.ReactNode }> = ({
   } = useQuery<any>({
     queryKey: ["flashcards", currentUser?.user_id],
     queryFn: async () => {
-      const res = await makeRequest.post("/api/users/get-flashcards", {
-        user_id: currentUser?.user_id,
-      });
+      const res = await makeRequest.post("/api/users/get-flashcards", {});
       return res.data.flashcards;
     },
     enabled: !!currentUser?.user_id,
@@ -110,11 +107,12 @@ export const QueryProvider: React.FC<{ children: React.ReactNode }> = ({
     enabled: isLoggedIn,
   });
 
-  const updateRecentVideos = useMutation({
+  const updateRecentVideoMutation = useMutation({
     mutationFn: async (video: YouTubePlayerVideo) => {
       await makeRequest.post("/api/users/update-recent-videos", {
         video_id: video.id,
         video_data: JSON.stringify(video),
+        updateTime: false,
         last_timestamp:
           video.last_timestamp !== undefined
             ? Math.round(video.last_timestamp * 100) / 100
@@ -153,8 +151,44 @@ export const QueryProvider: React.FC<{ children: React.ReactNode }> = ({
     },
   });
 
+  const updateRecentVideoTimeMutation = useMutation({
+    mutationFn: async (video: YouTubePlayerVideo) => {
+      await makeRequest.post("/api/users/update-recent-videos", {
+        video_id: video.id,
+        video_data: JSON.stringify(video),
+        updateTime: true,
+        last_timestamp:
+          video.last_timestamp !== undefined
+            ? Math.round(video.last_timestamp * 100) / 100
+            : 0,
+      });
+    },
+    onMutate: async (video: YouTubePlayerVideo) => {
+      const queryKey = ["recent-videos"];
+      await queryClient.cancelQueries({ queryKey });
+      const previousData = queryClient.getQueryData<any[]>(queryKey);
+      if (!previousData) return { previousData, queryKey };
+      queryClient.setQueryData(queryKey, previousData);
+      return { previousData, queryKey };
+    },
+    onError: (_err, _newData, context) => {
+      if (context?.queryKey && context?.previousData) {
+        queryClient.setQueryData(context.queryKey, context.previousData);
+      }
+    },
+    onSettled: (_data, _err, _variables, context) => {
+      if (context?.queryKey) {
+        queryClient.invalidateQueries({ queryKey: context.queryKey });
+      }
+    },
+  });
+
   const updateRecentVideo = async (video: YouTubePlayerVideo) => {
-    await updateRecentVideos.mutateAsync(video);
+    await updateRecentVideoMutation.mutateAsync(video);
+  };
+
+  const updateRecentVideoTime = async (video: YouTubePlayerVideo) => {
+    await updateRecentVideoTimeMutation.mutateAsync(video);
   };
 
   const {
@@ -318,6 +352,7 @@ export const QueryProvider: React.FC<{ children: React.ReactNode }> = ({
         isLoadingRecentVideosData,
         refetchRecentVideosData,
         updateRecentVideo,
+        updateRecentVideoTime,
         videoCollectionsData,
         isLoadingVideoCollectionsData,
         refetchVideoCollectionsData,

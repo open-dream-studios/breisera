@@ -4,6 +4,7 @@ import { StudyToolTypes } from "@/screens/Player/StudyTools/StudyTools";
 import { QueryObserverResult, useQuery } from "@tanstack/react-query";
 import { AuthContext } from "./authContext";
 import { makeRequest } from "@/util/axios";
+import { useContextQueries } from "./queryContext";
 
 export type YouTubePlayerVideo = {
   id: string;
@@ -118,7 +119,7 @@ const VideoContext = createContext<VideoContextType | undefined>(undefined);
 export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const { currentUser } = useContext(AuthContext);
+  const { updateRecentVideo } = useContextQueries()
   const [currentVideo, setCurrentVideo] = useState<YouTubePlayerVideo | null>(
     null
   );
@@ -207,6 +208,7 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const handleVideoClick = (video: YouTubePlayerVideo) => {
+    updateRecentVideo(video)
     setCurrentVideo(video);
     setPlayerState("screen");
   };

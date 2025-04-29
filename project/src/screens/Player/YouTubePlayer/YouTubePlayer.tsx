@@ -33,7 +33,7 @@ export const playVideo = () => {
 
 const YouTubePlayer = () => {
   const { currentVideo, addToLibraryVisible } = useVideo();
-  const { updateRecentVideo, recentVideosData } = useContextQueries();
+  const { updateRecentVideoTime, recentVideosData } = useContextQueries();
   const playerWrapperRef = useRef<HTMLDivElement>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -55,14 +55,13 @@ const YouTubePlayer = () => {
         setStartTime(0);
       }
     }
-    updateRecent();
   };
 
   const updateRecent = () => {
-    if (playerRef && currentVideo) {
+    if (playerRef && playerRef.getCurrentTime() && currentVideo) {
       const currentVideoCopy = currentVideo;
       currentVideoCopy.last_timestamp = playerRef.getCurrentTime().toFixed(2);
-      updateRecentVideo(currentVideoCopy);
+      updateRecentVideoTime(currentVideoCopy);
     }
   };
 
@@ -70,7 +69,7 @@ const YouTubePlayer = () => {
     if (!intervalRef.current) {
       intervalRef.current = setInterval(() => {
         updateRecent();
-      }, 5000);
+      }, 3000);
     }
   };
 
@@ -115,11 +114,11 @@ const YouTubePlayer = () => {
           onReady={onPlayerReady}
           onStateChange={(event) => {
             const playerState = event.data;
-            updateRecent();
             if (playerState === 1) {
               setIsPlaying(true);
             } else if (playerState === 2) {
               setIsPlaying(false);
+              updateRecent();
             }
           }}
         />

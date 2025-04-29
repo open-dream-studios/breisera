@@ -343,7 +343,7 @@ export const writeNote = async (req, res) => {
 export const getNotes = async (req, res) => {
   const token = req.cookies.accessToken;
   if (!token) return res.status(401).json("Not authenticated!");
-  const { user_id } = req.body;
+  const user_id = decodeToken(token);
 
   try {
     const notes = await new Promise((resolve, reject) => {
@@ -521,7 +521,7 @@ export const writeFlashCards = async (req, res) => {
 export const getFlashCards = async (req, res) => {
   const token = req.cookies.accessToken;
   if (!token) return res.status(401).json("Not authenticated!");
-  const { user_id } = req.body;
+  const user_id = decodeToken(token);
 
   try {
     const flashcards = await new Promise((resolve, reject) => {
@@ -615,34 +615,49 @@ export const updateRecentVideo = async (req, res) => {
   try {
     const token = req.cookies.accessToken;
     if (!token) return res.status(401).json({ error: "Not authenticated" });
-
     const user_id = decodeToken(token);
-    const { video_id, video_data, last_timestamp } = req.body;
+    const { video_id, video_data, updateTime, last_timestamp } = req.body;
 
     if (!video_id || !video_data || last_timestamp === null) {
       return res.status(400).json({ error: "Missing video data" });
     }
 
-    await new Promise((resolve, reject) => {
-      db.query(
-        `
+    if (updateTime) {
+      await new Promise((resolve, reject) => {
+        db.query(
+          `
           INSERT INTO recent_videos (user_id, video_id, video_data, last_timestamp)
           VALUES (?, ?, ?, ?)
           ON DUPLICATE KEY UPDATE 
-            last_timestamp = VALUES(last_timestamp),
+            last_timestamp = VALUES(last_timestamp)
+        `,
+          [user_id, video_id, video_data, last_timestamp],
+          (err, result) => {
+            if (err) {
+              console.error("DB Query Error:", err);
+              return reject(err);
+            }
+            resolve(result);
+          }
+        );
+      });
+    } else {
+      await new Promise((resolve, reject) => {
+        db.query(
+          `
+          INSERT INTO recent_videos (user_id, video_id, video_data, last_timestamp)
+          VALUES (?, ?, ?, ?)
+          ON DUPLICATE KEY UPDATE 
             updated_at = CURRENT_TIMESTAMP
         `,
-        [user_id, video_id, video_data, last_timestamp],
-        (err, result) => {
-          if (err) {
-            console.error("DB Query Error:", err);
-            return reject(err);
+          [user_id, video_id, video_data, last_timestamp],
+          (err, result) => {
+            if (err) return reject(err);
+            resolve(result);
           }
-          resolve(result);
-        }
-      );
-    });
-
+        );
+      });
+    }
     return res.status(200).json({ success: true });
   } catch (error) {
     console.error("Error updating recent video:", error);

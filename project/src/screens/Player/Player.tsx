@@ -86,6 +86,7 @@ const Player = () => {
   }, [currentWhisperTranscript]);
 
   const handleMouseMove = (e: MouseEvent) => {
+    e.preventDefault();
     if (containerRef.current) {
       const containerWidth = containerRef.current.offsetWidth;
       const containerLeft = containerRef.current.getBoundingClientRect().left;
@@ -99,7 +100,8 @@ const Player = () => {
     window.removeEventListener("mouseup", handleMouseUp);
   };
 
-  const handleMouseDown = () => {
+  const handleMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
     window.addEventListener("mousemove", handleMouseMove);
     window.addEventListener("mouseup", handleMouseUp);
   };
