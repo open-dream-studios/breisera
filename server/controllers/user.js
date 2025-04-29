@@ -788,6 +788,35 @@ export const updateVideoCollections = async (req, res) => {
   }
 };
 
+export const deleteVideoCollections = async (req, res) => {
+  try {
+    const token = req.cookies.accessToken;
+    if (!token) return res.status(401).json({ error: "Not authenticated" });
+    const user_id = decodeToken(token);
+    const { video_id, collection_id } = req.body;
+    if (!video_id || !collection_id) {
+      return res.status(400).json({ error: "IDs are required" });
+    }
+
+    const [result] = await db
+      .promise()
+      .query(
+        "DELETE FROM video_collections WHERE user_id = ? AND collection_id = ? AND video_id = ?",
+        [user_id, collection_id, video_id]
+      );
+    if (result.affectedRows === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Row was not found",
+      });
+    }
+    return res.status(200).json({ success: true });
+  } catch (error) {
+    console.error("Error deleting row:", error);
+    return res.status(500).json({ success: false, error: "Server error" });
+  }
+};
+
 export const getVideoCollectionNames = async (req, res) => {
   try {
     const token = req.cookies.accessToken;
@@ -801,7 +830,7 @@ export const getVideoCollectionNames = async (req, res) => {
       SELECT collection_id, collection_name
       FROM collections
       WHERE user_id = ?
-      ORDER BY updated_at ASC
+      ORDER BY created_at DESC
     `,
         [user_id],
         (err, data) => {
@@ -864,28 +893,35 @@ export const updateVideoCollectionNames = async (req, res) => {
   }
 };
 
-export const deleteVideoCollections = async (req, res) => {
+export const deleteVideoCollectionName = async (req, res) => {
   try {
     const token = req.cookies.accessToken;
     if (!token) return res.status(401).json({ error: "Not authenticated" });
     const user_id = decodeToken(token);
-    const { video_id, collection_id } = req.body;
-    if (!video_id || !collection_id) {
-      return res.status(400).json({ error: "IDs are required" });
+    const { collection_id } = req.body;
+    if (!collection_id) {
+      return res.status(400).json({ error: "Collection ID is required" });
     }
 
     const [result] = await db
       .promise()
       .query(
-        "DELETE FROM video_collections WHERE user_id = ? AND collection_id = ? AND video_id = ?",
-        [user_id, collection_id, video_id]
+        "DELETE FROM video_collections WHERE user_id = ? AND collection_id = ?",
+        [user_id, collection_id]
       );
-    if (result.affectedRows === 0) {
-      return res.status(404).json({
-        success: false,
-        message: "Row was not found",
-      });
-    }
+
+    const [result2] = await db
+      .promise()
+      .query(
+        "DELETE FROM collections WHERE user_id = ? AND collection_id = ?",
+        [user_id, collection_id]
+      );
+    // if (result.affectedRows === 0) {
+    //   return res.status(200).json({
+    //     success: false,
+    //     message: "Rows were not found",
+    //   });
+    // }
     return res.status(200).json({ success: true });
   } catch (error) {
     console.error("Error deleting row:", error);

@@ -195,7 +195,7 @@ const LeftBar = () => {
             style={{
               color: appTheme[currentUser.theme].text_1,
             }}
-            className="relative w-[100%] h-[100%] px-[20px] pt-[10px] items-start flex flex-col"
+            className="relative w-[100%] h-[100%] px-[20px] pt-[21px] items-start flex flex-col"
           >
             {playerState === "hidden" && (
               <div className="w-[100%] mt-[5px] mb-[15px]">

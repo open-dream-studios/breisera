@@ -10,9 +10,12 @@ import {
 import { YouTubePlayerVideo } from "@/contexts/videoContext";
 import { makeRequest } from "@/util/axios";
 import { AuthContext } from "./authContext";
-import { secondsToISO8601 } from "@/util/functions/Data";
 import { showToast } from "@/components/CustomToast";
-import { isNull } from "node:util";
+
+export type VideoCollection = {
+  collection_id: string;
+  collection_name: string;
+};
 
 export type QueryContextType = {
   notesData: any[];

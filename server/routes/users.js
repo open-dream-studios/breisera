@@ -20,6 +20,7 @@ import {
   deleteVideoCollections,
   getVideoCollectionNames,
   updateVideoCollectionNames,
+  deleteVideoCollectionName,
 } from "../controllers/user.js";
 
 const router = express.Router();
@@ -48,5 +49,6 @@ router.post("/delete-video-collections", deleteVideoCollections);
 
 router.post("/get-video-collection", getVideoCollectionNames);
 router.post("/update-video-collection", updateVideoCollectionNames);
+router.post("/delete-video-collection", deleteVideoCollectionName);
 
 export default router;
