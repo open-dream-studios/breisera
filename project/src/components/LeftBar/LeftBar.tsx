@@ -108,10 +108,19 @@ const LeftBar = () => {
     leftBarOpenRef.current = leftBarOpen;
   }, [leftBarOpen]);
 
+  const windowLargeRef = useRef<boolean>(window.innerWidth > 1024)
   const [windowWidth, setWindowWidth] = useState<number | null>(null);
   useEffect(() => {
     const handleResize = () => {
       setWindowWidth(window.innerWidth);
+      if (window.innerWidth > 1024 && !windowLargeRef.current) {
+        windowLargeRef.current = true
+        setLeftBarOpen(true)
+      }
+      if (window.innerWidth < 1024 && windowLargeRef.current) {
+        windowLargeRef.current = false
+        setLeftBarOpen(false)
+      }
     };
     handleResize();
     window.addEventListener("resize", handleResize);

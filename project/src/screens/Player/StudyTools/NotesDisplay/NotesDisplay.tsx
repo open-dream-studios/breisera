@@ -273,9 +273,9 @@ const NotesDisplay = () => {
           border: `1px solid ${appTheme[currentUser.theme].background_2}`,
           color: appTheme[currentUser.theme].text_1,
         }}
-        className="w-[100%] h-[100%] pt-[15px] px-[17px] rounded-[5px] relative"
+        className="w-[100%] h-[100%] px-[17px] rounded-[5px] relative"
       >
-        <div
+        {/* <div
           onClick={() => setNotesOpen((prev) => !prev)}
           style={{
             backgroundColor: appTheme[currentUser.theme].background_1,
@@ -305,7 +305,7 @@ const NotesDisplay = () => {
           >
             New Note...
           </div>
-        )}
+        )} */}
 
         <div
           ref={notesRef}
@@ -314,8 +314,10 @@ const NotesDisplay = () => {
           onInput={handleInputChange}
           className={`${
             notesOpen && "hidden sm:flex"
-          } z-[501] pb-[15px] w-[100%] pr-[7px] h-[100%] text-[15px] leading-[16px] outline-0 border-0 overflow-scroll break-words whitespace-pre-wrap`}
+          } z-[501] w-[100%] h-[100%] pt-[15px] max-h-[calc(97.5%-35px)] pb-[15px] pr-[7px] text-[15px] leading-[16px] outline-0 border-0 overflow-scroll overflow-x-hidden break-words whitespace-pre-wrap`}
           style={{
+            wordBreak: "break-word",
+            overflowWrap: "anywhere",
             resize: "none",
           }}
         />
