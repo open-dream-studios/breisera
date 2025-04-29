@@ -6,7 +6,7 @@ import { useVideo } from "@/contexts/videoContext";
 import { useModal2Store } from "@/store/useModalStore";
 import { appTheme, appTextSizes } from "@/util/appTheme";
 import { BACKEND_URL, FRONTEND_URL } from "@/util/config";
-import { openWindow } from "@/util/functions/AppFunctions";
+import { openWindow, smoothScrollTo } from "@/util/functions/AppFunctions";
 import { formatSubs } from "@/util/functions/YouTubeData";
 import Modal2Continue from "@/util/modals/Modal2Continue";
 import React, { useContext, useEffect, useRef, useState } from "react";
@@ -21,42 +21,19 @@ import { useQueryClient } from "@tanstack/react-query";
 import { IoCloseOutline } from "react-icons/io5";
 import { io } from "socket.io-client";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 const socket = io(BACKEND_URL);
-
-const smoothScrollTo = (element: HTMLElement, targetPosition: number) => {
-  const startPosition = element.scrollTop;
-  const distance = targetPosition - startPosition;
-  const startTime = performance.now();
-  const duration = 1200;
-
-  function animateScroll(currentTime: number) {
-    const elapsedTime = currentTime - startTime;
-    const progress = Math.min(elapsedTime / duration, 1);
-    const ease = easeInOutQuad(progress);
-
-    element.scrollTop = startPosition + distance * ease;
-
-    if (progress < 1) {
-      requestAnimationFrame(animateScroll);
-    }
-  }
-
-  function easeInOutQuad(t: number) {
-    return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
-  }
-
-  requestAnimationFrame(animateScroll);
-};
 
 type ChildProps = {
   libraryButtonRef: React.RefObject<HTMLButtonElement | null>;
 };
 
 function CollectionsPopup({ libraryButtonRef }: ChildProps) {
-  const { currentUser } = useContext(AuthContext);
-  const { currentVideo, setAddToLibraryVisible } = useVideo();
   const queryClient = useQueryClient();
+  const pathname = usePathname()
+  const { currentUser } = useContext(AuthContext);
+  const { currentVideo, setAddToLibraryVisible, playerState, setPlayerState } = useVideo();
   const {
     videoCollectionsData,
     updateVideoCollections,
@@ -185,8 +162,10 @@ function CollectionsPopup({ libraryButtonRef }: ChildProps) {
                             <img
                               className="opacity-25 z-[501] w-[100%] h-[140%] absolute object-cover"
                               src={
-                                videoCollectionsData[collectionIndex].videos[videoCollectionsData[collectionIndex].videos.length-1]
-                                  .snippet.thumbnails.high.url
+                                videoCollectionsData[collectionIndex].videos[
+                                  videoCollectionsData[collectionIndex].videos
+                                    .length - 1
+                                ].snippet.thumbnails.high.url
                               }
                               alt="collection thumbnails"
                             />
@@ -260,6 +239,11 @@ function CollectionsPopup({ libraryButtonRef }: ChildProps) {
           href={`${FRONTEND_URL}/library`}
           onClick={() => {
             setAddToLibraryVisible(false);
+            if (pathname === "/library") {
+              if (playerState === "screen") {
+                setPlayerState("sm");
+              }
+            }
           }}
           style={{
             color: appTheme[currentUser.theme].text_1,
