@@ -1,7 +1,14 @@
 @import "tailwindcss";
+@custom-variant dark (&:is(.dark *));
 /* @import "tw-animate-css"; */
 
-@custom-variant dark (&:is(.dark *));
+/* TIP TAP NOTES */
+.tiptap p {
+  margin: 0;
+}
+.tiptap {
+  outline: none;
+}
 
 /* DIM */
 .dim {

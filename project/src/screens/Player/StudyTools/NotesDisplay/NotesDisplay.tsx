@@ -8,14 +8,17 @@ import { makeRequest } from "@/util/axios";
 import { generateUniqueId } from "@/util/functions/Data";
 import React, {
   RefObject,
+  useCallback,
   useContext,
   useEffect,
   useRef,
   useState,
 } from "react";
 import { FaPlus } from "react-icons/fa6";
-import { FaChevronDown } from "react-icons/fa6";
 import { GoTrash } from "react-icons/go";
+import { useEditor, EditorContent } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import Underline from "@tiptap/extension-underline";
 
 type NotesListProps = {
   handleDeleteNote: (note_id: string) => void;
@@ -37,7 +40,7 @@ const NotesList = ({ handleDeleteNote, setNotesOpen }: NotesListProps) => {
 
   return (
     <div
-      className={`pt-[9px] pl-[1px] flex flex-col w-[100%] max-h-[100%] relative overflow-scroll`}
+      className={`pt-[9px] px-[1px] flex flex-col w-[100%] max-h-[100%] relative overflow-scroll`}
     >
       {notesData.length === 0 ? (
         <div className="mt-[5px]">You have no saved notes</div>
@@ -46,52 +49,48 @@ const NotesList = ({ handleDeleteNote, setNotesOpen }: NotesListProps) => {
           className="flex flex-col w-[100%] h-[100%] px-[12px] pb-[14px]"
           style={{ color: appTheme[currentUser.theme].text_1 }}
         >
-          {notesData
-            .concat(notesData)
-            .concat(notesData)
-            .concat(notesData)
-            .map((note: any, index: number) => {
-              return (
-                <div key={index}>
-                  <div
-                    className={`${
-                      index === 0 && "opacity-0"
-                    } w-[100%] h-[1px] mb-[10px] mt-[2px] rounded-[2px]`}
-                    style={{
-                      backgroundColor: appTheme[currentUser.theme].background_2,
-                    }}
-                  />
+          {notesData.map((note: any, index: number) => {
+            return (
+              <div key={index}>
+                <div
+                  className={`${
+                    index === 0 && "opacity-0"
+                  } w-[100%] h-[1px] mb-[10px] mt-[2px] rounded-[2px]`}
+                  style={{
+                    backgroundColor: appTheme[currentUser.theme].background_2,
+                  }}
+                />
 
-                  <div className="w-[100%] flex flex-row justify-between mb-[6px]">
-                    <div
-                      onClick={() => {
-                        setNotesOpen(false);
-                        setCurrentNote({
-                          ...currentNote,
-                          title: note.title,
-                          content: note.content,
-                          note_id: note.note_id,
-                          video_id: note.video_id,
-                        });
-                      }}
-                      style={{
-                        color: appTheme[currentUser.theme].text_2,
-                      }}
-                      className="cursor-pointer transition-opacity duration-[0.2s] ease-in-out hover:opacity-75 truncate w-[calc(100%-40px)] font-[400] text-[14px]"
-                    >
-                      {note.content === "<br>" || note.content.trim() === ""
-                        ? "Blank Note"
-                        : stripHtml(note.content)}
-                    </div>
-                    <GoTrash
-                      onClick={() => handleDeleteNote(note.note_id)}
-                      className="w-[18px] h-[18px] mr-[2px] cursor-pointer dim hover:opacity-50 opacity-[70%]"
-                      style={{ color: appTheme[currentUser.theme].text_1 }}
-                    />
+                <div className="w-[100%] flex flex-row justify-between mb-[6px]">
+                  <div
+                    onClick={() => {
+                      setNotesOpen(false);
+                      setCurrentNote({
+                        ...currentNote,
+                        title: note.title,
+                        content: note.content,
+                        note_id: note.note_id,
+                        video_id: note.video_id,
+                      });
+                    }}
+                    style={{
+                      color: appTheme[currentUser.theme].text_2,
+                    }}
+                    className="cursor-pointer transition-opacity duration-[0.2s] ease-in-out hover:opacity-75 truncate w-[calc(100%-40px)] font-[400] text-[14px]"
+                  >
+                    {note.content === "<p></p>" || note.content.trim() === ""
+                      ? "Blank Note"
+                      : stripHtml(note.content)}
                   </div>
+                  <GoTrash
+                    onClick={() => handleDeleteNote(note.note_id)}
+                    className="w-[18px] h-[18px] mr-[2px] cursor-pointer dim hover:opacity-50 opacity-[70%]"
+                    style={{ color: appTheme[currentUser.theme].text_1 }}
+                  />
                 </div>
-              );
-            })}
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
@@ -120,27 +119,6 @@ const NotesDisplay = () => {
     await writeNote();
     setCurrentNote({ ...currentNote, note_id: null, title: "", content: "" });
     setNotesOpen(false);
-    setTimeout(() => {
-      if (notesRef.current) {
-        notesRef.current.focus();
-      }
-    }, 100);
-  };
-
-  useEffect(() => {
-    if (
-      notesRef.current &&
-      currentNote.content !== notesRef.current.innerHTML
-    ) {
-      notesRef.current.innerHTML = currentNote.content;
-    }
-  }, [currentNote]);
-
-  const handleInputChange = () => {
-    if (notesRef.current) {
-      setCurrentNote({ ...currentNote, content: notesRef.current.innerHTML });
-    }
-    resetTimer();
   };
 
   const writeNote = async () => {
@@ -171,7 +149,7 @@ const NotesDisplay = () => {
     }
     timerRef.current = setTimeout(async () => {
       await writeNote();
-    }, 3000);
+    }, 2000);
   };
 
   const resetTimer = () => {
@@ -190,9 +168,7 @@ const NotesDisplay = () => {
 
   const handleOpenNotes = async () => {
     refetchNotesData();
-    if (!notesOpen) {
-      setNotesOpen(true);
-    }
+    setNotesOpen(prev => !prev)
   };
 
   const handleDeleteNote = async (note_id: string) => {
@@ -215,6 +191,49 @@ const NotesDisplay = () => {
     }
   };
 
+  useEffect(() => {
+    if (editor && currentNote.content !== editor.getHTML()) {
+      editor.commands.setContent(currentNote.content || "<p></p>", false);
+      setTimeout(() => editor.commands.focus("end"), 0);
+    }
+  }, [currentNote.note_id]);
+
+  const editor = useEditor({
+    extensions: [
+      StarterKit.configure({
+        heading: false,
+        blockquote: false,
+        codeBlock: false,
+        listItem: false,
+        bulletList: false,
+        orderedList: false,
+      }),
+      Underline,
+    ],
+    content: "",
+    onUpdate({ editor }) {
+      const html = editor.getHTML();
+      setCurrentNote({ ...currentNote, content: html });
+      resetTimer()
+    },
+    editorProps: {
+      handlePaste(view, event, slice) {
+        const text = event.clipboardData?.getData("text/plain");
+        if (text) {
+          view.dispatch(
+            view.state.tr.insertText(
+              text,
+              view.state.selection.from,
+              view.state.selection.to
+            )
+          );
+          return true;
+        }
+        return false;
+      },
+    },
+  });
+
   if (!currentUser) return;
   return (
     <div className="w-[100%] h-[100%] flex flex-col relative">
@@ -230,7 +249,7 @@ const NotesDisplay = () => {
       </div>
 
       <div
-        onClick={() => setNotesOpen((prev) => !prev)}
+        onClick={handleOpenNotes}
         style={{
           backgroundColor: appTheme[currentUser.theme].background_1,
           color: appTheme[currentUser.theme].text_1,
@@ -267,29 +286,27 @@ const NotesDisplay = () => {
             border: `1px solid ${appTheme[currentUser.theme].background_2}`,
             color: appTheme[currentUser.theme].text_1,
           }}
+          onClick={() => {
+            if (!editor?.isFocused) editor?.commands.focus();
+          }}
           className={`w-[100%] h-[100%] md:h-[calc(100%-54px)] md:mt-[54px]
-          px-[17px] rounded-[5px] relative`}
+          px-[17px] rounded-[5px] relative cursor-text`}
         >
-          {(currentNote.content === "<br>" || currentNote.content === "") && (
-            <div
-              style={{
-                color: appTheme[currentUser.theme].text_3,
-              }}
-              className="pointer-events-none select-none text-[15px] leading-[16px] absolute left-[17px] top-[15px]"
-            >
-              New Note...
-            </div>
-          )}
+          {editor &&
+            (editor.getHTML() === "" || editor.getHTML() === "<p></p>") && (
+              <div
+                style={{
+                  color: appTheme[currentUser.theme].text_3,
+                }}
+                className="pointer-events-none select-none text-[15px] leading-[16px] absolute left-[17px] top-[15px]"
+              >
+                New Note...
+              </div>
+            )}
 
-          <div
-            ref={notesRef}
-            contentEditable
-            suppressContentEditableWarning
-            onInput={handleInputChange}
-            className={`flex z-[501] w-[calc(100%+12px)] h-[100%] pt-[15px] pb-[15px] pr-[12px] text-[15px] leading-[16px] outline-0 border-0 overflow-scroll overflow-x-hidden break-words whitespace-pre-wrap`}
-            style={{
-              resize: "none",
-            }}
+          <EditorContent
+            editor={editor}
+            className="z-[501] w-[calc(100%+12px)] prose max-h-[100%] pt-[15px] pb-[20px] pr-[12px] text-[15px] leading-[16px] outline-none border-none overflow-scroll break-words "
           />
         </div>
       )}
