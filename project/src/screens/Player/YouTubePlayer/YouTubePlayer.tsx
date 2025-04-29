@@ -32,7 +32,7 @@ export const playVideo = () => {
 };
 
 const YouTubePlayer = () => {
-  const { currentVideo, addToLibraryVisible } = useVideo();
+  const { currentVideo, addToLibraryVisible, isDraggingDivider } = useVideo();
   const { updateRecentVideoTime, recentVideosData } = useContextQueries();
   const playerWrapperRef = useRef<HTMLDivElement>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -94,7 +94,7 @@ const YouTubePlayer = () => {
 
   return (
     <div className="z-[500] relative aspect-[16/9] bg-black flex items-center justify-center max-h-[600px]">
-      {addToLibraryVisible && (
+      {(addToLibraryVisible || isDraggingDivider) && (
         <div className="z-[502] absolute top-0 left-0 w-full h-full"></div>
       )}
       <div ref={playerWrapperRef} className="z-[501] relative w-full h-full">

@@ -18,18 +18,11 @@ import { FaChevronDown } from "react-icons/fa6";
 import { GoTrash } from "react-icons/go";
 
 type NotesListProps = {
-  notesOpen: boolean;
-  setNotesOpen: React.Dispatch<React.SetStateAction<boolean>>;
   handleDeleteNote: (note_id: string) => void;
-  smallScreen: boolean;
+  setNotesOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-const NotesList = ({
-  notesOpen,
-  setNotesOpen,
-  handleDeleteNote,
-  smallScreen,
-}: NotesListProps) => {
+const NotesList = ({ handleDeleteNote, setNotesOpen }: NotesListProps) => {
   const { currentUser } = useContext(AuthContext);
   const { currentNote, setCurrentNote } = useVideo();
   const { notesData } = useContextQueries();
@@ -44,82 +37,61 @@ const NotesList = ({
 
   return (
     <div
-      style={{
-        color: appTheme[currentUser.theme].text_3,
-      }}
-      className={`${
-        smallScreen
-          ? !notesOpen
-            ? "hidden"
-            : "flex sm:hidden"
-          : "flex mt-[3px]"
-      } z-[502] relative w-[calc(100%+10px)] pr-[10px] h-[100%] flex-col overflow-scroll`}
+      className={`pt-[9px] pl-[1px] flex flex-col w-[100%] max-h-[100%] relative overflow-scroll`}
     >
-      <div
-        onClick={() => {
-          if (!smallScreen && notesOpen) {
-            setNotesOpen(false);
-          }
-        }}
-        className={`${
-          !smallScreen && notesOpen && "cursor-pointer dim hover:brightness-75"
-        } font-[600] text-[20px] leading-[20px] mb-[8px] flex flex-row justify-between`}
-        style={{
-          color: appTheme[currentUser.theme].text_1,
-        }}
-      >
-        {smallScreen ? "Saved Notes" : "Notes"}
-        <FaChevronDown
-          style={{ color: appTheme[currentUser.theme].text_2 }}
-          className={`mt-[-1px] w-[22px] h-[22px] transition-all duration-0.3 ease-in-out ${
-            notesOpen && "rotate-180"
-          }`}
-        />
-      </div>
-      {notesOpen && notesData.length === 0 && (
+      {notesData.length === 0 ? (
         <div className="mt-[5px]">You have no saved notes</div>
-      )}
-      {notesOpen && (
+      ) : (
         <div
-          className="flex flex-col mb-[20px]"
+          className="flex flex-col w-[100%] h-[100%] px-[12px] pb-[14px]"
           style={{ color: appTheme[currentUser.theme].text_1 }}
         >
-          {notesData.map((note: any, index: number) => {
-            return (
-              <div key={index}>
-                <div
-                  className="opacity-50 w-[100%] h-[1px] mb-[10px] mt-[2px] rounded-[2px]"
-                  style={{
-                    backgroundColor: appTheme[currentUser.theme].text_3,
-                  }}
-                />
-                <div className="w-[100%] flex flex-row justify-between mb-[6px]">
+          {notesData
+            .concat(notesData)
+            .concat(notesData)
+            .concat(notesData)
+            .map((note: any, index: number) => {
+              return (
+                <div key={index}>
                   <div
-                    onClick={() => {
-                      setNotesOpen(false);
-                      setCurrentNote({
-                        ...currentNote,
-                        title: note.title,
-                        content: note.content,
-                        note_id: note.note_id,
-                        video_id: note.video_id,
-                      });
+                    className={`${
+                      index === 0 && "opacity-0"
+                    } w-[100%] h-[1px] mb-[10px] mt-[2px] rounded-[2px]`}
+                    style={{
+                      backgroundColor: appTheme[currentUser.theme].background_2,
                     }}
-                    className="cursor-pointer dim hover:brightness-75 truncate w-[calc(100%-40px)] font-[400] text-[14px]"
-                  >
-                    {note.content === "<br>" || note.content.trim() === ""
-                      ? "Blank Note"
-                      : stripHtml(note.content)}
-                  </div>
-                  <GoTrash
-                    onClick={() => handleDeleteNote(note.note_id)}
-                    className="w-[19px] h-[19px] mr-[2px] cursor-pointer opacity-dim hover:brightness-75"
-                    style={{ color: appTheme[currentUser.theme].text_1 }}
                   />
+
+                  <div className="w-[100%] flex flex-row justify-between mb-[6px]">
+                    <div
+                      onClick={() => {
+                        setNotesOpen(false);
+                        setCurrentNote({
+                          ...currentNote,
+                          title: note.title,
+                          content: note.content,
+                          note_id: note.note_id,
+                          video_id: note.video_id,
+                        });
+                      }}
+                      style={{
+                        color: appTheme[currentUser.theme].text_2,
+                      }}
+                      className="cursor-pointer transition-opacity duration-[0.2s] ease-in-out hover:opacity-75 truncate w-[calc(100%-40px)] font-[400] text-[14px]"
+                    >
+                      {note.content === "<br>" || note.content.trim() === ""
+                        ? "Blank Note"
+                        : stripHtml(note.content)}
+                    </div>
+                    <GoTrash
+                      onClick={() => handleDeleteNote(note.note_id)}
+                      className="w-[18px] h-[18px] mr-[2px] cursor-pointer dim hover:opacity-50 opacity-[70%]"
+                      style={{ color: appTheme[currentUser.theme].text_1 }}
+                    />
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
         </div>
       )}
     </div>
@@ -244,91 +216,83 @@ const NotesDisplay = () => {
   };
 
   if (!currentUser) return;
-
   return (
-    <div className="w-[100%] h-[100%] flex flex-col gap-[8px]">
+    <div className="w-[100%] h-[100%] flex flex-col relative">
       <div
         style={{
           backgroundColor: appTheme[currentUser.theme].component_bg_1,
-          border: `1px solid ${appTheme[currentUser.theme].background_2}`,
+          border: `0.1px solid ${appTheme[currentUser.theme].background_2}`,
         }}
-        className={`sm:flex flex-col hidden w-[100%] ${
-          notesOpen
-            ? "h-[200px] max-h-[200px] overflow-scroll"
-            : "h-[46px] min-h-[46px] cursor-pointer dim hover:brightness-75"
-        } rounded-[5px] px-[15px] pt-[8px] relative`}
-        onClick={handleOpenNotes}
+        className={`flex absolute top-0 left-0 flex-row justify-between w-[100%] h-[46px] min-h-[46px]
+            rounded-[5px] px-[15px] pt-[12px] font-[600] text-[20px] leading-[20px] select-none`}
       >
-        <NotesList
-          notesOpen={notesOpen}
-          setNotesOpen={setNotesOpen}
-          handleDeleteNote={handleDeleteNote}
-          smallScreen={false}
-        />
+        <p>Notes</p>
       </div>
 
       <div
+        onClick={() => setNotesOpen((prev) => !prev)}
         style={{
-          backgroundColor: appTheme[currentUser.theme].component_bg_1,
-          border: `1px solid ${appTheme[currentUser.theme].background_2}`,
+          backgroundColor: appTheme[currentUser.theme].background_1,
           color: appTheme[currentUser.theme].text_1,
         }}
-        className="w-[100%] h-[100%] px-[17px] rounded-[5px] relative"
+        className="select-none text-[13px] z-[503] leading-[13px] pb-[2px] flex absolute shadow-lg right-[45px] top-[9px] h-[30px] w-[57px] dim cursor-pointer hover:brightness-75 rounded-full items-center justify-center"
       >
-        {/* <div
-          onClick={() => setNotesOpen((prev) => !prev)}
-          style={{
-            backgroundColor: appTheme[currentUser.theme].background_1,
-            color: appTheme[currentUser.theme].text_1,
-          }}
-          className="text-[13px] z-[503] leading-[13px] pb-[2px] flex sm:hidden absolute shadow-lg right-[46px] top-[10px] h-[30px] w-[57px] dim cursor-pointer hover:brightness-75 rounded-full items-center justify-center"
-        >
-          {notesOpen ? "Close" : "Open"}
-        </div>
-        <div
-          onClick={handleNewNoteClick}
-          style={{
-            backgroundColor: currentUser.theme === "dark" ? appTheme[currentUser.theme].background_2 : appTheme[currentUser.theme].background_1,
-            color: appTheme[currentUser.theme].text_1,
-          }}
-          className="absolute z-[503] shadow-lg right-[10px] top-[10px] h-[30px] w-[30px] dim cursor-pointer hover:brightness-75 rounded-full flex items-center justify-center"
-        >
-          <FaPlus className="w-[15px] h-[15px]" />
-        </div>
-
-        {(currentNote.content === "<br>" || currentNote.content === "") && (
-          <div
-            style={{
-              color: appTheme[currentUser.theme].text_3,
-            }}
-            className="text-[15px] leading-[16px] absolute left-[17px] top-[15px]"
-          >
-            New Note...
-          </div>
-        )} */}
-
-        <div
-          ref={notesRef}
-          contentEditable
-          suppressContentEditableWarning
-          onInput={handleInputChange}
-          className={`${
-            notesOpen && "hidden sm:flex"
-          } z-[501] w-[100%] h-[100%] pt-[15px] max-h-[calc(97.5%-35px)] pb-[15px] pr-[7px] text-[15px] leading-[16px] outline-0 border-0 overflow-scroll overflow-x-hidden break-words whitespace-pre-wrap`}
-          style={{
-            wordBreak: "break-word",
-            overflowWrap: "anywhere",
-            resize: "none",
-          }}
-        />
-
-        <NotesList
-          notesOpen={notesOpen}
-          setNotesOpen={setNotesOpen}
-          handleDeleteNote={handleDeleteNote}
-          smallScreen={true}
-        />
+        {notesOpen ? "Close" : "Open"}
       </div>
+      <div
+        onClick={handleNewNoteClick}
+        style={{
+          backgroundColor:
+            currentUser.theme === "dark"
+              ? appTheme[currentUser.theme].background_2
+              : appTheme[currentUser.theme].background_1,
+          color: appTheme[currentUser.theme].text_1,
+        }}
+        className="select-none absolute z-[503] shadow-lg right-[9px] top-[9px] h-[30px] w-[30px] dim cursor-pointer hover:brightness-75 rounded-full flex items-center justify-center"
+      >
+        <FaPlus className="w-[15px] h-[15px]" />
+      </div>
+
+      {notesOpen ? (
+        <div className={`h-[calc(100%-46px)] mt-[46px]`}>
+          <NotesList
+            handleDeleteNote={handleDeleteNote}
+            setNotesOpen={setNotesOpen}
+          />
+        </div>
+      ) : (
+        <div
+          style={{
+            backgroundColor: appTheme[currentUser.theme].component_bg_1,
+            border: `1px solid ${appTheme[currentUser.theme].background_2}`,
+            color: appTheme[currentUser.theme].text_1,
+          }}
+          className={`w-[100%] h-[100%] md:h-[calc(100%-54px)] md:mt-[54px]
+          px-[17px] rounded-[5px] relative`}
+        >
+          {(currentNote.content === "<br>" || currentNote.content === "") && (
+            <div
+              style={{
+                color: appTheme[currentUser.theme].text_3,
+              }}
+              className="pointer-events-none select-none text-[15px] leading-[16px] absolute left-[17px] top-[15px]"
+            >
+              New Note...
+            </div>
+          )}
+
+          <div
+            ref={notesRef}
+            contentEditable
+            suppressContentEditableWarning
+            onInput={handleInputChange}
+            className={`flex z-[501] w-[calc(100%+12px)] h-[100%] pt-[15px] pb-[15px] pr-[12px] text-[15px] leading-[16px] outline-0 border-0 overflow-scroll overflow-x-hidden break-words whitespace-pre-wrap`}
+            style={{
+              resize: "none",
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 };

@@ -41,7 +41,7 @@ const StudyTools = () => {
   return (
     <div
       className={`w-[100%] ${
-        theaterMode ? "h-[500px]" : "h-100%]"
+        theaterMode ? "h-[500px]" : "h-[100%]"
       } px-[10px] pt-[8px] pb-[12px] flex flex-col gap-[10px]`}
     >
       <div

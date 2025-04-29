@@ -31,8 +31,10 @@ const Player = () => {
     setCurrentSummary,
     generateSummaries,
     theaterMode,
+    setIsDraggingDivider
   } = useVideo();
   const [dividerPercent, setDividerPercent] = useState(66);
+
   const containerRef = useRef<HTMLDivElement>(null);
   const [showPrimaryTools, setShowPrimaryTools] = useState<boolean>(true);
 
@@ -96,12 +98,14 @@ const Player = () => {
   };
 
   const handleMouseUp = () => {
+    setIsDraggingDivider(false);
     window.removeEventListener("mousemove", handleMouseMove);
     window.removeEventListener("mouseup", handleMouseUp);
   };
 
   const handleMouseDown = (e: React.MouseEvent) => {
     e.preventDefault();
+    setIsDraggingDivider(true);
     window.addEventListener("mousemove", handleMouseMove);
     window.addEventListener("mouseup", handleMouseUp);
   };

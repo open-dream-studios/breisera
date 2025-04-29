@@ -112,6 +112,8 @@ type VideoContextType = {
   setTheaterMode: React.Dispatch<React.SetStateAction<boolean>>;
   addToLibraryVisible: boolean;
   setAddToLibraryVisible: React.Dispatch<React.SetStateAction<boolean>>;
+  isDraggingDivider: boolean;
+  setIsDraggingDivider: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 const VideoContext = createContext<VideoContextType | undefined>(undefined);
@@ -174,6 +176,8 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({
   const [theaterMode, setTheaterMode] = useState<boolean>(false);
   const [addToLibraryVisible, setAddToLibraryVisible] =
     useState<boolean>(false);
+  const [isDraggingDivider, setIsDraggingDivider] = useState<boolean>(false);
+
 
   useEffect(() => {
     setMessages([]);
@@ -263,6 +267,8 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({
         setTheaterMode,
         addToLibraryVisible,
         setAddToLibraryVisible,
+        isDraggingDivider,
+        setIsDraggingDivider
       }}
     >
       {children}
