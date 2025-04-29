@@ -187,9 +187,9 @@ const GPT = () => {
             }
           }}
           style={{
-            color: appTheme[currentUser.theme].text_3,
+            color: appTheme[currentUser.theme].text_1,
           }}
-          className="cursor-pointer dim hover:brightness-75 w-[23px] h-[23px]"
+          className="opacity-50 cursor-pointer dim hover:brightness-75 w-[23px] h-[23px]"
         >
           <HiOutlinePencilAlt className="w-[100%] h-[100%]" />
         </div>
@@ -201,9 +201,7 @@ const GPT = () => {
           className="text-[14px] leading-[14px] font-[100] cursor-pointer dim hover:brightness-75 px-[18px] py-[6px] rounded-[15px]"
           onClick={() => {
             if (modelDisplayed) {
-              openWindow(
-                "https://ai.google.dev/gemini-api/docs/models#gemini-1.5-flash"
-              );
+              setModelDisplayed(false);
             } else {
               setModelDisplayed(true);
             }

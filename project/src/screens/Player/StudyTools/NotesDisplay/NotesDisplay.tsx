@@ -8,7 +8,6 @@ import { makeRequest } from "@/util/axios";
 import { generateUniqueId } from "@/util/functions/Data";
 import React, {
   RefObject,
-  useCallback,
   useContext,
   useEffect,
   useRef,
@@ -36,7 +35,7 @@ const NotesList = ({ handleDeleteNote, setNotesOpen }: NotesListProps) => {
     return div.innerText;
   };
 
-  if (!currentUser) return <></>;
+  if (!currentUser || !notesData) return <></>;
 
   return (
     <div
@@ -67,9 +66,9 @@ const NotesList = ({ handleDeleteNote, setNotesOpen }: NotesListProps) => {
                       setNotesOpen(false);
                       setCurrentNote({
                         ...currentNote,
+                        note_id: note.note_id,
                         title: note.title,
                         content: note.content,
-                        note_id: note.note_id,
                         video_id: note.video_id,
                       });
                     }}
@@ -175,7 +174,7 @@ const NotesDisplay = () => {
     try {
       const res = await makeRequest.post("/api/users/delete-note", {
         user_id: currentUser?.user_id,
-        note_id: note_id,
+        note_id,
       });
       if (note_id === currentNote.note_id) {
         setCurrentNote({
@@ -242,10 +241,10 @@ const NotesDisplay = () => {
           backgroundColor: appTheme[currentUser.theme].component_bg_1,
           border: `0.1px solid ${appTheme[currentUser.theme].background_2}`,
         }}
-        className={`flex absolute top-0 left-0 flex-row justify-between w-[100%] h-[46px] min-h-[46px]
+        className={`flex absolute top-0 left-0 flex-row w-[100%] h-[46px] min-h-[46px]
             rounded-[5px] px-[15px] pt-[12px] font-[600] text-[20px] leading-[20px] select-none`}
       >
-        <p>Notes</p>
+        Notes
       </div>
 
       <div

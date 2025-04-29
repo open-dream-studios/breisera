@@ -1,6 +1,17 @@
 import { RefObject } from "react";
 import { create } from "zustand";
 
+export interface GPTRefStore {
+  GPTRef: RefObject<HTMLTextAreaElement> | null;
+  setGPTRef: (ref: RefObject<HTMLTextAreaElement>) => void;
+}
+
+export const useGPTRefStore = create<GPTRefStore>((set) => ({
+  GPTRef: null,
+  setGPTRef: (ref) => set({ GPTRef: ref }),
+}));
+
+
 export interface NoteRefStore {
   noteRef: RefObject<HTMLDivElement> | null;
   setNoteRef: (ref: RefObject<HTMLDivElement>) => void;
@@ -11,12 +22,12 @@ export const useNoteRefStore = create<NoteRefStore>((set) => ({
   setNoteRef: (ref) => set({ noteRef: ref }),
 }));
 
-export interface GPTRefStore {
-  GPTRef: RefObject<HTMLTextAreaElement> | null;
-  setGPTRef: (ref: RefObject<HTMLTextAreaElement>) => void;
+export interface FlashCardsRefStore {
+  flashcardsRef: RefObject<HTMLDivElement> | null;
+  setFlashCardsRef: (ref: RefObject<HTMLDivElement>) => void;
 }
 
-export const useGPTRefStore = create<GPTRefStore>((set) => ({
-  GPTRef: null,
-  setGPTRef: (ref) => set({ GPTRef: ref }),
+export const useFlashCardsRefStore = create<FlashCardsRefStore>((set) => ({
+  flashcardsRef: null,
+  setFlashCardsRef: (ref) => set({ flashcardsRef: ref }),
 }));
