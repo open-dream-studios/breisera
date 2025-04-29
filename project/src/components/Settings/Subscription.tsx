@@ -4,7 +4,7 @@ import StripeProvider from "../../util/payments/StripeProvider";
 import { BACKEND_URL } from "../../util/config";
 import { AuthContext } from "../../contexts/authContext";
 import { useModal2Store } from "../../store/useModalStore";
-import Modal2Close from "../../util/modals/Modal2Close";
+import Modal2Close from "../../modals/Modal2Close";
 import {
   CreditTypes,
   SubscriptionTypes,
@@ -12,7 +12,7 @@ import {
   subscription_products,
 } from "../../util/payments/Stripe";
 import { appTheme } from "../../util/appTheme";
-import Modal2Continue from "../../util/modals/Modal2Continue";
+import Modal2Continue from "../../modals/Modal2Continue";
 
 const Subscription = () => {
   const { currentUser, currentUserSubscription } = useContext(AuthContext);

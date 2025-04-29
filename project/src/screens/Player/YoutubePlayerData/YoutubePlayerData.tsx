@@ -3,12 +3,12 @@ import { showToast } from "@/components/CustomToast";
 import { AuthContext } from "@/contexts/authContext";
 import { useContextQueries } from "@/contexts/queryContext";
 import { useVideo } from "@/contexts/videoContext";
-import { useModal2Store } from "@/store/useModalStore";
+import { useModal1Store, useModal2Store } from "@/store/useModalStore";
 import { appTheme, appTextSizes } from "@/util/appTheme";
 import { BACKEND_URL, FRONTEND_URL } from "@/util/config";
 import { openWindow, smoothScrollTo } from "@/util/functions/AppFunctions";
 import { formatSubs } from "@/util/functions/YouTubeData";
-import Modal2Continue from "@/util/modals/Modal2Continue";
+import Modal2Continue from "@/modals/Modal2Continue";
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { RxCopy } from "react-icons/rx";
 import { TfiDownload } from "react-icons/tfi";
@@ -22,6 +22,7 @@ import { IoCloseOutline } from "react-icons/io5";
 import { io } from "socket.io-client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import PremiumPopup from "@/modals/PremiumPopup";
 
 const socket = io(BACKEND_URL);
 
@@ -31,9 +32,10 @@ type ChildProps = {
 
 function CollectionsPopup({ libraryButtonRef }: ChildProps) {
   const queryClient = useQueryClient();
-  const pathname = usePathname()
+  const pathname = usePathname();
   const { currentUser } = useContext(AuthContext);
-  const { currentVideo, setAddToLibraryVisible, playerState, setPlayerState } = useVideo();
+  const { currentVideo, setAddToLibraryVisible, playerState, setPlayerState } =
+    useVideo();
   const {
     videoCollectionsData,
     updateVideoCollections,
@@ -266,6 +268,9 @@ const YoutubePlayerData = () => {
     addToLibraryVisible,
     setAddToLibraryVisible,
   } = useVideo();
+  const modal1 = useModal1Store((state: any) => state.modal1);
+  const setModal1 = useModal1Store((state: any) => state.setModal1);
+
   const modal2 = useModal2Store((state: any) => state.modal2);
   const setModal2 = useModal2Store((state: any) => state.setModal2);
 
@@ -348,22 +353,34 @@ const YoutubePlayerData = () => {
 
   const handleDownloadClick = () => {
     if (!currentUser) return;
-    setModal2({
-      ...modal2,
-      open: !modal2.open,
-      showClose: false,
+    setModal1({
+      ...modal1,
+      open: !modal1.open,
+      showClose: true,
       offClickClose: true,
-      width: "w-[300px]",
-      maxWidth: "max-w-[400px]",
-      aspectRatio: "aspect-[5/2]",
-      borderRadius: "rounded-[12px] md:rounded-[15px]",
-      content: (
-        <Modal2Continue
-          text={"Download this YouTube video?"}
-          onContinue={handleDownload}
-        />
-      ),
+      width: "w-[85vw] sm:w-[530px] md:w-[550px]",
+      maxWidth: "max-w-[450px] sm:max-w-[550px]",
+      aspectRatio: "aspect-[1/1.2]",
+      borderRadius: "rounded-[16px] md:rounded-[20px]",
+      content: <PremiumPopup />,
     });
+
+    // setModal2({
+    //   ...modal2,
+    //   open: !modal2.open,
+    //   showClose: false,
+    //   offClickClose: true,
+    //   width: "w-[300px]",
+    //   maxWidth: "max-w-[400px]",
+    //   aspectRatio: "aspect-[5/2]",
+    //   borderRadius: "rounded-[12px] md:rounded-[15px]",
+    //   content: (
+    //     <Modal2Continue
+    //       text={"Download this YouTube video?"}
+    //       onContinue={handleDownload}
+    //     />
+    //   ),
+    // });
   };
 
   if (currentVideo === null || !currentUser) return;

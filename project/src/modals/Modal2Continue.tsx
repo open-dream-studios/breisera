@@ -1,8 +1,8 @@
 "use client";
 import { useContext } from "react";
-import { appTheme } from "../appTheme";
-import { AuthContext } from "../../contexts/authContext";
-import { useModal2Store } from "../../store/useModalStore";
+import { appTheme } from "../util/appTheme";
+import { AuthContext } from "../contexts/authContext";
+import { useModal2Store } from "../store/useModalStore";
 
 type Modal2ContinueProps = {
   text: string;

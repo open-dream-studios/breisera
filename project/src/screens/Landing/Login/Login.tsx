@@ -15,7 +15,7 @@ import animationData from "../../../util/animations/loading-animation-black.json
 import { useModal1Store, useModal2Store } from "../../../store/useModalStore";
 import TermsDocument from "../../../util/forms/TermsDocument";
 import PrivacyDocument from "../../../util/forms/PrivacyDocument";
-import Modal2Warning from "../../../util/modals/Modal2Close";
+import Modal2Warning from "../../../modals/Modal2Close";
 import { validateEmail } from "../../../util/functions/Data";
 import { useRouter } from "next/navigation";
 import { googleSignIn, login, register } from "@/util/auth";

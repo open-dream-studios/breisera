@@ -1,9 +1,9 @@
 "use client"
 import { useContext } from "react";
-import { AuthContext } from "../../contexts/authContext";
-import { appTheme, ThemeType } from "../appTheme";
-import { useModal2Store } from "../../store/useModalStore";
-import appDetails from "../appDetails.json"
+import { AuthContext } from "../contexts/authContext";
+import { appTheme, ThemeType } from "../util/appTheme";
+import { useModal2Store } from "../store/useModalStore";
+import appDetails from "../util/appDetails.json"
 
 const Modal2Close = ({ text }: { text: string }) => {
   const modal2 = useModal2Store((state: any) => state.modal2);

@@ -5,7 +5,7 @@ import {
   useLeftBarRefStore,
 } from "../../store/useLeftBarOpenStore";
 import { useModal2Store } from "../../store/useModalStore";
-import Modal2Continue from "../../util/modals/Modal2Continue";
+import Modal2Continue from "../../modals/Modal2Continue";
 import { appTheme } from "../../util/appTheme";
 import appDetails from "../../util/appDetails.json";
 import { AuthContext } from "@/contexts/authContext";
@@ -112,15 +112,6 @@ const LeftBar = () => {
   useEffect(() => {
     const handleResize = () => {
       setWindowWidth(window.innerWidth);
-      if (window.innerWidth > 1024) {
-        if (!leftBarOpenRef.current) {
-          setLeftBarOpen(true);
-        }
-      } else {
-        if (leftBarOpenRef.current) {
-          setLeftBarOpen(false);
-        }
-      }
     };
     handleResize();
     window.addEventListener("resize", handleResize);

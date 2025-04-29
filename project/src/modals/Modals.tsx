@@ -1,10 +1,10 @@
 "use client";
 import React, { useContext, useEffect, useRef, useState } from "react";
-import { useModal1Store, useModal2Store } from "../../store/useModalStore";
-import { appTheme, ThemeType } from "../../util/appTheme";
-import { AuthContext } from "../../contexts/authContext";
+import { useModal1Store, useModal2Store } from "../store/useModalStore";
+import { appTheme, ThemeType } from "../util/appTheme";
+import { AuthContext } from "../contexts/authContext";
 import { IoCloseOutline } from "react-icons/io5";
-import appDetails from "../../util/appDetails.json";
+import appDetails from "../util/appDetails.json";
 
 const Modals = ({ landing }: { landing: boolean }) => {
   let currentTheme = appDetails.default_theme as ThemeType;
@@ -110,7 +110,7 @@ const Modals = ({ landing }: { landing: boolean }) => {
             style={{
               border: `1px solid ${appTheme[currentTheme].background_2_2}`,
               color: appTheme[currentTheme].text_1,
-              backgroundColor: appTheme[currentTheme].background_1_2,
+              backgroundColor: appTheme[currentTheme].background_1,
             }}
           >
             {modal1.showClose && (

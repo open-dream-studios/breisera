@@ -14,9 +14,14 @@ import {
 import { SiOpenai } from "react-icons/si";
 import { makeRequest } from "@/util/axios";
 import { showToast } from "@/components/CustomToast";
+import PremiumPopup from "@/modals/PremiumPopup";
+import { useModal1Store } from "@/store/useModalStore";
 
 const TranscriptDisplay = () => {
   const { currentUser } = useContext(AuthContext);
+  const modal1 = useModal1Store((state: any) => state.modal1);
+  const setModal1 = useModal1Store((state: any) => state.setModal1);
+
   const {
     currentVideo,
     currentVideoTranscript,
@@ -28,29 +33,36 @@ const TranscriptDisplay = () => {
   } = useVideo();
 
   const handleWhisperClick = async () => {
-    if (currentUser && currentVideo) {
-      setLoadingCurrentWhisperTranscript(true);
-      try {
-        const res = await makeRequest.post("/api/youtube/generate-transcript", {
-          videoId: currentVideo.id,
-          video: currentVideo,
-        });
-        if (res.status === 200) {
-          setCurrentWhisperTranscript(res.data);
-          showToast("Whisper transcript generated!", "success");
-          if (res.data && res.data.length > 0) {
+    setModal1({
+      ...modal1,
+      open: !modal1.open,
+      showClose: true,
+      offClickClose: true,
+      width: "w-[85vw] sm:w-[530px] md:w-[550px]",
+      maxWidth: "max-w-[450px] sm:max-w-[550px]",
+      aspectRatio: "aspect-[1/1.2]",
+      borderRadius: "rounded-[16px] md:rounded-[20px]",
+      content: <PremiumPopup />,
+    });
 
-          
-
-          }
-        }
-      } catch (error) {
-        console.error("Video transcript not available:", error);
-        showToast("Unable to generate whisper transcript", "error");
-      } finally {
-        setLoadingCurrentWhisperTranscript(false);
-      }
-    }
+    // if (currentUser && currentVideo) {
+    //   setLoadingCurrentWhisperTranscript(true);
+    //   try {
+    //     const res = await makeRequest.post("/api/youtube/generate-transcript", {
+    //       videoId: currentVideo.id,
+    //       video: currentVideo,
+    //     });
+    //     if (res.status === 200) {
+    //       setCurrentWhisperTranscript(res.data);
+    //       showToast("Whisper transcript generated!", "success");
+    //     }
+    //   } catch (error) {
+    //     console.error("Video transcript not available:", error);
+    //     showToast("Unable to generate whisper transcript", "error");
+    //   } finally {
+    //     setLoadingCurrentWhisperTranscript(false);
+    //   }
+    // }
   };
 
   if (!currentUser) return <></>;
@@ -73,8 +85,7 @@ const TranscriptDisplay = () => {
                 : currentUser.theme === "dark"
                 ? `1px solid ${appTheme[currentUser.theme].background_2}`
                 : "none",
-            color:
-              appTheme[currentUser.theme].text_2,
+            color: appTheme[currentUser.theme].text_2,
           }}
         >
           <SiOpenai />
