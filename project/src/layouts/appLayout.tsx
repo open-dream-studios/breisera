@@ -94,6 +94,7 @@ const AppRoot = ({ children }: { children: ReactNode }) => {
     localStorage.setItem("user", JSON.stringify(currentUser));
   }, [currentUser]);
 
+  console.log(currentUser)
   return currentUser ? (
     <ProtectedLayout>{children}</ProtectedLayout>
   ) : (

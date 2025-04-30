@@ -208,9 +208,12 @@ export const login = (req, res) => {
     const token = jwt.sign({ id: data[0].user_id }, process.env.JWT_SECRET, {
       expiresIn: "7d",
     });
+    console.log("TOK", token)
     res.cookie("accessToken", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      // TURN THIS LINE ON IN PRODUCTION -> secure false allows connection to local host
+      // secure: process.env.NODE_ENV === "production",
+      secure: false,
       sameSite: "lax",
       path: "/",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
