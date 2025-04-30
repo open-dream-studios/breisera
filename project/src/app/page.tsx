@@ -28,7 +28,7 @@ const HomePage = () => {
     const fetchVideos = async () => {
       try {
         const res = await makeRequest.post("/api/youtube/search", {
-          query: "extessy apex",
+          query: "ted talk",
         });
         const data = res.data;
         if (Array.isArray(data)) {

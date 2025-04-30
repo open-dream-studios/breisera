@@ -404,7 +404,8 @@ export const generateYoutubeTranscript = async (req, res) => {
       duration: Number((seg.end - seg.start).toFixed(2)),
       lang: "en",
     }));
-
+    
+    await updateUserAction(user_id, validActions["whisper"], 1);
     res.status(200).json(formatted);
   } catch (error) {
     console.error("Whisper error:", error.message);

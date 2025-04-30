@@ -21,6 +21,7 @@ import {
   getVideoCollectionNames,
   updateVideoCollectionNames,
   deleteVideoCollectionName,
+  updateUserActionCall
 } from "../controllers/user.js";
 
 const router = express.Router();
@@ -52,5 +53,7 @@ router.post("/delete-video-collections", deleteVideoCollections);
 router.post("/get-video-collection", getVideoCollectionNames);
 router.post("/update-video-collection", updateVideoCollectionNames);
 router.post("/delete-video-collection", deleteVideoCollectionName);
+
+router.post("/user-action", updateUserActionCall)
 
 export default router;

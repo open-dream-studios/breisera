@@ -6,7 +6,7 @@ dotenv.config();
 
 import { createClient } from "@supabase/supabase-js";
 import { decodeToken } from "../functions/auth.js";
-import { saveFlashCards } from "./user.js";
+import { saveFlashCards, updateUserAction, validActions } from "./user.js";
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -141,6 +141,7 @@ export const geminiQuery = async (req, res) => {
     const data = await geminiResponse.json();
     const content =
       data?.candidates?.[0]?.content?.parts?.[0]?.text || "No answer.";
+    await updateUserAction(user_id, validActions["ai"], 1);
     res.status(200).json({ content });
   } catch (err) {
     console.error(err.response?.data || err.message);
@@ -403,6 +404,7 @@ export const geminiSummariesQuery = async (req, res) => {
 
   if (!storedSummary) {
     summaryPromise = generateSummary(transcript, video);
+    await updateUserAction(user_id, validActions["summary"], 1);
   }
   if (!storedKeyConcepts) {
     keyConceptsPromise = generateKeyConcepts(transcript, video);
@@ -552,6 +554,7 @@ export const geminiFlashcardsQuery = async (req, res) => {
     );
 
     if (result) {
+      await updateUserAction(user_id, validActions["flash_card"], 1);
       return res.status(200).json({ content: cleanedContent, flashcard_id, title, video_id: video.id, video_data: video });
     } else {
       return res.status(500).json({ error: "Error saving flashcards" });

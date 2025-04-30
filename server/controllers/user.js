@@ -459,7 +459,13 @@ export const saveFlashCards = async (
       const success = await new Promise((resolve, reject) => {
         db.query(
           "UPDATE flashcards SET title = ?, content = ?, collection_id = ? WHERE user_id = ? AND flashcard_id = ?",
-          [title, JSON.stringify(content), collection_id, user_id, flashcard_id],
+          [
+            title,
+            JSON.stringify(content),
+            collection_id,
+            user_id,
+            flashcard_id,
+          ],
           (err, data) => {
             if (err) {
               console.error(
@@ -931,4 +937,41 @@ export const deleteVideoCollectionName = async (req, res) => {
     console.error("Error deleting row:", error);
     return res.status(500).json({ success: false, error: "Server error" });
   }
+};
+
+export const validActions = {
+  ai: "ai_tokens_used",
+  summary: "summary_tokens_used",
+  flash_card: "flash_card_tokens_used",
+  whisper: "whisper_tokens_used",
+};
+
+export const updateUserActionCall = async (req, res) => {
+  const token = req.cookies.accessToken;
+  if (!token) return res.status(401).json({ error: "Not authenticated" });
+
+  const user_id = decodeToken(token);
+  const { action, tokensUsed } = req.body;
+  const column = validActions[action];
+
+  if (!user_id || !column || typeof tokensUsed !== "number") {
+    return res.status(400).json({ error: "Invalid request" });
+  }
+
+  try {
+    await updateUserAction(user_id, column, tokensUsed);
+    return res.status(200).json({ success: true });
+  } catch (err) {
+    console.error("Failed to update usage:", err);
+    return res.status(500).json({ error: "Database error" });
+  }
+};
+
+export const updateUserAction = async (user_id, column, tokensUsed) => {
+  return db
+    .promise()
+    .query(
+      `UPDATE users SET ${column} = COALESCE(${column}, 0) + ? WHERE user_id = ?`,
+      [tokensUsed, user_id]
+    );
 };
