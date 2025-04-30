@@ -8,10 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 const SummaryDisplay = () => {
   const { currentUser } = useContext(AuthContext);
   const { currentSummary, loadingCurrentSummaries } = useVideo();
-  if (currentSummary) {
-    console.log(timeStampInjectionAndFormatting(currentSummary, "dark"));
-  }
-  
+
   if (!currentUser) return <></>;
 
   return (

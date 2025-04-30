@@ -64,13 +64,7 @@ const FlashCardsList = ({
                   <div
                     onClick={() => {
                       setFlashCardsOpen(false);
-                      setCurrentFlashCards({
-                        ...currentFlashCards,
-                        flashcard_id: flashCardSet.flashcard_id,
-                        title: flashCardSet.title,
-                        content: flashCardSet.content,
-                        video_id: flashCardSet.video_id,
-                      });
+                      setCurrentFlashCards(flashCardSet);
                     }}
                     style={{
                       color: appTheme[currentUser.theme].text_2,
@@ -142,7 +136,8 @@ const FlashCardsDisplay = () => {
           title: geminiResponse.title,
           flashcard_id: geminiResponse.flashcard_id,
           content: JSON.parse(geminiResponse.content),
-          video_id: geminiResponse.videoId,
+          video_id: geminiResponse.video_id,
+          video_data: geminiResponse.video_data
         });
       }
       setLoadingCurrentFlashCards(false);

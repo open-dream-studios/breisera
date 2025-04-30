@@ -52,6 +52,7 @@ export type FlashCardsType = {
   title: string;
   content: FlashCardType[];
   video_id: string | null;
+  video_data: any | null;
 };
 
 type VideoContextType = {
@@ -164,6 +165,7 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({
     title: "",
     content: [],
     video_id: null,
+    video_data: null,
   });
   const [loadingCurrentFlashCards, setLoadingCurrentFlashCards] =
     useState<boolean>(false);

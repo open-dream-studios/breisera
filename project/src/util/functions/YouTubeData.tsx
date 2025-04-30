@@ -6,6 +6,7 @@ import {
   setVideoTime,
 } from "@/screens/Player/YouTubePlayer/YouTubePlayer";
 import React from "react";
+import { FlashCardsType, YouTubePlayerVideo } from "@/contexts/videoContext";
 
 export const formatSubs = (subs: string | number): string => {
   const num = typeof subs === "string" ? parseInt(subs, 10) : subs;
@@ -54,23 +55,32 @@ export const convertToSeconds = (timestamp: string): number => {
 
 export const timeStampInjection = (
   currentTheme: ThemeType,
-  message: string
+  message: string,
+  handleVideoClick: (video: YouTubePlayerVideo) => void,
+  currentFlashCards: FlashCardsType,
+  clickToVideo: boolean
 ) => {
   const parts = message.split(/(\[?\d{1,2}:\d{1,2}(?::\d{2})?\]?)/g);
   return parts.map((part, index) => {
     const match = part.match(/\[?(\d{1,2}:\d{1,2}(?::\d{2})?)\]?/);
     if (match) {
       const time = match[1];
-      console.log(time)
+      console.log(time);
       return (
         <button
           key={index}
           onClick={(e: any) => {
             e.stopPropagation();
-            const currentTime = getVideoTime();
-            const seconds = convertToSeconds(time);
-            if (currentTime !== seconds && seconds) {
-              setVideoTime(seconds);
+            if (clickToVideo) {
+              handleVideoClick(
+                currentFlashCards.video_data as YouTubePlayerVideo
+              );
+            } else {
+              const currentTime = getVideoTime();
+              const seconds = convertToSeconds(time);
+              if (currentTime !== seconds && seconds) {
+                setVideoTime(seconds);
+              }
             }
           }}
           style={{

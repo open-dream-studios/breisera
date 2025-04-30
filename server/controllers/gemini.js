@@ -552,7 +552,7 @@ export const geminiFlashcardsQuery = async (req, res) => {
     );
 
     if (result) {
-      return res.status(200).json({ content: cleanedContent, flashcard_id, title, videoId: video.id });
+      return res.status(200).json({ content: cleanedContent, flashcard_id, title, video_id: video.id, video_data: video });
     } else {
       return res.status(500).json({ error: "Error saving flashcards" });
     }

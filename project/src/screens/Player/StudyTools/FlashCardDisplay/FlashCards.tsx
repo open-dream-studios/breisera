@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { AuthContext } from "@/contexts/authContext";
 import { appTheme } from "@/util/appTheme";
-import { useVideo } from "@/contexts/videoContext";
+import { useVideo, YouTubePlayerVideo } from "@/contexts/videoContext";
 import { Skeleton } from "@/components/ui/skeleton";
 import { timeStampInjection } from "@/util/functions/YouTubeData";
 import { BsLightningChargeFill } from "react-icons/bs";
@@ -16,6 +16,7 @@ const FlashCards = ({
 }) => {
   const { currentUser } = useContext(AuthContext);
   const {
+    currentVideo,
     currentFlashCards,
     loadingCurrentFlashCards,
     currentIndex,
@@ -26,6 +27,7 @@ const FlashCards = ({
     setFlipped,
     disableAnimation,
     setDisableAnimation,
+    handleVideoClick,
   } = useVideo();
 
   const card = currentFlashCards.content[currentIndex];
@@ -115,18 +117,35 @@ const FlashCards = ({
             </div>
           ) : (
             <div className="h-[100%] flex flex-col items-center">
-              <div
-                style={{
-                  border: `0.1px solid ${
-                    appTheme[currentUser.theme].background_2
-                  }`,
-                }}
-                className="w-[100%] h-[50px] shadow-lg rounded-[10px] mb-[15px]"
-              >
-                <>
-                  {/* {currentFlashCards.vide} */}
-                </>
-              </div>
+              {currentVideo &&
+                currentFlashCards.video_data &&
+                currentVideo.id !== currentFlashCards.video_data.id && (
+                  <div
+                    style={{
+                      border: `0.1px solid ${
+                        appTheme[currentUser.theme].background_2
+                      }`,
+                    }}
+                    onClick={() => {
+                      handleVideoClick(
+                        currentFlashCards.video_data as YouTubePlayerVideo
+                      );
+                    }}
+                    className="cursor-pointer dim hover:brightness-75 w-[100%] h-[50px] shadow-lg rounded-[10px] mb-[15px] flex flex-row items-center px-[15px] gap-[11px]"
+                  >
+                    <img
+                      className="w-[50px] min-w-[50px] h-[28px] object-cover rounded-[5px] overflow-hidden"
+                      src={
+                        currentFlashCards.video_data.snippet.thumbnails.high.url
+                      }
+                    />
+                    <p className="w-[100%] truncate  font-[500]">
+                      {currentFlashCards.video_data &&
+                        currentFlashCards.video_data.snippet.title}
+                    </p>
+                  </div>
+                )}
+
               <motion.div
                 className="w-full max-w-md aspect-[2/1.5] relative"
                 onClick={handleClick}
@@ -151,7 +170,9 @@ const FlashCards = ({
                   }}
                 >
                   <div className="">
-                    {timeStampInjection(currentUser.theme, card.question)}
+                    {timeStampInjection(currentUser.theme, card.question, handleVideoClick, currentFlashCards, currentVideo &&
+                currentFlashCards.video_data &&
+                currentVideo.id !== currentFlashCards.video_data.id)}
                   </div>
                 </motion.div>
 
@@ -164,7 +185,9 @@ const FlashCards = ({
                   }}
                 >
                   <div className="">
-                    {timeStampInjection(currentUser.theme, card.answer)}
+                    {timeStampInjection(currentUser.theme, card.answer, handleVideoClick, currentFlashCards, currentVideo &&
+                currentFlashCards.video_data &&
+                currentVideo.id !== currentFlashCards.video_data.id)}
                   </div>
                 </motion.div>
               </motion.div>
