@@ -1,0 +1,233 @@
+"use client";
+import { useContext, useState } from "react";
+import { motion } from "framer-motion";
+import { ArrowLeft, ArrowRight } from "lucide-react";
+import { AuthContext } from "@/contexts/authContext";
+import { appTheme } from "@/util/appTheme";
+import { useVideo, YouTubePlayerVideo } from "@/contexts/videoContext";
+import { Skeleton } from "@/components/ui/skeleton";
+import { timeStampInjection } from "@/util/functions/YouTubeData";
+import { BsLightningChargeFill } from "react-icons/bs";
+
+const FlashCards = ({
+  generateFlashCards,
+}: {
+  generateFlashCards: () => void;
+}) => {
+  const { currentUser } = useContext(AuthContext);
+  const {
+    currentVideo,
+    currentFlashCards,
+    loadingCurrentFlashCards,
+    currentIndex,
+    setCurrentIndex,
+    isAnimating,
+    setIsAnimating,
+    flipped,
+    setFlipped,
+    disableAnimation,
+    setDisableAnimation,
+    handleVideoClick,
+  } = useVideo();
+
+  const card = currentFlashCards.content[currentIndex];
+
+  const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const selection = window.getSelection();
+    const isTextSelected = selection && selection.toString().length > 0;
+
+    if (!isTextSelected) {
+      handleFlip();
+    }
+  };
+
+  const handleFlip = () => {
+    if (isAnimating) return;
+    setIsAnimating(true);
+    setFlipped((prev) => !prev);
+    setTimeout(() => setIsAnimating(false), 600); // sync with animation duration
+  };
+
+  const instantReset = () => {
+    // disable animation for one render
+    setDisableAnimation(true);
+    setFlipped(false);
+    setTimeout(() => setDisableAnimation(false), 0); // enable again on next tick
+  };
+
+  const goNext = () => {
+    if (flipped) instantReset(); // avoid animation if showing answer
+    setCurrentIndex((prev) => (prev + 1) % currentFlashCards.content.length);
+  };
+
+  const goBack = () => {
+    if (flipped) instantReset(); // avoid animation if showing answer
+    setCurrentIndex(
+      (prev) =>
+        (prev - 1 + currentFlashCards.content.length) %
+        currentFlashCards.content.length
+    );
+  };
+
+  if (!currentUser) return;
+
+  return (
+    <div className="h-[100%] pt-[20px] px-[20px] w-[100%]">
+      {loadingCurrentFlashCards ? (
+        <div className="w-[100%] flex flex-col items-center">
+          <Skeleton
+            className={`w-[100%] aspect-[2/1.5] mb-[18px] ${
+              currentUser.theme === "dark"
+                ? "brightness-25"
+                : "brightness-[90%]"
+            }`}
+          />
+          <Skeleton
+            className={`w-[75%] h-[20px] mb-[18px] ${
+              currentUser.theme === "dark"
+                ? "brightness-25"
+                : "brightness-[90%]"
+            }`}
+          />
+        </div>
+      ) : (
+        <>
+          {currentFlashCards.content.length === 0 ||
+          !currentFlashCards.flashcard_id ? (
+            <div className="h-[100%] flex flex-col items-center">
+              <div
+                className="w-full max-w-md aspect-[2/1.5] relative"
+                onClick={generateFlashCards}
+                style={{ transformStyle: "preserve-3d", cursor: "pointer" }}
+              >
+                <div
+                  className="cursor-pointer dim hover:brightness-90 absolute gap-[5px] w-[100%] h-[100%] flex items-center pb-[5px] px-[20px] justify-center text-center rounded-[18px] shadow-xl text-[15px] leading-[23px] font-[500]"
+                  style={{
+                    backfaceVisibility: "hidden",
+                    backgroundColor: appTheme[currentUser.theme].flash_cards,
+                    border: `0.1px solid ${
+                      appTheme[currentUser.theme].background_2
+                    }`,
+                  }}
+                >
+                  {loadingCurrentFlashCards ? "Generating" : "Generate"}
+                  <BsLightningChargeFill className="w-[16px] h-[16px] mt-[-2px]" />
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="h-[100%] flex flex-col items-center">
+              {currentVideo &&
+                currentFlashCards.video_data &&
+                currentVideo.id !== currentFlashCards.video_data.id && (
+                  <div
+                    style={{
+                      border: `0.1px solid ${
+                        appTheme[currentUser.theme].background_2
+                      }`,
+                    }}
+                    onClick={() => {
+                      handleVideoClick(
+                        currentFlashCards.video_data as YouTubePlayerVideo,
+                        null
+                      );
+                    }}
+                    className="cursor-pointer dim hover:brightness-75 w-[100%] h-[50px] shadow-lg rounded-[10px] mb-[15px] flex flex-row items-center px-[15px] gap-[11px]"
+                  >
+                    <img
+                      className="w-[50px] min-w-[50px] h-[28px] object-cover rounded-[5px] overflow-hidden"
+                      src={
+                        currentFlashCards.video_data.snippet.thumbnails.high.url
+                      }
+                    />
+                    <p className="w-[100%] truncate  font-[500]">
+                      {currentFlashCards.video_data &&
+                        currentFlashCards.video_data.snippet.title}
+                    </p>
+                  </div>
+                )}
+
+              <motion.div
+                className="w-full max-w-md aspect-[2/1.5] relative"
+                onClick={handleClick}
+                initial={false}
+                animate={{ rotateY: flipped ? 180 : 0 }}
+                transition={
+                  disableAnimation
+                    ? { duration: 0 }
+                    : { duration: 0.6, ease: "easeInOut" }
+                }
+                style={{ transformStyle: "preserve-3d", cursor: "pointer" }}
+              >
+                <motion.div
+                  className="absolute overflow-hidden w-[100%] h-[100%] flex items-center pb-[5px] px-[20px] justify-center text-center rounded-[18px] shadow-xl text-[15px] leading-[23px] font-semibold cursor-pointer"
+                  style={{
+                    backfaceVisibility: "hidden",
+                    rotateY: 0,
+                    backgroundColor: appTheme[currentUser.theme].flash_cards,
+                    border: `0.1px solid ${
+                      appTheme[currentUser.theme].background_2
+                    }`,
+                  }}
+                >
+                  <div className="">
+                    {timeStampInjection(currentUser.theme, card.question, handleVideoClick, currentFlashCards, currentVideo &&
+                currentFlashCards.video_data &&
+                currentVideo.id !== currentFlashCards.video_data.id)}
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  className="absolute overflow-hidden w-[100%] h-[100%] flex items-center pb-[5px] px-[20px] justify-center text-center rounded-[18px] shadow-xl text-[15px] leading-[23px] font-semibold cursor-pointer"
+                  style={{
+                    backfaceVisibility: "hidden",
+                    rotateY: 180,
+                    backgroundColor: appTheme[currentUser.theme].flash_cards,
+                  }}
+                >
+                  <div className="">
+                    {timeStampInjection(currentUser.theme, card.answer, handleVideoClick, currentFlashCards, currentVideo &&
+                currentFlashCards.video_data &&
+                currentVideo.id !== currentFlashCards.video_data.id)}
+                  </div>
+                </motion.div>
+              </motion.div>
+
+              <div className="mt-[17px] font-[300] text-[15px] lg:text-[20px]">
+                {currentIndex + 1} / {currentFlashCards.content.length}
+              </div>
+
+              <div className="mt-8 flex gap-8 mb-[90px]">
+                <button
+                  onClick={goBack}
+                  style={{
+                    backgroundColor: appTheme[currentUser.theme].background_2,
+                  }}
+                  className={`${
+                    currentIndex === 0 && "opacity-50 pointer-events-none"
+                  } w-14 h-14 rounded-full shadow-lg dim cursor-pointer hover:brightness-75 flex items-center justify-center`}
+                >
+                  <ArrowLeft />
+                </button>
+                <button
+                  onClick={goNext}
+                  style={{
+                    backgroundColor: appTheme[currentUser.theme].background_2,
+                  }}
+                  className={`${
+                    currentIndex === currentFlashCards.content.length - 1 &&
+                    "opacity-50 pointer-events-none"
+                  } w-14 h-14 rounded-full shadow-lg dim cursor-pointer hover:brightness-75 flex items-center justify-center`}
+                >
+                  <ArrowRight />
+                </button>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+};
+
+export default FlashCards;
