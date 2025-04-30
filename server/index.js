@@ -302,14 +302,14 @@ app.get("/delete-download", async (req, res) => {
   }
 });
 
-const redis = new IORedis(process.env.REDIS_URL);
+// const redis = new IORedis(process.env.REDIS_URL);
 
 setInterval(async () => {
   try {
-    const keys = await redis.keys("video-ready:*");
+    const keys = await connection.keys("video-ready:*");
 
     for (const key of keys) {
-      const socketId = await redis.get(key);
+      const socketId = await connection.get(key);
       const video_name = key.replace("video-ready:", "");
 
       if (socketId) {
@@ -321,7 +321,7 @@ setInterval(async () => {
         });
 
         // After emitting, delete the key so you don't send multiple times
-        await redis.del(key);
+        await connection.del(key);
       }
     }
   } catch (err) {

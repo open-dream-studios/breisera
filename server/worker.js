@@ -2,7 +2,7 @@ import { Worker } from "bullmq";
 import { spawn } from "child_process";
 import path from "path";
 import { fileURLToPath } from "url";
-import IORedis from "ioredis";
+// import IORedis from "ioredis";
 import dotenv from "dotenv";
 import { S3Client } from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
@@ -16,9 +16,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // --- Redis connection
-const connection = new IORedis(process.env.REDIS_URL, {
-  maxRetriesPerRequest: null,
-});
+// const connection = new IORedis(process.env.REDIS_URL, {
+//   maxRetriesPerRequest: null,
+// });
 
 // --- S3 Client
 const s3 = new S3Client({
