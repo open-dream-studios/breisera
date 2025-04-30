@@ -157,7 +157,7 @@ const FlashCards = ({ generateFlashCards }: { generateFlashCards: () => void}) =
                 {currentIndex + 1} / {currentFlashCards.content.length}
               </div>
 
-              <div className="mt-8 flex gap-8 mb-[50px]">
+              <div className="mt-8 flex gap-8 mb-[90px]">
                 <button
                   onClick={goBack}
                   style={{

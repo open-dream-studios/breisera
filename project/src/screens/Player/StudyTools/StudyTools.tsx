@@ -40,9 +40,8 @@ const StudyTools = () => {
 
   return (
     <div
-      className={`w-[100%] ${
-        theaterMode ? "h-[500px]" : "h-[100%]"
-      } px-[10px] pt-[8px] pb-[12px] flex flex-col gap-[10px]`}
+      className={`w-[100%] h-[100%] min-h-[500px] 
+      px-[10px] pt-[8px] pb-[12px] flex flex-col gap-[10px]`}
     >
       <div
         className="select-none px-[4px] h-[37px] rounded-[6px] flex flex-row items-center justify-center"
