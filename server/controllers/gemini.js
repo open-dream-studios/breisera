@@ -65,6 +65,7 @@ async function upsertVideoStorage(
 export const geminiQuery = async (req, res) => {
   const token = req.cookies.accessToken;
   if (!token) return res.status(401).json("Not authenticated!");
+  const user_id = decodeToken(token)
 
   const { messages, transcript, video } = req.body;
   if (!video) return res.status(404).json("No video sent");
@@ -393,6 +394,7 @@ const generateKeyConcepts = async (transcript, video) => {
 export const geminiSummariesQuery = async (req, res) => {
   const token = req.cookies.accessToken;
   if (!token) return res.status(401).json("Not authenticated!");
+  const user_id = decodeToken(token)
 
   const { transcript, video } = req.body;
   if (!video) return res.status(404).json("No video sent");

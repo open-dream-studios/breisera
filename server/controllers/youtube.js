@@ -12,6 +12,7 @@ import he from "he";
 import { usePython } from "../functions/python.js";
 import { formatTimeStamp } from "../functions/data.js";
 import fetch from "node-fetch";
+import { decodeToken } from "../functions/auth.js";
 dotenv.config();
 
 const openai = new OpenAI({
@@ -357,6 +358,7 @@ const chunkTranscriptWithSentences = async (transcriptArray) => {
 export const generateYoutubeTranscript = async (req, res) => {
   const token = req.cookies.accessToken;
   if (!token) return res.status(401).json("Not authenticated!");
+  const user_id = decodeToken(token)
 
   const { videoId, video } = req.body;
   if (!videoId || !video) return res.status(400).json("Missing video ID");
@@ -404,7 +406,7 @@ export const generateYoutubeTranscript = async (req, res) => {
       duration: Number((seg.end - seg.start).toFixed(2)),
       lang: "en",
     }));
-    
+
     await updateUserAction(user_id, validActions["whisper"], 1);
     res.status(200).json(formatted);
   } catch (error) {
