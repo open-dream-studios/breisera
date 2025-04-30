@@ -5,6 +5,7 @@ import { QueryObserverResult, useQuery } from "@tanstack/react-query";
 import { AuthContext } from "./authContext";
 import { makeRequest } from "@/util/axios";
 import { useContextQueries } from "./queryContext";
+import { setVideoTime } from "@/screens/Player/YouTubePlayer/YouTubePlayer";
 
 export type YouTubePlayerVideo = {
   id: string;
@@ -108,13 +109,17 @@ type VideoContextType = {
   disableAnimation: boolean;
   setDisableAnimation: React.Dispatch<React.SetStateAction<boolean>>;
   generateSummaries: (transcript: VideoTranscript) => void;
-  handleVideoClick: (video: YouTubePlayerVideo) => void;
+  handleVideoClick: (video: YouTubePlayerVideo, time: number | null) => void;
   theaterMode: boolean;
   setTheaterMode: React.Dispatch<React.SetStateAction<boolean>>;
   addToLibraryVisible: boolean;
   setAddToLibraryVisible: React.Dispatch<React.SetStateAction<boolean>>;
   isDraggingDivider: boolean;
   setIsDraggingDivider: React.Dispatch<React.SetStateAction<boolean>>;
+  startTime: number;
+  setStartTime: React.Dispatch<React.SetStateAction<number>>;
+  startTimeOverride: number | null;
+  setStartTimeOverride: React.Dispatch<React.SetStateAction<number | null>>;
 };
 
 const VideoContext = createContext<VideoContextType | undefined>(undefined);
@@ -122,7 +127,7 @@ const VideoContext = createContext<VideoContextType | undefined>(undefined);
 export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const { updateRecentVideo } = useContextQueries()
+  const { updateRecentVideo } = useContextQueries();
   const [currentVideo, setCurrentVideo] = useState<YouTubePlayerVideo | null>(
     null
   );
@@ -179,7 +184,8 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({
   const [addToLibraryVisible, setAddToLibraryVisible] =
     useState<boolean>(false);
   const [isDraggingDivider, setIsDraggingDivider] = useState<boolean>(false);
-
+  const [startTime, setStartTime] = useState<number>(0);
+  const [startTimeOverride, setStartTimeOverride] = useState<number | null>(null);
 
   useEffect(() => {
     setMessages([]);
@@ -213,8 +219,21 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  const handleVideoClick = (video: YouTubePlayerVideo) => {
-    updateRecentVideo(video)
+  let overrideStartTime: number | null = null;
+  // const handleVideoClick = (video: YouTubePlayerVideo, time: number | null) => {
+  //   updateRecentVideo(video);
+  //   setCurrentVideo(video);
+  //   setPlayerState("screen");
+  //   if (time) {
+  //     setVideoTime(time);
+  //   }
+  // };
+  const handleVideoClick = (video: YouTubePlayerVideo, time: number | null) => {
+    if (time !== null) {
+      // setStartTime(time)
+      setStartTimeOverride(time);
+    }
+    updateRecentVideo(video);
     setCurrentVideo(video);
     setPlayerState("screen");
   };
@@ -270,7 +289,11 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({
         addToLibraryVisible,
         setAddToLibraryVisible,
         isDraggingDivider,
-        setIsDraggingDivider
+        setIsDraggingDivider,
+        startTime,
+        setStartTime,
+        startTimeOverride,
+        setStartTimeOverride,
       }}
     >
       {children}

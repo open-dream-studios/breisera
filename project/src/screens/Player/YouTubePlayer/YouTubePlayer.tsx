@@ -32,30 +32,56 @@ export const playVideo = () => {
 };
 
 const YouTubePlayer = () => {
-  const { currentVideo, addToLibraryVisible, isDraggingDivider } = useVideo();
+  const { currentVideo, addToLibraryVisible, isDraggingDivider, startTime, setStartTime, startTimeOverride, setStartTimeOverride } = useVideo();
   const { updateRecentVideoTime, recentVideosData } = useContextQueries();
   const playerWrapperRef = useRef<HTMLDivElement>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [startTime, setStartTime] = useState<number>(0);
 
-  const onPlayerReady = (event: any) => {
-    playerRef = event.target;
-    if (recentVideosData && currentVideo) {
-      const foundIndex = recentVideosData.findIndex(
-        (video: YouTubePlayerVideo) => video.video_data.id === currentVideo.id
-      );
-      if (foundIndex !== -1) {
-        if (recentVideosData[foundIndex].last_timestamp) {
-          setStartTime(recentVideosData[foundIndex].last_timestamp);
-        } else {
-          setStartTime(0);
-        }
-      } else {
-        setStartTime(0);
-      }
+
+  // const onPlayerReady = (event: any) => {
+  //   playerRef = event.target;
+  //   if (recentVideosData && currentVideo) {
+  //     const foundIndex = recentVideosData.findIndex(
+  //       (video: YouTubePlayerVideo) => video.video_data.id === currentVideo.id
+  //     );
+  //     if (foundIndex !== -1) {
+  //       if (recentVideosData[foundIndex].last_timestamp) {
+  //         setStartTime(recentVideosData[foundIndex].last_timestamp);
+  //       } else {
+  //         setStartTime(0);
+  //       }
+  //     } else {
+  //       setStartTime(0);
+  //     }
+  //   }
+  // };
+
+const onPlayerReady = (event: any) => {
+  playerRef = event.target;
+
+  if (startTimeOverride !== null) {
+    playerRef.seekTo(startTimeOverride, true);
+    setStartTime(startTimeOverride);
+    setStartTimeOverride(null); 
+    return;
+  }
+
+  if (recentVideosData && currentVideo) {
+    const foundIndex = recentVideosData.findIndex(
+      (video: YouTubePlayerVideo) => video.video_data.id === currentVideo.id
+    );
+    if (foundIndex !== -1) {
+      const ts = recentVideosData[foundIndex].last_timestamp || 0;
+      setStartTime(ts);
+      playerRef.seekTo(ts, true);
+    } else {
+      setStartTime(0);
     }
-  };
+  } else {
+    setStartTime(0);
+  }
+};
 
   const updateRecent = () => {
     if (playerRef && playerRef.getCurrentTime() && currentVideo) {

@@ -32,23 +32,15 @@ export const formatTimeStamp = (input: number): string => {
     : `${paddedMinutes}:${paddedSeconds}`;
 };
 
-// export const convertToSeconds = (timestamp: string): number => {
-//   const [hours, minutes, seconds] = timestamp.split(":").map(Number);
-//   return hours * 3600 + minutes * 60 + seconds;
-// };
 export const convertToSeconds = (timestamp: string): number => {
   const parts = timestamp.split(":").map(Number);
-
   if (parts.length === 2) {
-    // Format: mm:ss
     const [minutes, seconds] = parts;
     return minutes * 60 + seconds;
   } else if (parts.length === 3) {
-    // Format: hh:mm:ss
     const [hours, minutes, seconds] = parts;
     return hours * 3600 + minutes * 60 + seconds;
   } else {
-    // Invalid format
     return 0;
   }
 };
@@ -56,7 +48,7 @@ export const convertToSeconds = (timestamp: string): number => {
 export const timeStampInjection = (
   currentTheme: ThemeType,
   message: string,
-  handleVideoClick: (video: YouTubePlayerVideo) => void,
+  handleVideoClick: (video: YouTubePlayerVideo, time: number | null) => void,
   currentFlashCards: FlashCardsType,
   clickToVideo: boolean
 ) => {
@@ -65,7 +57,6 @@ export const timeStampInjection = (
     const match = part.match(/\[?(\d{1,2}:\d{1,2}(?::\d{2})?)\]?/);
     if (match) {
       const time = match[1];
-      console.log(time);
       return (
         <button
           key={index}
@@ -73,7 +64,8 @@ export const timeStampInjection = (
             e.stopPropagation();
             if (clickToVideo) {
               handleVideoClick(
-                currentFlashCards.video_data as YouTubePlayerVideo
+                currentFlashCards.video_data as YouTubePlayerVideo,
+                convertToSeconds(time)
               );
             } else {
               const currentTime = getVideoTime();

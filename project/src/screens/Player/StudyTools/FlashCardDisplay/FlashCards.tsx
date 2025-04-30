@@ -128,7 +128,8 @@ const FlashCards = ({
                     }}
                     onClick={() => {
                       handleVideoClick(
-                        currentFlashCards.video_data as YouTubePlayerVideo
+                        currentFlashCards.video_data as YouTubePlayerVideo,
+                        null
                       );
                     }}
                     className="cursor-pointer dim hover:brightness-75 w-[100%] h-[50px] shadow-lg rounded-[10px] mb-[15px] flex flex-row items-center px-[15px] gap-[11px]"

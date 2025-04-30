@@ -49,10 +49,6 @@ const HomePage = () => {
     }
   }, []);
 
-  const handleVideoClick = (video: YouTubePlayerVideo) => {
-    setCurrentVideo(video);
-  };
-
   if (loading) return <div>Loading...</div>;
 
   if (!currentUser) return;

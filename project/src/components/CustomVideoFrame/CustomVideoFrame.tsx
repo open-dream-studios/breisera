@@ -28,7 +28,7 @@ const CustomVideoFrame = ({
       }}
     >
       <Link
-        onClick={() => handleVideoClick(recentVideo)}
+        onClick={() => handleVideoClick(recentVideo, null)}
         href={`${FRONTEND_URL}/www.youtube.com/watch?v=${recentVideo.id}`}
         className="dim group-hover:brightness-75 w-[100%] h-[100%]"
       >

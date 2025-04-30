@@ -161,7 +161,7 @@ const LeftBar = () => {
     if (windowWidth < 1024) {
       closeLeftBar();
     }
-    handleVideoClick(video);
+    handleVideoClick(video, null);
   };
 
   if (!currentUser) return;
