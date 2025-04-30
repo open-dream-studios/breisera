@@ -288,7 +288,7 @@ const FlashCardsDisplay = () => {
         className={`flex absolute top-0 left-0 flex-row w-[100%] h-[46px] min-h-[46px]
             rounded-[5px] px-[15px] font-[600] text-[20px] leading-[20px] select-none`}
       >
-        {!currentFlashCards.flashcard_id || flashCardsOpen ? (
+        {!currentFlashCards.flashcard_id || flashCardsOpen || loadingCurrentFlashCards ? (
           <p className="pt-[12px]">Flash Cards</p>
         ) : (
           <input

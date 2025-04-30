@@ -32,7 +32,14 @@ const NotesList = ({ handleDeleteNote, setNotesOpen }: NotesListProps) => {
   const stripHtml = (html: string) => {
     const div = document.createElement("div");
     div.innerHTML = html;
-    return div.innerText;
+    const paragraphs = div.querySelectorAll("p");
+    for (const p of paragraphs) {
+      const cleanText = p.innerText.trim();
+      if (cleanText.length > 0) {
+        return cleanText;
+      }
+    }
+    return "Blank Note";
   };
 
   if (!currentUser || !notesData) return <></>;
@@ -167,7 +174,7 @@ const NotesDisplay = () => {
 
   const handleOpenNotes = async () => {
     refetchNotesData();
-    setNotesOpen(prev => !prev)
+    setNotesOpen((prev) => !prev);
   };
 
   const handleDeleteNote = async (note_id: string) => {
@@ -213,7 +220,7 @@ const NotesDisplay = () => {
     onUpdate({ editor }) {
       const html = editor.getHTML();
       setCurrentNote({ ...currentNote, content: html });
-      resetTimer()
+      resetTimer();
     },
     editorProps: {
       handlePaste(view, event, slice) {

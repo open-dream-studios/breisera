@@ -520,7 +520,7 @@ export const geminiFlashcardsQuery = async (req, res) => {
     if (userFlashCards.length > 100) {
       return res.status(500).json("User flash card limit reached")
     }
-    const title = `Flashcard Set ${userFlashCards + 1}`;
+    const title = `Flash Card Set ${userFlashCards + 1}`;
 
     const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent`;
     const geminiResponse = await fetch(
