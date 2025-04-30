@@ -2,7 +2,6 @@
 import { AuthContext } from "@/contexts/authContext";
 import { useContextQueries } from "@/contexts/queryContext";
 import { FlashCardsType, useVideo } from "@/contexts/videoContext";
-import { useFlashCardsRefStore } from "@/store/useStudyToolsStore";
 import { appTheme } from "@/util/appTheme";
 import { makeRequest } from "@/util/axios";
 import { generateUniqueId } from "@/util/functions/Data";
@@ -34,12 +33,6 @@ const FlashCardsList = ({
   const { currentUser } = useContext(AuthContext);
   const { currentFlashCards, setCurrentFlashCards } = useVideo();
   const { flashCardData } = useContextQueries();
-
-  const stripHtml = (html: string) => {
-    const div = document.createElement("div");
-    div.innerHTML = html;
-    return div.innerText;
-  };
 
   if (!currentUser || !flashCardData) return <></>;
 
@@ -74,7 +67,7 @@ const FlashCardsList = ({
                         ...currentFlashCards,
                         flashcard_id: flashCardSet.flashcard_id,
                         title: flashCardSet.title,
-                        content: JSON.parse(flashCardSet.content),
+                        content: flashCardSet.content,
                         video_id: flashCardSet.video_id,
                       });
                     }}
@@ -83,10 +76,9 @@ const FlashCardsList = ({
                     }}
                     className="cursor-pointer transition-opacity duration-[0.2s] ease-in-out hover:opacity-75 truncate w-[calc(100%-40px)] font-[400] text-[14px]"
                   >
-                    {flashCardSet.title === "<p></p>" ||
-                    flashCardSet.title.trim() === ""
+                    {flashCardSet.title === ""
                       ? "Empty Set"
-                      : stripHtml(flashCardSet.title)}
+                      : flashCardSet.title}
                   </div>
                   <GoTrash
                     onClick={() =>
@@ -154,14 +146,6 @@ const FlashCardsDisplay = () => {
     return "Something went wrong...";
   };
 
-  const flashCardsRef = useRef<HTMLDivElement>(null);
-  const setFlashCardsRef = useFlashCardsRefStore(
-    (state) => state.setFlashCardsRef
-  );
-  useEffect(() => {
-    setFlashCardsRef(flashCardsRef as RefObject<HTMLDivElement>);
-  }, [setFlashCardsRef, flashCardsRef]);
-
   const currentFlashCardsRef = useRef<FlashCardsType>(currentFlashCards);
   useEffect(() => {
     currentFlashCardsRef.current = currentFlashCards;
@@ -173,7 +157,7 @@ const FlashCardsDisplay = () => {
     setCurrentFlashCards({
       ...currentFlashCards,
       flashcard_id: null,
-      title: "",
+      title: "New Set",
       content: [],
     });
     setFlashCardsOpen(false);
@@ -302,9 +286,21 @@ const FlashCardsDisplay = () => {
           border: `0.1px solid ${appTheme[currentUser.theme].background_2}`,
         }}
         className={`flex absolute top-0 left-0 flex-row w-[100%] h-[46px] min-h-[46px]
-            rounded-[5px] px-[15px] pt-[12px] font-[600] text-[20px] leading-[20px] select-none`}
+            rounded-[5px] px-[15px] font-[600] text-[20px] leading-[20px] select-none`}
       >
-        Flash Cards
+        {!currentFlashCards.flashcard_id || flashCardsOpen ? (
+          <p className="pt-[12px]">Flash Cards</p>
+        ) : (
+          <input
+            className="outline-none border-none m-0 p-0 w-[calc(100%-100px)] truncate"
+            type="text"
+            onChange={(e: any)=>{
+              setCurrentFlashCards({ ...currentFlashCards, title: e.target.value })
+              resetTimer()
+            }}
+            value={currentFlashCards.title}
+          />
+        )}
       </div>
 
       <div
@@ -351,23 +347,25 @@ const FlashCardsDisplay = () => {
         >
           <FlashCards generateFlashCards={generateFlashCards} />
 
-          {currentFlashCards.content.length > 0 && <div
-            onClick={() => !loadingCurrentFlashCards && generateFlashCards()}
-            className="select-none opacity-90 absolute bottom-[14px] w-[80%] dim hover:brightness-75 cursor-pointer font-[600] text-[16px] py-[7px] px-[13px] rounded-[50px] flex flex-row items-center justify-center gap-[5px]"
-            style={{
-              backgroundColor: appTheme[currentUser.theme].text_1,
-              color: appTheme[currentUser.theme].background_1,
-            }}
-          >
-            {loadingCurrentFlashCards ? (
-              <>Generating...</>
-            ) : (
-              <>
-                <BsLightningChargeFill className="w-[16px] h-[16px] mt-[-2px]" />
-                Generate
-              </>
-            )}
-          </div>}
+          {currentFlashCards.content.length > 0 && (
+            <div
+              onClick={() => !loadingCurrentFlashCards && generateFlashCards()}
+              className="select-none opacity-90 absolute bottom-[14px] w-[80%] dim hover:brightness-75 cursor-pointer font-[600] text-[16px] py-[7px] px-[13px] rounded-[50px] flex flex-row items-center justify-center gap-[5px]"
+              style={{
+                backgroundColor: appTheme[currentUser.theme].text_1,
+                color: appTheme[currentUser.theme].background_1,
+              }}
+            >
+              {loadingCurrentFlashCards ? (
+                <>Generating...</>
+              ) : (
+                <>
+                  <BsLightningChargeFill className="w-[16px] h-[16px] mt-[-2px]" />
+                  Generate
+                </>
+              )}
+            </div>
+          )}
 
           {/* {editor &&
             (editor.getHTML() === "" || editor.getHTML() === "<p></p>") && (

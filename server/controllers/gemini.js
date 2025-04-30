@@ -546,7 +546,7 @@ export const geminiFlashcardsQuery = async (req, res) => {
       flashcard_id,
       null,
       title,
-      JSON.stringify(cleanedContent),
+      cleanedContent,
       video.id,
       JSON.stringify(video)
     );

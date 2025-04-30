@@ -486,7 +486,6 @@ export const writeFlashCards = async (req, res) => {
 
   let { flashcard_id, title, content, collection_id, video_id, video_data } =
     req.body;
-  collection_id = collection_id ? collection_id : generateId(15);
 
   try {
     const result = await saveFlashCards(

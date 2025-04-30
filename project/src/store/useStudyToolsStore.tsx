@@ -21,13 +21,3 @@ export const useNoteRefStore = create<NoteRefStore>((set) => ({
   noteRef: null,
   setNoteRef: (ref) => set({ noteRef: ref }),
 }));
-
-export interface FlashCardsRefStore {
-  flashcardsRef: RefObject<HTMLDivElement> | null;
-  setFlashCardsRef: (ref: RefObject<HTMLDivElement>) => void;
-}
-
-export const useFlashCardsRefStore = create<FlashCardsRefStore>((set) => ({
-  flashcardsRef: null,
-  setFlashCardsRef: (ref) => set({ flashcardsRef: ref }),
-}));
