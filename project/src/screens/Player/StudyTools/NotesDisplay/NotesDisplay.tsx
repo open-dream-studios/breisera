@@ -288,7 +288,7 @@ const NotesDisplay = () => {
           onClick={() => {
             if (!editor?.isFocused) editor?.commands.focus();
           }}
-          className={`w-[100%] h-[100%] md:h-[calc(100%-54px)] md:mt-[54px]
+          className={`w-[100%] h-[calc(100%-54px)] mt-[54px]
           px-[17px] rounded-[5px] relative cursor-text`}
         >
           {editor &&

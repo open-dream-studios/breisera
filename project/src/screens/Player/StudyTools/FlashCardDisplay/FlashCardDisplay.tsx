@@ -1,7 +1,7 @@
 "use client";
 import { AuthContext } from "@/contexts/authContext";
 import { useContextQueries } from "@/contexts/queryContext";
-import { FlashCards, useVideo } from "@/contexts/videoContext";
+import { FlashCardsType, useVideo } from "@/contexts/videoContext";
 import { useFlashCardsRefStore } from "@/store/useStudyToolsStore";
 import { appTheme } from "@/util/appTheme";
 import { makeRequest } from "@/util/axios";
@@ -18,13 +18,19 @@ import { GoTrash } from "react-icons/go";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
+import { BACKEND_URL } from "@/util/config";
+import { BsLightningChargeFill } from "react-icons/bs";
+import FlashCards from "./FlashCards";
 
 type FlashCardsListProps = {
   handleDeleteFlashCards: (flashcard_id: string) => void;
   setFlashCardsOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-const FlashCardsList = ({ handleDeleteFlashCards, setFlashCardsOpen }: FlashCardsListProps) => {
+const FlashCardsList = ({
+  handleDeleteFlashCards,
+  setFlashCardsOpen,
+}: FlashCardsListProps) => {
   const { currentUser } = useContext(AuthContext);
   const { currentFlashCards, setCurrentFlashCards } = useVideo();
   const { flashCardData } = useContextQueries();
@@ -68,7 +74,7 @@ const FlashCardsList = ({ handleDeleteFlashCards, setFlashCardsOpen }: FlashCard
                         ...currentFlashCards,
                         flashcard_id: flashCardSet.flashcard_id,
                         title: flashCardSet.title,
-                        content: flashCardSet.content,
+                        content: JSON.parse(flashCardSet.content),
                         video_id: flashCardSet.video_id,
                       });
                     }}
@@ -77,12 +83,15 @@ const FlashCardsList = ({ handleDeleteFlashCards, setFlashCardsOpen }: FlashCard
                     }}
                     className="cursor-pointer transition-opacity duration-[0.2s] ease-in-out hover:opacity-75 truncate w-[calc(100%-40px)] font-[400] text-[14px]"
                   >
-                    {flashCardSet.title === "<p></p>" || flashCardSet.title.trim() === ""
+                    {flashCardSet.title === "<p></p>" ||
+                    flashCardSet.title.trim() === ""
                       ? "Empty Set"
                       : stripHtml(flashCardSet.title)}
                   </div>
                   <GoTrash
-                    onClick={() => handleDeleteFlashCards(flashCardSet.flashcard_id)}
+                    onClick={() =>
+                      handleDeleteFlashCards(flashCardSet.flashcard_id)
+                    }
                     className="w-[18px] h-[18px] mr-[2px] cursor-pointer dim hover:opacity-50 opacity-[70%]"
                     style={{ color: appTheme[currentUser.theme].text_1 }}
                   />
@@ -98,17 +107,62 @@ const FlashCardsList = ({ handleDeleteFlashCards, setFlashCardsOpen }: FlashCard
 
 const FlashCardsDisplay = () => {
   const { currentUser } = useContext(AuthContext);
-  const { currentFlashCards, setCurrentFlashCards, currentVideo } = useVideo();
-  const { refetchFlashCardData } = useContextQueries();
+  const {
+    currentFlashCards,
+    setCurrentFlashCards,
+    currentVideo,
+    currentVideoTranscript,
+    loadingCurrentFlashCards,
+    setLoadingCurrentFlashCards,
+    setCurrentIndex,
+    setIsAnimating,
+    setFlipped,
+    setDisableAnimation,
+  } = useVideo();
+  const { refetchFlashCardData, flashCardData } = useContextQueries();
   const [flashCardsOpen, setFlashCardsOpen] = useState(false);
 
+  const generateFlashCards = async () => {
+    const topic = "Intelligent questions and answers";
+    if (currentVideo && currentVideoTranscript) {
+      setLoadingCurrentFlashCards(true);
+      setCurrentIndex(0);
+      setIsAnimating(false);
+      setFlipped(false);
+      setDisableAnimation(false);
+      const res = await makeRequest.post(
+        BACKEND_URL + "/api/youtube/gemini-flashcards",
+        {
+          number: 10,
+          topic: topic,
+          transcript: currentVideoTranscript,
+          video: currentVideo,
+        }
+      );
+      if (res.status === 200) {
+        const geminiResponse = res.data;
+        setCurrentFlashCards({
+          title: geminiResponse.title,
+          flashcard_id: geminiResponse.flashcard_id,
+          content: JSON.parse(geminiResponse.content),
+          video_id: geminiResponse.videoId,
+        });
+      }
+      setLoadingCurrentFlashCards(false);
+      refetchFlashCardData();
+    }
+    return "Something went wrong...";
+  };
+
   const flashCardsRef = useRef<HTMLDivElement>(null);
-  const setFlashCardsRef = useFlashCardsRefStore((state) => state.setFlashCardsRef);
+  const setFlashCardsRef = useFlashCardsRefStore(
+    (state) => state.setFlashCardsRef
+  );
   useEffect(() => {
     setFlashCardsRef(flashCardsRef as RefObject<HTMLDivElement>);
   }, [setFlashCardsRef, flashCardsRef]);
 
-  const currentFlashCardsRef = useRef<FlashCards>(currentFlashCards);
+  const currentFlashCardsRef = useRef<FlashCardsType>(currentFlashCards);
   useEffect(() => {
     currentFlashCardsRef.current = currentFlashCards;
   }, [currentFlashCards]);
@@ -116,21 +170,27 @@ const FlashCardsDisplay = () => {
   const handleNewFlashCardsClick = async () => {
     cancelTimer();
     await writeFlashCards();
-    setCurrentFlashCards({ ...currentFlashCards, flashcard_id: null, title: "", content: [] });
+    setCurrentFlashCards({
+      ...currentFlashCards,
+      flashcard_id: null,
+      title: "",
+      content: [],
+    });
     setFlashCardsOpen(false);
   };
 
   const writeFlashCards = async () => {
     if (!currentUser || !currentVideo) return;
     const flashCards = currentFlashCardsRef.current;
-    const flashCardsId = flashCards.flashcard_id ? flashCards.flashcard_id : generateUniqueId();
+    const flashCardsId = flashCards.flashcard_id
+      ? flashCards.flashcard_id
+      : generateUniqueId();
     setCurrentFlashCards({ ...flashCards, flashcard_id: flashCardsId });
     try {
       const res = await makeRequest.post("/api/users/write-flashcards", {
-        user_id: currentUser.user_id,
         flashcard_id: flashCardsId,
         title: flashCards.title,
-        content: flashCards.content,
+        content: JSON.stringify(flashCards.content),
         collection_id: null,
         video_id: currentVideo ? currentVideo.id : null,
         video_data: JSON.stringify(currentVideo),
@@ -174,9 +234,9 @@ const FlashCardsDisplay = () => {
     try {
       const res = await makeRequest.post("/api/users/delete-flashcards", {
         user_id: currentUser?.user_id,
-        flashcard_id
+        flashcard_id,
       });
-      if (flashcard_id== currentFlashCards.flashcard_id) {
+      if (flashcard_id == currentFlashCards.flashcard_id) {
         setCurrentFlashCards({
           ...currentFlashCards,
           flashcard_id: null,
@@ -281,16 +341,34 @@ const FlashCardsDisplay = () => {
       ) : (
         <div
           style={{
-            backgroundColor: appTheme[currentUser.theme].component_bg_1,
-            border: `1px solid ${appTheme[currentUser.theme].background_2}`,
             color: appTheme[currentUser.theme].text_1,
           }}
           // onClick={() => {
           //   if (!editor?.isFocused) editor?.commands.focus();
           // }}
-          className={`w-[100%] h-[100%] md:h-[calc(100%-54px)] md:mt-[54px]
-          px-[17px] rounded-[5px] relative cursor-text`}
+          className={`relative w-[100%] h-[calc(100%-54px)] mt-[54px]
+          rounded-[5px] cursor-text flex justify-center`}
         >
+          <FlashCards generateFlashCards={generateFlashCards} />
+
+          {currentFlashCards.content.length > 0 && <div
+            onClick={() => !loadingCurrentFlashCards && generateFlashCards()}
+            className="select-none opacity-90 absolute bottom-[14px] w-[80%] dim hover:brightness-75 cursor-pointer font-[600] text-[16px] py-[7px] px-[13px] rounded-[50px] flex flex-row items-center justify-center gap-[5px]"
+            style={{
+              backgroundColor: appTheme[currentUser.theme].text_1,
+              color: appTheme[currentUser.theme].background_1,
+            }}
+          >
+            {loadingCurrentFlashCards ? (
+              <>Generating...</>
+            ) : (
+              <>
+                <BsLightningChargeFill className="w-[16px] h-[16px] mt-[-2px]" />
+                Generate
+              </>
+            )}
+          </div>}
+
           {/* {editor &&
             (editor.getHTML() === "" || editor.getHTML() === "<p></p>") && (
               <div

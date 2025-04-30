@@ -397,40 +397,16 @@ export const deleteNote = async (req, res) => {
   }
 };
 
-export const writeFlashCards = async (req, res) => {
-  const token = req.cookies.accessToken;
-  if (!token) return res.status(401).json("Not authenticated!");
-  let {
-    user_id,
-    flashcard_id,
-    collection_id,
-    video_id,
-    video_data,
-    title,
-    content,
-  } = req.body;
-  collection_id = collection_id ? collection_id : generateId(15);
-
+export const saveFlashCards = async (
+  user_id,
+  flashcard_id,
+  collection_id,
+  title,
+  content,
+  video_id,
+  video_data
+) => {
   try {
-    // Make sure the user doesn't have more than 100 flash card sets already
-    const userFlashCards = await new Promise((resolve, reject) => {
-      db.query(
-        "SELECT * FROM flashcards WHERE user_id = ?",
-        [user_id],
-        (err, data) => {
-          if (err) {
-            console.error(
-              "DB Query Error: Could not fetch any existing flashcard sets",
-              err
-            );
-            return reject(err);
-          }
-          resolve(data.length);
-        }
-      );
-    });
-    const newTitle = `Set ${userFlashCards + 1}`;
-
     // Search to see if the flashcards already exists
     const existingFlashCards = await new Promise((resolve, reject) => {
       db.query(
@@ -451,23 +427,18 @@ export const writeFlashCards = async (req, res) => {
     let flashcards = existingFlashCards || null;
     if (!flashcards) {
       // Create a new flashcard set
-      if (userFlashCards && userFlashCards >= 100) {
-        return res
-          .status(417)
-          .json({ message: "User flashcard limit exceeded" });
-      }
       const success = await new Promise((resolve, reject) => {
         db.query(
-          "INSERT INTO flashcards (`user_id`,`flashcard_id`,`collection_id`,`video_id`,`video_data`,`title`,`content`) VALUE (?)",
+          "INSERT INTO flashcards (`user_id`,`flashcard_id`,`collection_id`,`title`,`content`,`video_id`,`video_data`) VALUE (?)",
           [
             [
               user_id,
               flashcard_id,
               collection_id,
+              title,
+              content,
               video_id,
               video_data,
-              newTitle,
-              content,
             ],
           ],
           (err, data) => {
@@ -482,19 +453,13 @@ export const writeFlashCards = async (req, res) => {
           }
         );
       });
-      if (success) {
-        return res.status(200).json({ message: "Flashcard set created" });
-      } else {
-        return res
-          .status(417)
-          .json({ message: "Flashcard set creation failed" });
-      }
+      return success;
     } else {
       // Update flashcard set
       const success = await new Promise((resolve, reject) => {
         db.query(
-          "UPDATE flashcards SET content = ?, collection_id = ? WHERE user_id = ? AND flashcard_id = ?",
-          [content, collection_id, user_id, flashcard_id],
+          "UPDATE flashcards SET title = ?, content = ?, collection_id = ? WHERE user_id = ? AND flashcard_id = ?",
+          [title, content, collection_id, user_id, flashcard_id],
           (err, data) => {
             if (err) {
               console.error(
@@ -507,11 +472,36 @@ export const writeFlashCards = async (req, res) => {
           }
         );
       });
-      if (success) {
-        return res.status(200).json({ message: "Flashcard set updated" });
-      } else {
-        return res.status(417).json({ message: "Flashcard set update failed" });
-      }
+      return success;
+    }
+  } catch (error) {
+    return null;
+  }
+};
+
+export const writeFlashCards = async (req, res) => {
+  const token = req.cookies.accessToken;
+  if (!token) return res.status(401).json("Not authenticated!");
+  const user_id = decodeToken(token);
+
+  let { flashcard_id, title, content, collection_id, video_id, video_data } =
+    req.body;
+  collection_id = collection_id ? collection_id : generateId(15);
+
+  try {
+    const result = await saveFlashCards(
+      user_id,
+      flashcard_id,
+      collection_id,
+      title,
+      content,
+      video_id,
+      video_data
+    );
+    if (result) {
+      return res.status(200).json("Flashcards saved");
+    } else {
+      return res.status(500).json("Error saving flashcards");
     }
   } catch (error) {
     return res.status(404).json(null);

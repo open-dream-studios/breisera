@@ -22,3 +22,22 @@ export function formatTimeStamp(input) {
 
   return `${hours}:${paddedMinutes}:${paddedSeconds}`
 }
+
+export const extractJsonArray = (input) => {
+  const regex = /\[\s*{[\s\S]*?}\s*]/g; // matches from [ { ... } ] with any content between
+
+  const match = input.match(regex);
+
+  if (match && match.length > 0) {
+    try {
+      const parsed = match[0];
+      return parsed;
+    } catch (e) {
+      // If parsing fails, return original input
+      return input;
+    }
+  }
+
+  // If no match is found, return original input
+  return input;
+};

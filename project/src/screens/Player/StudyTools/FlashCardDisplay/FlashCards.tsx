@@ -7,8 +7,9 @@ import { appTheme } from "@/util/appTheme";
 import { useVideo } from "@/contexts/videoContext";
 import { Skeleton } from "@/components/ui/skeleton";
 import { timeStampInjection } from "@/util/functions/YouTubeData";
+import { BsLightningChargeFill } from "react-icons/bs";
 
-const FlashCards = () => {
+const FlashCards = ({ generateFlashCards }: { generateFlashCards: () => void}) => {
   const { currentUser } = useContext(AuthContext);
   const {
     currentFlashCards,
@@ -62,15 +63,10 @@ const FlashCards = () => {
     );
   };
 
-  if (
-    !currentUser ||
-    currentFlashCards.content.length === 0 ||
-    !currentFlashCards.flashcard_id
-  )
-    return;
+  if (!currentUser) return;
 
   return (
-    <div className="h-[100%] pt-[20px] px-[20px]">
+    <div className="h-[100%] pt-[20px] px-[20px] w-[100%]">
       {loadingCurrentFlashCards ? (
         <div className="w-[100%] flex flex-col items-center">
           <Skeleton
@@ -89,76 +85,106 @@ const FlashCards = () => {
           />
         </div>
       ) : (
-        <div className="h-[100%] flex flex-col items-center">
-          <motion.div
-            className="w-full max-w-md aspect-[2/1.5] relative"
-            onClick={handleClick}
-            initial={false}
-            animate={{ rotateY: flipped ? 180 : 0 }}
-            transition={
-              disableAnimation
-                ? { duration: 0 }
-                : { duration: 0.6, ease: "easeInOut" }
-            }
-            style={{ transformStyle: "preserve-3d", cursor: "pointer" }}
-          >
-            <motion.div
-              className="absolute overflow-hidden w-[100%] h-[100%] flex items-center pb-[5px] px-[20px] justify-center text-center rounded-[18px] shadow-xl text-[15px] leading-[23px] font-semibold cursor-pointer"
-              style={{
-                backfaceVisibility: "hidden",
-                rotateY: 0,
-                backgroundColor: appTheme[currentUser.theme].background_2,
-              }}
-            >
-              <div className="">
-                {timeStampInjection(currentUser.theme, card.question)}
+        <>
+          {currentFlashCards.content.length === 0 ||
+          !currentFlashCards.flashcard_id ? (
+            <div className="h-[100%] flex flex-col items-center">
+              <div
+                className="w-full max-w-md aspect-[2/1.5] relative"
+                onClick={generateFlashCards}
+                style={{ transformStyle: "preserve-3d", cursor: "pointer" }}
+              >
+                <div
+                  className="cursor-pointer dim hover:brightness-90 absolute gap-[5px] w-[100%] h-[100%] flex items-center pb-[5px] px-[20px] justify-center text-center rounded-[18px] shadow-xl text-[15px] leading-[23px] font-[500]"
+                  style={{
+                    backfaceVisibility: "hidden",
+                    backgroundColor: appTheme[currentUser.theme].flash_cards,
+                    border: `0.1px solid ${
+                      appTheme[currentUser.theme].background_2
+                    }`,
+                  }}
+                >
+                  {loadingCurrentFlashCards ? "Generating" : "Generate"}
+                  <BsLightningChargeFill className="w-[16px] h-[16px] mt-[-2px]" />
+                </div>
               </div>
-            </motion.div>
+            </div>
+          ) : (
+            <div className="h-[100%] flex flex-col items-center">
+              <motion.div
+                className="w-full max-w-md aspect-[2/1.5] relative"
+                onClick={handleClick}
+                initial={false}
+                animate={{ rotateY: flipped ? 180 : 0 }}
+                transition={
+                  disableAnimation
+                    ? { duration: 0 }
+                    : { duration: 0.6, ease: "easeInOut" }
+                }
+                style={{ transformStyle: "preserve-3d", cursor: "pointer" }}
+              >
+                <motion.div
+                  className="absolute overflow-hidden w-[100%] h-[100%] flex items-center pb-[5px] px-[20px] justify-center text-center rounded-[18px] shadow-xl text-[15px] leading-[23px] font-semibold cursor-pointer"
+                  style={{
+                    backfaceVisibility: "hidden",
+                    rotateY: 0,
+                    backgroundColor: appTheme[currentUser.theme].flash_cards,
+                    border: `0.1px solid ${
+                      appTheme[currentUser.theme].background_2
+                    }`,
+                  }}
+                >
+                  <div className="">
+                    {timeStampInjection(currentUser.theme, card.question)}
+                  </div>
+                </motion.div>
 
-            <motion.div
-              className="absolute overflow-hidden w-[100%] h-[100%] flex items-center pb-[5px] px-[20px] justify-center text-center rounded-[18px] shadow-xl text-[15px] leading-[23px] font-semibold cursor-pointer"
-              style={{
-                backfaceVisibility: "hidden",
-                rotateY: 180,
-                backgroundColor: appTheme[currentUser.theme].background_2,
-              }}
-            >
-              <div className="">
-                {timeStampInjection(currentUser.theme, card.answer)}
+                <motion.div
+                  className="absolute overflow-hidden w-[100%] h-[100%] flex items-center pb-[5px] px-[20px] justify-center text-center rounded-[18px] shadow-xl text-[15px] leading-[23px] font-semibold cursor-pointer"
+                  style={{
+                    backfaceVisibility: "hidden",
+                    rotateY: 180,
+                    backgroundColor: appTheme[currentUser.theme].flash_cards,
+                  }}
+                >
+                  <div className="">
+                    {timeStampInjection(currentUser.theme, card.answer)}
+                  </div>
+                </motion.div>
+              </motion.div>
+
+              <div className="mt-[17px] font-[300] text-[15px] lg:text-[20px]">
+                {currentIndex + 1} / {currentFlashCards.content.length}
               </div>
-            </motion.div>
-          </motion.div>
 
-          <div className="mt-[17px] font-[300] text-[15px] lg:text-[20px]">
-            {currentIndex + 1} / {currentFlashCards.content.length}
-          </div>
-
-          <div className="mt-8 flex gap-8 mb-[50px]">
-            <button
-              onClick={goBack}
-              style={{
-                backgroundColor: appTheme[currentUser.theme].background_2,
-              }}
-              className={`${
-                currentIndex === 0 && "opacity-50 pointer-events-none"
-              } w-14 h-14 rounded-full shadow-lg dim cursor-pointer hover:brightness-75 flex items-center justify-center`}
-            >
-              <ArrowLeft />
-            </button>
-            <button
-              onClick={goNext}
-              style={{
-                backgroundColor: appTheme[currentUser.theme].background_2,
-              }}
-              className={`${
-                currentIndex === currentFlashCards.content.length - 1 &&
-                "opacity-50 pointer-events-none"
-              } w-14 h-14 rounded-full shadow-lg dim cursor-pointer hover:brightness-75 flex items-center justify-center`}
-            >
-              <ArrowRight />
-            </button>
-          </div>
-        </div>
+              <div className="mt-8 flex gap-8 mb-[50px]">
+                <button
+                  onClick={goBack}
+                  style={{
+                    backgroundColor: appTheme[currentUser.theme].background_2,
+                  }}
+                  className={`${
+                    currentIndex === 0 && "opacity-50 pointer-events-none"
+                  } w-14 h-14 rounded-full shadow-lg dim cursor-pointer hover:brightness-75 flex items-center justify-center`}
+                >
+                  <ArrowLeft />
+                </button>
+                <button
+                  onClick={goNext}
+                  style={{
+                    backgroundColor: appTheme[currentUser.theme].background_2,
+                  }}
+                  className={`${
+                    currentIndex === currentFlashCards.content.length - 1 &&
+                    "opacity-50 pointer-events-none"
+                  } w-14 h-14 rounded-full shadow-lg dim cursor-pointer hover:brightness-75 flex items-center justify-center`}
+                >
+                  <ArrowRight />
+                </button>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

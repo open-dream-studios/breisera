@@ -1,9 +1,12 @@
 import dotenv from "dotenv";
-import { formatTimeStamp } from "../functions/data.js";
+import { db } from "../connection/connect.js";
+import { extractJsonArray, formatTimeStamp, generateId } from "../functions/data.js";
 import fetch from "node-fetch";
 dotenv.config();
 
 import { createClient } from "@supabase/supabase-js";
+import { decodeToken } from "../functions/auth.js";
+import { saveFlashCards } from "./user.js";
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -46,7 +49,7 @@ async function upsertVideoStorage(
     updateData.video_key_concept = generatedKeyConcepts;
   }
 
-  updateData.process_version = 1.1
+  updateData.process_version = 1.1;
 
   const { error } = await supabase
     .from("video_summaries")
@@ -427,12 +430,13 @@ export const geminiSummariesQuery = async (req, res) => {
 
 // TO DO: SEND VIDEO LENGTH
 export const geminiFlashcardsQuery = async (req, res) => {
-    const token = req.cookies.accessToken;
+  const token = req.cookies.accessToken;
   if (!token) return res.status(401).json("Not authenticated!");
+  const user_id = decodeToken(token);
 
   const { number, topic, transcript, video } = req.body;
-  if (!number || !transcript || !video ) {
-    return res.status(500).json("Invalid data sent")
+  if (!number || !transcript || !video) {
+    return res.status(500).json("Invalid data sent");
   }
   const geminiModel = "gemini-1.5-flash";
 
@@ -495,6 +499,29 @@ export const geminiFlashcardsQuery = async (req, res) => {
   ];
 
   try {
+    // Make sure the user doesn't have more than 100 flash card sets already
+    const userFlashCards = await new Promise((resolve, reject) => {
+      db.query(
+        "SELECT * FROM flashcards WHERE user_id = ?",
+        [user_id],
+        (err, data) => {
+          if (err) {
+            console.error(
+              "DB Query Error: Could not fetch any existing flashcard sets",
+              err
+            );
+            return reject(err);
+          }
+          resolve(data.length);
+        }
+      );
+    });
+
+    if (userFlashCards.length > 100) {
+      return res.status(500).json("User flash card limit reached")
+    }
+    const title = `Flashcard Set ${userFlashCards + 1}`;
+
     const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent`;
     const geminiResponse = await fetch(
       `${GEMINI_API_URL}?key=${process.env.GOOGLE_API_KEY}`,
@@ -510,7 +537,25 @@ export const geminiFlashcardsQuery = async (req, res) => {
     const data = await geminiResponse.json();
     const content =
       data?.candidates?.[0]?.content?.parts?.[0]?.text || "No answer.";
-    res.status(200).json({ content });
+
+    // Save Set
+    const flashcard_id = generateId(15)
+    const cleanedContent = extractJsonArray(content)
+    const result = await saveFlashCards(
+      user_id,
+      flashcard_id,
+      null,
+      title,
+      JSON.stringify(cleanedContent),
+      video.id,
+      JSON.stringify(video)
+    );
+
+    if (result) {
+      return res.status(200).json({ content: cleanedContent, flashcard_id, title, videoId: video.id });
+    } else {
+      return res.status(500).json({ error: "Error saving flashcards" });
+    }
   } catch (err) {
     console.error(err.response?.data || err.message);
     res.status(500).json({ error: "Gemini API request failed" });

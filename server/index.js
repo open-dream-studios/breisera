@@ -283,7 +283,7 @@ app.post("/create-video", async (req, res) => {
 });
 
 app.get("/delete-download", async (req, res) => {
-  console.log("promised deletion")
+  // console.log("promised deletion")
   const { videoName } = req.query;
   if (!videoName) {
     return res.status(400).json({ error: "Missing videoName parameter" });
@@ -291,7 +291,7 @@ app.get("/delete-download", async (req, res) => {
 
   try {
     await new Promise((resolve) => setTimeout(resolve, 60000));
-    console.log("deleting")
+    // console.log("deleting")
     await deleteFromBucket(videoName);
     return res
       .status(200)

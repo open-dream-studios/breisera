@@ -21,6 +21,8 @@ export const appTheme = {
     text_3: "#555555",
     text_4: "#999999",
 
+    flash_cards: "#FAFAFA",
+
     // Globals
     app_color_1: "#A796D5",
     app_text_color_1: "#A796D5",
@@ -45,6 +47,9 @@ export const appTheme = {
     text_2: "#DDDDDD",
     text_3: "#BBBBBB",
     text_4: "#888888",
+
+    // 
+    flash_cards: "#888888",
 
     // Globals
     app_color_1: "#A796D5",

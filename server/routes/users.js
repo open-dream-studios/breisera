@@ -33,9 +33,11 @@ router.get("/current", getCurrentUser);
 router.get("/current-subscription", getCurrentUserSubscription);
 router.get("/current-billing", getCurrentUserBilling);
 router.put("/update-current", updateCurrentUser);
+
 router.post("/write-note", writeNote);
 router.post("/get-notes", getNotes);
 router.post("/delete-note", deleteNote);
+
 router.post("/write-flashcards", writeFlashCards);
 router.post("/get-flashcards", getFlashCards);
 router.post("/delete-flashcards", deleteFlashCards);

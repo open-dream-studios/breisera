@@ -41,16 +41,16 @@ export type VideoTranscript = null | VideoTranscriptBit[];
 export type Summary = null | string;
 export type KeyConcepts = null | string;
 
-export type FlashCard = {
+export type FlashCardType = {
   question: string;
   answer: string;
   timeStamp?: string;
   [key: string]: any;
 };
-export type FlashCards = {
+export type FlashCardsType = {
   flashcard_id: string | null;
   title: string;
-  content: FlashCard[];
+  content: FlashCardType[];
   video_id: string | null;
 };
 
@@ -94,8 +94,8 @@ type VideoContextType = {
   setLoadingCurrentSummaries: React.Dispatch<React.SetStateAction<boolean>>;
   currentStudyTool: StudyToolTypes;
   setCurrentStudyTool: React.Dispatch<React.SetStateAction<StudyToolTypes>>;
-  currentFlashCards: FlashCards;
-  setCurrentFlashCards: React.Dispatch<React.SetStateAction<FlashCards>>;
+  currentFlashCards: FlashCardsType;
+  setCurrentFlashCards: React.Dispatch<React.SetStateAction<FlashCardsType>>;
   loadingCurrentFlashCards: boolean;
   setLoadingCurrentFlashCards: React.Dispatch<React.SetStateAction<boolean>>;
   currentIndex: number;
@@ -159,7 +159,7 @@ export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({
   const [loadingCurrentSummaries, setLoadingCurrentSummaries] =
     useState<boolean>(true);
 
-  const [currentFlashCards, setCurrentFlashCards] = useState<FlashCards>({
+  const [currentFlashCards, setCurrentFlashCards] = useState<FlashCardsType>({
     flashcard_id: null,
     title: "",
     content: [],

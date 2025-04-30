@@ -188,7 +188,6 @@ const FlashCardDisplay = () => {
     setCurrentFlashCards({ ...currentFlashCards, flashcard_id: flashcardId });
     try {
       const res = await makeRequest.post("/api/users/write-flashcards", {
-        user_id: currentUser.user_id,
         flashcard_id: flashcardId,
         title: currentFlashCards.title,
         content: JSON.stringify(currentFlashCards.content),

@@ -62,7 +62,7 @@ export const timeStampInjection = (
           }}
           className="hover:brightness-75 dim cursor-pointer bg-gray-500 px-[5px] text-[14px] leading-[14px] py-[4px] ml-[2px] mr-[2px] rounded-[5px]"
         >
-          {time}
+          {cleanTimestamp(time)}
         </button>
       );
     }
@@ -70,6 +70,24 @@ export const timeStampInjection = (
     return <span key={index}>{part}</span>;
   });
 };
+
+export function cleanTimestamp(timestamp: string): string {
+  const parts = timestamp.split(":").map(Number);
+
+  if (parts.length !== 3) return timestamp; // fallback if not in hh:mm:ss format
+
+  const [hours, minutes, seconds] = parts;
+
+  if (hours === 0 && minutes === 0) {
+    return `0:${String(seconds).padStart(2, '0')}`;
+  }
+
+  if (hours === 0) {
+    return `${minutes}:${String(seconds).padStart(2, '0')}`;
+  }
+
+  return `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+}
 
 // export const timeStampInjectionAndFormatBreaks = (
 //   message: string,
@@ -158,7 +176,7 @@ export const timeStampInjectionAndFormatting = (
             }}
             className="hover:brightness-75 dim cursor-pointer bg-gray-500 px-[5px] text-[14px] leading-[14px] py-[4px] ml-[2px] mr-[2px] rounded-[5px]"
           >
-            {time}
+            {cleanTimestamp(time)}
           </button>
         );
       }
@@ -168,23 +186,4 @@ export const timeStampInjectionAndFormatting = (
 
     return [...lineElements, <br key={`br-${lineIndex}`} />];
   });
-};
-
-export const extractJsonArray = (input: string) => {
-  const regex = /\[\s*{[\s\S]*?}\s*]/g; // matches from [ { ... } ] with any content between
-
-  const match = input.match(regex);
-
-  if (match && match.length > 0) {
-    try {
-      const parsed = JSON.parse(match[0]);
-      return parsed;
-    } catch (e) {
-      // If parsing fails, return original input
-      return input;
-    }
-  }
-
-  // If no match is found, return original input
-  return input;
 };

@@ -230,7 +230,7 @@ const chunkTranscriptWithSentences = async (transcriptArray) => {
   // const result = await usePython(fullTranscript, "string", "transcript-processing.py");
   // console.log(result);
   // return result
-  console.log(fullTranscript);
+  // console.log(fullTranscript);
 
   try {
     const formattedMessage = [
@@ -246,7 +246,7 @@ const chunkTranscriptWithSentences = async (transcriptArray) => {
       store: true,
       messages: formattedMessage,
     });
-    console.log(completion.choices[0].message.content);
+    // console.log(completion.choices[0].message.content);
     return completion.choices[0].message.content;
   } catch (error) {
     console.error(error);
@@ -417,7 +417,7 @@ export const generateYoutubeTranscript = async (req, res) => {
 };
 
 async function storeTranscriptEmbeddings(videoId, chunks) {
-  console.log("Embedding transcript...");
+  // console.log("Embedding transcript...");
   const inputs = chunks.map((chunk) => chunk.text.slice(0, 1000));
   const response = await openai.embeddings.create({
     model: "text-embedding-3-small",
@@ -443,7 +443,7 @@ async function storeTranscriptEmbeddings(videoId, chunks) {
     }
   }
 
-  console.log("✅ All chunks embedded and stored for", videoId);
+  // console.log("✅ All chunks embedded and stored for", videoId);
 }
 
 async function embed(text) {
