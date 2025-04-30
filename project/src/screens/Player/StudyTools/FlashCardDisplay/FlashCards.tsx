@@ -9,7 +9,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { timeStampInjection } from "@/util/functions/YouTubeData";
 import { BsLightningChargeFill } from "react-icons/bs";
 
-const FlashCards = ({ generateFlashCards }: { generateFlashCards: () => void}) => {
+const FlashCards = ({
+  generateFlashCards,
+}: {
+  generateFlashCards: () => void;
+}) => {
   const { currentUser } = useContext(AuthContext);
   const {
     currentFlashCards,
@@ -111,6 +115,18 @@ const FlashCards = ({ generateFlashCards }: { generateFlashCards: () => void}) =
             </div>
           ) : (
             <div className="h-[100%] flex flex-col items-center">
+              <div
+                style={{
+                  border: `0.1px solid ${
+                    appTheme[currentUser.theme].background_2
+                  }`,
+                }}
+                className="w-[100%] h-[50px] shadow-lg rounded-[10px] mb-[15px]"
+              >
+                <>
+                  {/* {currentFlashCards.vide} */}
+                </>
+              </div>
               <motion.div
                 className="w-full max-w-md aspect-[2/1.5] relative"
                 onClick={handleClick}

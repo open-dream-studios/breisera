@@ -56,11 +56,12 @@ export const timeStampInjection = (
   currentTheme: ThemeType,
   message: string
 ) => {
-  const parts = message.split(/(\[?\d{1,2}:\d{2}(?::\d{2})?\]?)/g);
+  const parts = message.split(/(\[?\d{1,2}:\d{1,2}(?::\d{2})?\]?)/g);
   return parts.map((part, index) => {
-    const match = part.match(/\[?(\d{1,2}:\d{2}(?::\d{2})?)\]?/);
+    const match = part.match(/\[?(\d{1,2}:\d{1,2}(?::\d{2})?)\]?/);
     if (match) {
       const time = match[1];
+      console.log(time)
       return (
         <button
           key={index}
@@ -156,7 +157,7 @@ export const timeStampInjectionAndFormatting = (
 
   return lines.flatMap((line, lineIndex) => {
     const isPossibleHeader =
-      !/\d{2}:\d{2}:\d{2}/.test(line) &&
+      !/\[?\d{1,2}:\d{1,2}(?::\d{2})?\]?/.test(line) &&
       line.trim().split(/\s+/).length >= 2 &&
       line.trim().split(/\s+/).length <= 15;
 
@@ -173,10 +174,10 @@ export const timeStampInjectionAndFormatting = (
     }
 
     // const parts = line.split(/(\[?\d{2}:\d{2}:\d{2}\]?)/g);
-    const parts = message.split(/(\[?\d{1,2}:\d{2}(?::\d{2})?\]?)/g);
+    const parts = line.split(/(\[?\d{1,2}:\d{1,2}(?::\d{2})?\]?)/g);
     const lineElements = parts.map((part, index) => {
       // const match = part.match(/\[?(\d{2}:\d{2}:\d{2})\]?/);
-      const match = part.match(/\[?(\d{1,2}:\d{2}(?::\d{2})?)\]?/);
+      const match = part.match(/\[?(\d{1,2}:\d{1,2}(?::\d{2})?)\]?/);
       if (match) {
         const time = match[1];
         return (

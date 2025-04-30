@@ -8,7 +8,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 const SummaryDisplay = () => {
   const { currentUser } = useContext(AuthContext);
   const { currentSummary, loadingCurrentSummaries } = useVideo();
+  if (currentSummary) {
+    console.log(timeStampInjectionAndFormatting(currentSummary, "dark"));
+  }
+  
   if (!currentUser) return <></>;
+
   return (
     <div className="flex flex-col pb-[60px]">
       <p className="text-[23px] mb-[18px] font-[600]">Summary</p>
