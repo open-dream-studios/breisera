@@ -34,6 +34,7 @@ const FlashCardsList = ({
   const { currentFlashCards, setCurrentFlashCards } = useVideo();
   const { flashCardData } = useContextQueries();
 
+  console.log(flashCardData)
   if (!currentUser || !flashCardData) return <></>;
 
   return (
@@ -174,7 +175,7 @@ const FlashCardsDisplay = () => {
       const res = await makeRequest.post("/api/users/write-flashcards", {
         flashcard_id: flashCardsId,
         title: flashCards.title,
-        content: JSON.stringify(flashCards.content),
+        content: flashCards.content,
         collection_id: null,
         video_id: currentVideo ? currentVideo.id : null,
         video_data: JSON.stringify(currentVideo),

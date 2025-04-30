@@ -82,10 +82,11 @@ export const QueryProvider: React.FC<{ children: React.ReactNode }> = ({
     queryKey: ["flashcards", currentUser?.user_id],
     queryFn: async () => {
       const res = await makeRequest.post("/api/users/get-flashcards", {});
-      const data = res.data.flashcards.map((card: any) => ({
+      const data = res.data.flashcards.map((card: any) => {
+        return ({
         ...card,
-        content: JSON.parse(card.content),
-      }));
+        content: card.content,
+      })});
       return data;
     },
     enabled: !!currentUser?.user_id,
