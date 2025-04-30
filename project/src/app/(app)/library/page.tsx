@@ -182,7 +182,11 @@ const LibraryPage = () => {
               const videoData = recentVideo.video_data;
               return (
                 <div key={index}>
-                  <CustomVideoFrame recentVideo={videoData} index={index} />
+                  <CustomVideoFrame
+                    video={videoData}
+                    index={index}
+                    isRecent={true}
+                  />
                 </div>
               );
             })
@@ -224,7 +228,12 @@ const LibraryPage = () => {
             <p className="mt-[50px] mb-[10px] text-[30px] leading-[30px] tracking-[1px] font-[600] w-[100%] text-center">
               Saved Collections
             </p>
-            <div className="hover:brightness-50 brightness-75 cursor-pointer dim absolute right-0 top-[11px]" onClick={handleAddCollection}>Add Collection</div>
+            <div
+              className="hover:brightness-50 brightness-75 cursor-pointer dim absolute right-0 top-[11px]"
+              onClick={handleAddCollection}
+            >
+              Add Collection
+            </div>
 
             {videoCollectionData.length > 0 &&
               videoCollectionData.map(
@@ -272,17 +281,18 @@ const LibraryPage = () => {
                                   ].videos.length
                                 : 3
                             )
-                            .map((recentVideo: any, index: number) => {
+                            .map((video: any, index: number) => {
                               return (
                                 <div key={index} className="relative">
                                   <CustomVideoFrame
-                                    recentVideo={recentVideo}
+                                    video={video}
                                     index={index}
+                                    isRecent={false}
                                   />
                                   <div
                                     onClick={() =>
                                       handleRemoveSavedVideo(
-                                        recentVideo,
+                                        video,
                                         videoCollectionsData[
                                           videoCollectionsData.findIndex(
                                             (video) =>

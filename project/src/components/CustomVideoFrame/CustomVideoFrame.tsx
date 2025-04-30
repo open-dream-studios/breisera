@@ -9,11 +9,13 @@ import { useContext } from "react";
 import { RiPlayLargeFill } from "react-icons/ri";
 
 const CustomVideoFrame = ({
-  recentVideo,
+  video,
   index,
+  isRecent
 }: {
-  recentVideo: any;
+  video: any;
   index: number;
+  isRecent: boolean,
 }) => {
   const { currentUser } = useContext(AuthContext);
   const { handleVideoClick } = useVideo();
@@ -28,27 +30,27 @@ const CustomVideoFrame = ({
       }}
     >
       <Link
-        onClick={() => handleVideoClick(recentVideo, null)}
-        href={`${FRONTEND_URL}/www.youtube.com/watch?v=${recentVideo.id}`}
+        onClick={() => handleVideoClick(video, null)}
+        href={`${FRONTEND_URL}/www.youtube.com/watch?v=${video.id}`}
         className="dim group-hover:brightness-75 w-[100%] h-[100%]"
       >
         <div className="relative w-[100%] aspect-[16/9] overflow-hidden">
           <img
             className="w-[100%] h-[100%] object-cover"
             src={
-              recentVideo.snippet?.thumbnails?.high?.url
-                ? recentVideo.snippet.thumbnails.high.url
+              video.snippet?.thumbnails?.high?.url
+                ? video.snippet.thumbnails.high.url
                 : ""
             }
           />
           <div className="absolute bottom-[10px] right-[12px] bg-white py-[8px] px-[19px] rounded-[6px] flex flex-row gap-[6px] items-center justify-center">
             <RiPlayLargeFill className="text-black w-[13px] h-[13px]" />
             <p className="text-[11px] leading-[11px] font-[600] mt-[1px] text-black">
-              Resume
+              {isRecent ? "Resume" : "Watch"}
             </p>
           </div>
         </div>
-        <div
+        {isRecent && <div
           className="w-[100%] h-[2.5px] bottom-[-2.5px]"
           style={{
             backgroundColor: appTheme[currentUser.theme].background_3,
@@ -66,7 +68,7 @@ const CustomVideoFrame = ({
             }}
             className="bg-red-400 h-[2.5px] bottom-0"
           />}
-        </div>
+        </div>}
         <div className="w-[100%] relative flex flex-col pt-[5px] mb-[40px] px-[13px] gap-[6px]">
           <p
             className="font-[500] truncate w-[100%] overflow-hidden text-[14px] leading-[14px] tracking-[0.2px] mt-[5px]"
@@ -74,7 +76,7 @@ const CustomVideoFrame = ({
               color: appTheme[currentUser.theme].text_1,
             }}
           >
-            {recentVideo.snippet.title}
+            {video.snippet.title}
           </p>
         </div>
       </Link>
@@ -82,7 +84,7 @@ const CustomVideoFrame = ({
       <div
         onClick={(e: any) => {
           window.open(
-            `https://www.youtube.com/channel/${recentVideo.snippet.channelId}`,
+            `https://www.youtube.com/channel/${video.snippet.channelId}`,
             "_blank"
           );
         }}
@@ -91,7 +93,7 @@ const CustomVideoFrame = ({
         <div className="w-[25px] h-[25px] min-w-[25px] overflow-hidden rounded-full">
           <img
             className="w-[100%] h-[100%] object-cover"
-            src={recentVideo.channelInfo.thumbnail}
+            src={video.channelInfo.thumbnail}
           />
         </div>
         <p
@@ -100,7 +102,7 @@ const CustomVideoFrame = ({
             color: appTheme[currentUser.theme].text_1,
           }}
         >
-          {recentVideo.snippet.channelTitle}
+          {video.snippet.channelTitle}
         </p>
       </div>
     </div>

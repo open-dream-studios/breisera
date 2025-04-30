@@ -60,7 +60,7 @@ const HomePage = () => {
           key={video.id}
           className="dim hover:brightness-75"
         >
-          <CustomVideoFrame index={1} recentVideo={video} />
+          <CustomVideoFrame index={1} video={video} isRecent={false} />
         </div>
       ))}
     </div>
