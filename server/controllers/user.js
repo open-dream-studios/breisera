@@ -459,7 +459,7 @@ export const saveFlashCards = async (
       const success = await new Promise((resolve, reject) => {
         db.query(
           "UPDATE flashcards SET title = ?, content = ?, collection_id = ? WHERE user_id = ? AND flashcard_id = ?",
-          [title, content, collection_id, user_id, flashcard_id],
+          [title, JSON.stringify(content), collection_id, user_id, flashcard_id],
           (err, data) => {
             if (err) {
               console.error(

@@ -238,6 +238,7 @@ const NotesDisplay = () => {
         return false;
       },
     },
+    immediatelyRender: false,
   });
 
   if (!currentUser) return;
