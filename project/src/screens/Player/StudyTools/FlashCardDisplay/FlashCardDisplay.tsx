@@ -20,6 +20,7 @@ import Underline from "@tiptap/extension-underline";
 import { BACKEND_URL } from "@/util/config";
 import { BsLightningChargeFill } from "react-icons/bs";
 import FlashCards from "./FlashCards";
+import { showToast } from "@/components/CustomToast";
 
 type FlashCardsListProps = {
   handleDeleteFlashCards: (flashcard_id: string) => void;
@@ -34,7 +35,6 @@ const FlashCardsList = ({
   const { currentFlashCards, setCurrentFlashCards } = useVideo();
   const { flashCardData } = useContextQueries();
 
-  console.log(flashCardData)
   if (!currentUser || !flashCardData) return <></>;
 
   return (
@@ -116,6 +116,10 @@ const FlashCardsDisplay = () => {
   const [flashCardsOpen, setFlashCardsOpen] = useState(false);
 
   const generateFlashCards = async () => {
+    if (!currentVideoTranscript) {
+      showToast("No transcript available","success")
+      return
+    }
     const topic = "Intelligent questions and answers";
     if (currentVideo && currentVideoTranscript) {
       setLoadingCurrentFlashCards(true);

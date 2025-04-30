@@ -31,18 +31,34 @@ export const formatTimeStamp = (input: number): string => {
     : `${paddedMinutes}:${paddedSeconds}`;
 };
 
+// export const convertToSeconds = (timestamp: string): number => {
+//   const [hours, minutes, seconds] = timestamp.split(":").map(Number);
+//   return hours * 3600 + minutes * 60 + seconds;
+// };
 export const convertToSeconds = (timestamp: string): number => {
-  const [hours, minutes, seconds] = timestamp.split(":").map(Number);
-  return hours * 3600 + minutes * 60 + seconds;
+  const parts = timestamp.split(":").map(Number);
+
+  if (parts.length === 2) {
+    // Format: mm:ss
+    const [minutes, seconds] = parts;
+    return minutes * 60 + seconds;
+  } else if (parts.length === 3) {
+    // Format: hh:mm:ss
+    const [hours, minutes, seconds] = parts;
+    return hours * 3600 + minutes * 60 + seconds;
+  } else {
+    // Invalid format
+    return 0;
+  }
 };
 
 export const timeStampInjection = (
   currentTheme: ThemeType,
   message: string
 ) => {
-  const parts = message.split(/(\[?\d{2}:\d{2}:\d{2}\]?)/g);
+  const parts = message.split(/(\[?\d{1,2}:\d{2}(?::\d{2})?\]?)/g);
   return parts.map((part, index) => {
-    const match = part.match(/\[?(\d{2}:\d{2}:\d{2})\]?/);
+    const match = part.match(/\[?(\d{1,2}:\d{2}(?::\d{2})?)\]?/);
     if (match) {
       const time = match[1];
       return (
@@ -66,7 +82,6 @@ export const timeStampInjection = (
         </button>
       );
     }
-
     return <span key={index}>{part}</span>;
   });
 };
@@ -79,14 +94,16 @@ export function cleanTimestamp(timestamp: string): string {
   const [hours, minutes, seconds] = parts;
 
   if (hours === 0 && minutes === 0) {
-    return `0:${String(seconds).padStart(2, '0')}`;
+    return `0:${String(seconds).padStart(2, "0")}`;
   }
 
   if (hours === 0) {
-    return `${minutes}:${String(seconds).padStart(2, '0')}`;
+    return `${minutes}:${String(seconds).padStart(2, "0")}`;
   }
 
-  return `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  return `${hours}:${String(minutes).padStart(2, "0")}:${String(
+    seconds
+  ).padStart(2, "0")}`;
 }
 
 // export const timeStampInjectionAndFormatBreaks = (
@@ -155,9 +172,11 @@ export const timeStampInjectionAndFormatting = (
       ];
     }
 
-    const parts = line.split(/(\[?\d{2}:\d{2}:\d{2}\]?)/g);
+    // const parts = line.split(/(\[?\d{2}:\d{2}:\d{2}\]?)/g);
+    const parts = message.split(/(\[?\d{1,2}:\d{2}(?::\d{2})?\]?)/g);
     const lineElements = parts.map((part, index) => {
-      const match = part.match(/\[?(\d{2}:\d{2}:\d{2})\]?/);
+      // const match = part.match(/\[?(\d{2}:\d{2}:\d{2})\]?/);
+      const match = part.match(/\[?(\d{1,2}:\d{2}(?::\d{2})?)\]?/);
       if (match) {
         const time = match[1];
         return (
